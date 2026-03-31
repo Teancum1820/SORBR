@@ -1,0 +1,2596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f0f0f">
+<title>Sorbr — Speed Reading & Comprehension</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="apple-mobile-web-app-title" content="Sorbr">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Lexend:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #1a1a1a;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --accent: #ffffff;
+    --accent2: #ff5555;
+    --accent3: #eeeeee;
+    --text: #f0f0f0;
+    --muted: #555555;
+    --word-size: clamp(44px, 9vw, 90px);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    letter-spacing: 0.02em;
+    word-spacing: 0.06em;
+    line-height: 1.6;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ═══════════════ HEADER ═══════════════ */
+  header {
+    position: relative; z-index: 10;
+    padding: 12px 20px;
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .logo { font-size: 16px; font-weight: 700; letter-spacing: 0.03em; }
+  .logo span { color: var(--accent); }
+  .stats-bar { display: flex; gap: 12px; font-size: 10px; color: var(--muted); flex-wrap: wrap; }
+  .stats-bar b { color: var(--accent); }
+  @media (max-width: 480px) {
+    .stats-bar span:nth-child(2) { display: none; }
+  }
+
+  main { position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+  /* ═══════════════ INPUT PANEL ═══════════════ */
+  #input-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 28px 16px 32px;
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  .panel-title {
+    font-size: clamp(22px, 6vw, 40px); font-weight: 700;
+    letter-spacing: 0.01em; text-align: center; line-height: 1.2;
+  }
+  .panel-title span { color: var(--accent); }
+
+  /* URL input row */
+  .url-row { display: flex; width: 100%; max-width: 660px; }
+  .url-row input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-right: none; color: var(--text);
+    font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 14px;
+    padding: 13px 14px; outline: none; transition: border-color 0.2s;
+    border-radius: 4px 0 0 4px; letter-spacing: 0.02em;
+    -webkit-appearance: none;
+  }
+  .url-row input:focus { border-color: var(--accent); }
+  .url-row input::placeholder { color: var(--muted); }
+  .url-row input.error { border-color: var(--accent2); }
+
+  .btn-fetch {
+    background: var(--accent); color: #0f0f0f;
+    border: none; font-family: 'Lexend', sans-serif; font-weight: 700; font-size: 12px;
+    letter-spacing: 0.06em; padding: 12px 18px; cursor: pointer;
+    border-radius: 0 4px 4px 0; transition: background 0.15s, transform 0.1s;
+    text-transform: uppercase; white-space: nowrap; min-width: 80px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-fetch:hover:not(:disabled) { background: #dddddd; }
+  .btn-fetch:active:not(:disabled) { transform: scale(0.97); }
+  .btn-fetch:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .fetch-status {
+    width: 100%; max-width: 660px; font-size: 12px; min-height: 18px;
+    display: flex; align-items: center; gap: 8px;
+    margin-top: -8px;
+  }
+  .fetch-status.ok   { color: #4caf50; }
+  .fetch-status.err  { color: var(--accent2); }
+  .fetch-status.info { color: var(--muted); }
+
+  .divider {
+    display: flex; align-items: center; gap: 14px;
+    width: 100%; max-width: 660px; color: var(--muted); font-size: 12px;
+  }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  #text-input {
+    width: 100%; max-width: 660px;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 14px;
+    padding: 13px; height: 100px; resize: vertical; outline: none;
+    border-radius: 4px; transition: border-color 0.2s;
+    line-height: 1.8; letter-spacing: 0.02em;
+    -webkit-appearance: none;
+  }
+  #text-input:focus { border-color: var(--accent); }
+  #text-input::placeholder { color: var(--muted); }
+
+  .upload-zone {
+    width: 100%; max-width: 660px;
+    border: 2px dashed var(--border); border-radius: 4px; padding: 16px;
+    text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    font-size: 13px; color: var(--muted);
+  }
+  /* Hide drag-and-drop hint on mobile — they'll tap instead */
+  @media (hover: none) {
+    .upload-zone { padding: 14px; }
+    .upload-zone strong { display: none; }
+  }
+  .upload-zone:hover { border-color: var(--accent); background: rgba(255,255,255,0.03); }
+  .upload-zone.drag-over { border-color: var(--accent); background: rgba(255,255,255,0.05); }
+  .upload-zone input { display: none; }
+  .upload-zone .upload-icon { font-size: 20px; margin-bottom: 4px; display: block; }
+
+  .options-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .opt-group { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .opt-group label { white-space: nowrap; }
+
+  .checkpoint-opt {
+    display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 8px 11px;
+  }
+  .checkpoint-opt select {
+    background: transparent; border: none; color: var(--accent);
+    font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 12px; font-weight: 700;
+    outline: none; cursor: pointer; min-height: 24px;
+  }
+  .checkpoint-opt select option { background: var(--surface2); color: var(--text); }
+
+  input[type="range"] {
+    -webkit-appearance: none; width: 90px; height: 4px;
+    background: var(--border); border-radius: 2px; outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 18px; height: 18px;
+    border-radius: 50%; background: var(--accent); cursor: pointer;
+  }
+
+  .btn-start {
+    background: transparent; border: 2px solid var(--accent); color: var(--accent);
+    font-family: 'Lexend', sans-serif; font-weight: 700; font-size: 14px;
+    letter-spacing: 0.08em; text-transform: uppercase; padding: 13px 44px;
+    cursor: pointer; border-radius: 4px; transition: all 0.2s;
+    min-height: 48px; touch-action: manipulation;
+  }
+  .btn-start:hover { background: var(--accent); color: #0f0f0f; }
+
+  /* ═══════════════ READER PANEL ═══════════════ */
+  #reader-panel { display: none; flex: 1; flex-direction: column; min-height: 0; }
+
+  #progress-wrap { padding: 8px 28px 2px; flex-shrink: 0; }
+  #progress-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  #progress-fill  { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.1s linear; }
+  #checkpoint-markers { position: relative; height: 9px; margin-top: 3px; }
+  .cp-marker {
+    position: absolute; top: 0; width: 2px; height: 7px;
+    background: var(--accent3); border-radius: 1px; transform: translateX(-1px); opacity: 0.6;
+    transition: opacity 0.3s;
+  }
+  .cp-marker.passed { opacity: 0.2; }
+
+  #word-stage {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    position: relative; padding: 16px 36px; min-height: 0;
+  }
+  #word-stage::before {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%); width: 2px; height: 48px;
+    background: rgba(255,255,255,0.06); border-radius: 1px; pointer-events: none;
+  }
+
+  #current-word {
+    font-family: 'Lexend', sans-serif; font-weight: 600;
+    font-size: var(--word-size); letter-spacing: 0.04em;
+    text-align: center; position: relative; line-height: 1.15;
+  }
+  #current-word .orp { color: #666666; }
+
+  #pause-dot {
+    position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%);
+    width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+    opacity: 0; transition: opacity 0.15s;
+  }
+  #pause-dot.visible { opacity: 1; }
+
+  #punc-label {
+    position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%);
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--accent); opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap;
+  }
+  #punc-label.show { opacity: 1; }
+
+  @keyframes wordFlash {
+    0%  { opacity: 0; transform: scale(0.94); }
+    15% { opacity: 1; transform: scale(1); }
+    85% { opacity: 1; }
+    100%{ opacity: 0.9; }
+  }
+  .word-animate { animation: wordFlash 0.11s ease-out; }
+
+  #context-strip {
+    padding: 0 28px 10px; font-size: 13px; color: var(--muted);
+    text-align: center; line-height: 1.9; letter-spacing: 0.02em;
+    min-height: 44px; flex-shrink: 0;
+  }
+  #context-strip .ctx-prev { opacity: 0.38; }
+  #context-strip .ctx-next { opacity: 0.38; }
+  #context-strip .ctx-cur  { color: var(--text); font-weight: 700; }
+
+  #controls {
+    border-top: 1px solid var(--border); padding: 10px 16px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; flex-wrap: nowrap; flex-shrink: 0;
+  }
+  .ctrl-group { display: flex; align-items: center; gap: 5px; }
+  .ctrl-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    width: 40px; height: 40px; border-radius: 6px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; transition: border-color 0.15s, background 0.15s; flex-shrink: 0;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  .ctrl-btn:hover { border-color: var(--accent); background: rgba(255,255,255,0.05); }
+  .ctrl-btn.active { border-color: var(--accent); color: var(--accent); }
+  #play-btn {
+    width: 50px; height: 50px; background: var(--accent);
+    border-color: var(--accent); color: #0f0f0f; font-size: 18px; border-radius: 50%;
+  }
+  #play-btn:hover { background: #dddddd; }
+
+  .wpm-control { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+  #wpm-display {
+    font-size: 17px; font-weight: 700; color: var(--accent);
+    font-family: 'Lexend', sans-serif; min-width: 44px; text-align: center;
+  }
+
+  .btn-sm {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    font-size: 10px; padding: 6px 10px; border-radius: 4px; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.05em; transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap; min-height: 34px; touch-action: manipulation;
+  }
+  .btn-sm:hover { color: var(--text); border-color: var(--muted); }
+  .btn-sm.purple:hover { color: var(--accent3); border-color: var(--accent3); }
+
+  /* On small screens, hide "← New Text" label, just show icon */
+  @media (max-width: 400px) {
+    #back-btn { font-size: 0; width: 34px; padding: 6px; }
+    #back-btn::before { content: '←'; font-size: 14px; }
+  }
+
+  #notes-count {
+    display: none; position: absolute; top: -5px; right: -5px;
+    background: var(--accent3); color: #0f0f0f; font-size: 9px; font-weight: 700;
+    width: 14px; height: 14px; border-radius: 50%;
+    align-items: center; justify-content: center;
+  }
+  #notes-toggle-btn { position: relative; }
+
+  /* On mobile, word stage is tappable to play/pause */
+  #word-stage { cursor: pointer; }
+  @media (hover: none) {
+    #word-stage::after {
+      content: 'Tap to play/pause';
+      position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+      font-size: 9px; color: var(--muted); letter-spacing: 0.08em;
+      text-transform: uppercase; opacity: 0.6; pointer-events: none;
+      white-space: nowrap;
+    }
+  }
+
+  .key-hint {
+    font-size: 9px; color: var(--muted); text-align: center;
+    padding-bottom: 6px; flex-shrink: 0;
+  }
+  /* Hide keyboard hint on touch devices */
+  @media (hover: none) { .key-hint { display: none; } }
+  kbd {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 1px 4px; border-radius: 3px; font-size: 9px;
+  }
+
+  /* ═══════════════ CHECKPOINT OVERLAY ═══════════════ */
+  #checkpoint-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,10,10,0.92); z-index: 90;
+    align-items: center; justify-content: center;
+    padding: 20px; backdrop-filter: blur(10px);
+  }
+  #checkpoint-overlay.show { display: flex; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Two-panel card */
+  .cp-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; width: 100%; max-width: 880px;
+    display: flex; flex-direction: row;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    animation: slideUp 0.22s ease;
+    max-height: 90vh; overflow: hidden;
+  }
+
+  /* Left panel — scrollable text review */
+  .cp-text-panel {
+    flex: 1; min-width: 0;
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+  }
+  .cp-text-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .cp-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent3); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 3px; padding: 3px 8px; margin-bottom: 8px;
+  }
+  .cp-text-header h3 {
+    font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 600;
+    color: var(--text); line-height: 1.3;
+  }
+  .cp-text-header h3 b { color: var(--accent); }
+  .cp-text-header p {
+    font-size: 11px; color: var(--muted); margin-top: 3px;
+  }
+
+  /* Scrollable text body */
+  .cp-text-scroll {
+    flex: 1; overflow-y: auto; padding: 18px 20px;
+    font-size: 13px; line-height: 1.9; color: var(--muted);
+    letter-spacing: 0.015em; word-spacing: 0.05em;
+  }
+  .cp-text-scroll::-webkit-scrollbar { width: 4px; }
+  .cp-text-scroll::-webkit-scrollbar-track { background: transparent; }
+  .cp-text-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Highlight the checkpoint word(s) */
+  .cp-text-scroll .cp-highlight {
+    color: var(--accent); font-weight: 700;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px; padding: 0 2px;
+  }
+  .cp-text-scroll .cp-dim { opacity: 0.45; }
+  .cp-text-scroll .cp-paragraph { margin-bottom: 1em; display: block; }
+
+  /* Right panel — note input */
+  .cp-note-panel {
+    width: 320px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    padding: 20px;
+    gap: 14px;
+  }
+
+  .cp-note-title {
+    font-family: 'Lexend', sans-serif; font-size: 14px; font-weight: 600;
+    color: var(--text); line-height: 1.4;
+  }
+  .cp-note-title span { color: var(--muted); font-weight: 400; font-size: 12px; display: block; margin-top: 3px; }
+
+  #summary-input {
+    flex: 1; min-height: 140px;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 13px;
+    padding: 12px 14px; border-radius: 4px; resize: none;
+    outline: none; line-height: 1.8; letter-spacing: 0.02em;
+    transition: border-color 0.2s;
+  }
+  #summary-input:focus { border-color: var(--accent3); }
+  #summary-input::placeholder { color: var(--muted); font-style: italic; font-size: 12px; }
+
+  .cp-hint {
+    font-size: 10px; color: var(--muted); line-height: 1.6;
+  }
+
+  .cp-actions { display: flex; flex-direction: column; gap: 8px; }
+  .btn-cp {
+    font-family: 'Lexend', sans-serif; font-weight: 600; font-size: 12px;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 10px 20px;
+    border-radius: 4px; cursor: pointer; transition: all 0.15s; border: none;
+    width: 100%; text-align: center;
+  }
+  .btn-cp.primary { background: var(--accent3); color: #0f0f0f; }
+  .btn-cp.primary:hover { background: #dddddd; }
+  .btn-cp.skip { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-cp.skip:hover { border-color: var(--muted); color: var(--text); }
+
+  /* Mobile: stack panels */
+  @media (max-width: 640px) {
+    .cp-card { flex-direction: column; max-height: 92vh; }
+    .cp-text-panel { max-height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
+    .cp-note-panel { width: 100%; }
+  }
+
+  /* ═══════════════ NOTES SIDEBAR ═══════════════ */
+  #notes-sidebar {
+    display: none; position: fixed; top: 0; right: 0; bottom: 0;
+    width: min(380px, 90vw); background: var(--surface2);
+    border-left: 1px solid var(--border); z-index: 80;
+    flex-direction: column; box-shadow: -4px 0 24px rgba(255,255,255,0.07);
+  }
+  #notes-sidebar.open { display: flex; }
+
+  .sidebar-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  }
+  .sidebar-header h3 { font-family: 'Lexend', sans-serif; font-size: 14px; font-weight: 600; }
+  .sidebar-header h3 span { color: var(--accent3); }
+  .btn-close-sidebar {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    width: 26px; height: 26px; border-radius: 4px; cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; justify-content: center; transition: color 0.15s;
+  }
+  .btn-close-sidebar:hover { color: var(--text); }
+
+  #notes-list {
+    flex: 1; overflow-y: auto; padding: 16px 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  #notes-list::-webkit-scrollbar { width: 3px; }
+  #notes-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .note-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 13px;
+    display: flex; flex-direction: column; gap: 7px;
+  }
+  .note-card.note-final {
+    border-color: var(--accent); border-width: 1.5px;
+  }
+  .note-meta { display: flex; justify-content: space-between; align-items: center; }
+  .note-checkpoint { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent3); }
+  .note-progress { font-size: 10px; color: var(--muted); }
+  .note-text { font-size: 12.5px; line-height: 1.7; color: var(--text); }
+  .note-text.skipped { color: var(--muted); font-style: italic; }
+  .note-excerpt {
+    font-size: 11px; color: var(--muted); font-style: italic;
+    line-height: 1.6; border-left: 2px solid var(--border); padding-left: 8px;
+  }
+  .notes-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 40px 0; line-height: 1.8; }
+
+  .sidebar-footer {
+    padding: 10px 16px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap;
+  }
+  .btn-export {
+    flex: 1; background: transparent; border: 1px solid var(--border); color: var(--muted);
+    font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 8px 4px; border-radius: 4px; cursor: pointer; transition: all 0.15s;
+    min-height: 36px; touch-action: manipulation; white-space: nowrap;
+  }
+  .btn-export:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-export.pdf-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+  .btn-export.copy-btn:hover { border-color: #4caf50; color: #4caf50; }
+  .btn-export.bookmark-btn:hover { border-color: #f0c040; color: #f0c040; }
+
+  /* ═══════════════ DONE OVERLAY ═══════════════ */
+  #done-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,10,10,0.96); z-index: 100;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px; text-align: center; padding: 24px;
+  }
+  #done-overlay h2 { font-family: 'Lexend', sans-serif; font-size: 40px; font-weight: 700; }
+  #done-overlay h2 span { color: var(--accent); }
+  #done-overlay p { font-size: 13px; color: var(--muted); }
+  #done-overlay .done-btns { display: flex; gap: 9px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+
+  .btn-done {
+    background: var(--accent); border: none; color: #0f0f0f;
+    font-family: 'Lexend', sans-serif; font-weight: 700; font-size: 12px;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 10px 26px;
+    cursor: pointer; border-radius: 4px; transition: background 0.15s;
+  }
+  .btn-done:hover { background: #dddddd; }
+  .btn-done.secondary { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-done.secondary:hover { border-color: var(--muted); color: var(--text); background: transparent; }
+  .btn-done.purple { background: var(--accent3); color: #0f0f0f; }
+  .btn-done.purple:hover { background: #dddddd; }
+
+  /* ═══════════════ TOAST ═══════════════ */
+  #toast {
+    position: fixed; bottom: 22px; left: 50%;
+    transform: translateX(-50%) translateY(65px);
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-size: 12px;
+    padding: 8px 16px; border-radius: 6px; z-index: 300;
+    transition: transform 0.28s ease; pointer-events: none; white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.ok  { border-color: #4caf50; color: #4caf50; }
+  #toast.err { border-color: var(--accent2); color: var(--accent2); }
+
+  .version-footer {
+    font-size: 11px; color: var(--muted); text-align: center;
+    margin-top: 4px; letter-spacing: 0.04em; opacity: 0.7;
+  }
+
+  /* ── Mobile sidebar: full-width on small screens ── */
+  @media (max-width: 500px) {
+    #notes-sidebar { width: 100vw; border-left: none; }
+    .cp-note-panel { padding: 14px; gap: 10px; }
+    .cp-text-header { padding: 12px 14px 10px; }
+    .cp-text-scroll { padding: 12px 14px; font-size: 12px; }
+    .cp-text-panel { max-height: 38vh; }
+    #summary-input { min-height: 100px; font-size: 14px; }
+    .btn-cp { padding: 12px; font-size: 13px; min-height: 46px; }
+    #done-overlay h2 { font-size: 32px; }
+    .done-btns { flex-direction: column; align-items: center; width: 100%; }
+    .btn-done { width: 100%; max-width: 280px; padding: 14px; }
+    .options-row { flex-direction: column; align-items: flex-start; padding: 0 8px; width: 100%; max-width: 660px; }
+    .checkpoint-opt { width: 100%; }
+  }
+
+  /* ── Landscape phone: reduce vertical padding ── */
+  @media (max-height: 500px) and (orientation: landscape) {
+    #input-panel { gap: 10px; padding: 12px 16px; justify-content: flex-start; }
+    .panel-title { font-size: 20px; }
+    #text-input { height: 70px; }
+    .upload-zone { padding: 10px; }
+    .upload-zone .upload-icon { display: none; }
+    .word-stage { min-height: 0; }
+    #context-strip { min-height: 32px; padding-bottom: 4px; }
+    #current-word { font-size: clamp(32px, 8vw, 60px); }
+  }
+
+  /* ── Smooth overscroll everywhere ── */
+  #input-panel, #notes-list, .cp-text-scroll {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Prevent text selection during reading (avoids accidental selection on tap) ── */
+  #word-stage, #current-word, #context-strip {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+
+  
+  /* ═══════════════ PRINT PICKER MODAL ═══════════════ */
+  #print-picker-modal {
+    display: none; position: fixed; inset: 0; z-index: 115;
+    background: rgba(10,10,10,0.88); backdrop-filter: blur(10px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  #print-picker-modal.show { display: flex; }
+
+  .pp-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; width: 100%; max-width: 380px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+    animation: slideUp 0.2s ease; overflow: hidden;
+  }
+  .pp-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .pp-header h3 {
+    font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 600; color: var(--text);
+  }
+  .pp-options { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+  .pp-option {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 7px; padding: 16px 18px;
+    display: flex; align-items: center; gap: 16px;
+    cursor: pointer; text-align: left; transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+  }
+  .pp-option:hover { border-color: var(--accent); background: rgba(255,255,255,0.04); }
+  .pp-option:active { transform: scale(0.99); }
+
+  .pp-icon { font-size: 28px; flex-shrink: 0; }
+  .pp-label {
+    font-family: 'Lexend', sans-serif; font-size: 14px; font-weight: 600;
+    color: var(--text); display: block; margin-bottom: 3px;
+  }
+  .pp-desc { font-size: 11px; color: var(--muted); display: block; }
+
+  /* ═══════════════ CHAPTER PICKER MODAL ═══════════════ */
+  #chapter-modal {
+    display: none; position: fixed; inset: 0; z-index: 110;
+    background: rgba(10,10,10,0.92); backdrop-filter: blur(10px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  #chapter-modal.show { display: flex; }
+
+  .ch-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; width: 100%; max-width: 540px;
+    max-height: 85vh; display: flex; flex-direction: column;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+    animation: slideUp 0.22s ease;
+  }
+
+  .ch-header {
+    padding: 18px 20px 12px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 12px; flex-shrink: 0;
+  }
+  .ch-title { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .ch-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); width: fit-content;
+  }
+  .ch-header h3 {
+    font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 600;
+    color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 380px;
+  }
+  .ch-subtitle {
+    padding: 10px 20px 6px; font-size: 12px; color: var(--muted); flex-shrink: 0;
+  }
+
+  #ch-list {
+    flex: 1; overflow-y: auto; padding: 8px 12px 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    overscroll-behavior: contain;
+  }
+  #ch-list::-webkit-scrollbar { width: 4px; }
+  #ch-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .ch-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 6px; cursor: pointer;
+    border: 1px solid transparent; transition: all 0.12s;
+    background: transparent;
+  }
+  .ch-item:hover { background: var(--surface); border-color: var(--border); }
+  .ch-item:active { transform: scale(0.99); }
+  .ch-num {
+    font-size: 10px; color: var(--muted); font-family: 'Lexend', sans-serif;
+    min-width: 28px; text-align: right; flex-shrink: 0;
+  }
+  .ch-info { flex: 1; min-width: 0; }
+  .ch-name {
+    font-size: 13px; color: var(--text); font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ch-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .ch-arrow { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+
+  .ch-footer {
+    padding: 12px 16px; border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 500px) {
+    .ch-card { max-height: 90vh; }
+    .ch-header h3 { max-width: 220px; font-size: 13px; }
+  }
+
+  /* ── Mobile: compact the home screen so less scrolling needed ── */
+  @media (max-width: 500px) {
+    #input-panel { gap: 12px; padding: 16px 12px; }
+    .panel-title { font-size: clamp(20px, 7vw, 32px); }
+    #text-input { height: 80px; }
+    .qp-textarea { height: 80px; }
+    .upload-zone { padding: 12px; }
+  }
+
+  /* ── On really short screens (landscape phone) hide the panel title ── */
+  @media (max-height: 500px) {
+    .panel-title { display: none; }
+    #input-panel { gap: 10px; padding: 12px; }
+    #input-panel::before, #input-panel::after { display: none; }
+  }
+
+  /* ═══════════════ QUICK PRINT SECTION ═══════════════ */
+  .qp-section {
+    width: 100%; max-width: 660px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: visible; /* never clip controls */
+  }
+
+  .qp-header {
+    padding: 13px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .qp-label {
+    font-family: 'Lexend', sans-serif;
+    font-size: 13px; font-weight: 600; color: var(--text);
+    letter-spacing: 0.01em;
+  }
+  .qp-desc {
+    font-size: 11px; color: var(--muted); line-height: 1.5;
+  }
+
+  .qp-textarea {
+    width: 100%; background: transparent;
+    border: none; border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-size: 13px; padding: 13px 16px;
+    height: 90px; resize: none; outline: none;
+    line-height: 1.8; letter-spacing: 0.02em;
+    -webkit-appearance: none; display: block;
+  }
+  .qp-textarea::placeholder { color: var(--muted); font-style: italic; }
+  .qp-textarea:focus { background: rgba(255,255,255,0.02); }
+
+  .qp-controls {
+    padding: 10px 12px;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 8px;
+    flex-wrap: wrap; /* wrap on narrow screens */
+    border-radius: 0 0 8px 8px;
+  }
+
+  .qp-format-group {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .qp-format-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-size: 11px; padding: 7px 12px; border-radius: 4px;
+    cursor: pointer; transition: all 0.15s; display: flex;
+    align-items: center; gap: 5px; white-space: nowrap;
+    touch-action: manipulation; min-height: 36px;
+  }
+  .qp-format-btn:hover { border-color: var(--muted); color: var(--text); }
+  .qp-format-btn.active {
+    background: var(--accent); border-color: var(--accent);
+    color: #0f0f0f; font-weight: 700;
+  }
+  .qp-size {
+    font-size: 9px; opacity: 0.7; letter-spacing: 0.03em;
+  }
+
+  .btn-qp-print {
+    background: var(--accent); color: #0f0f0f;
+    border: none; font-family: 'Lexend', sans-serif;
+    font-weight: 700; font-size: 12px; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 9px 20px;
+    border-radius: 4px; cursor: pointer; min-height: 36px;
+    transition: background 0.15s; white-space: nowrap;
+    touch-action: manipulation;
+  }
+  .btn-qp-print:hover { background: #dddddd; }
+
+  /* On mobile, stack format buttons and print button full width */
+  @media (max-width: 480px) {
+    .qp-controls { flex-direction: column; align-items: stretch; gap: 8px; }
+    .qp-format-group { width: 100%; justify-content: stretch; }
+    .qp-format-btn { flex: 1; justify-content: center; }
+    .btn-qp-print { width: 100%; text-align: center; padding: 12px; font-size: 13px; }
+  }
+
+  .spin {
+    display: inline-block; width: 13px; height: 13px;
+    border: 2px solid rgba(255,255,255,0.2); border-top-color: #0f0f0f;
+    border-radius: 50%; animation: spin 0.65s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Sor<span>br</span></div>
+  <div class="stats-bar" id="stats-bar">
+    <span>WORDS: <b id="stat-total">0</b></span>
+    <span>POS: <b id="stat-index">0</b></span>
+    <span>ETA: <b id="stat-eta">—</b></span>
+    <span>NOTES: <b id="stat-notes">0</b></span>
+  </div>
+</header>
+
+<main>
+  <!-- ══ INPUT PANEL ══ -->
+  <div id="input-panel">
+    <div class="panel-title">Read faster.<br><span>Absorb deeper.</span></div>
+
+    <div class="url-row">
+      <input type="text" id="url-input" placeholder="Paste a URL to fetch article text…" />
+      <button class="btn-fetch" id="fetch-btn">Fetch</button>
+    </div>
+    <div class="fetch-status info" id="fetch-status"></div>
+
+    <div class="divider">or paste text / drop a PDF, EPUB, or TXT below</div>
+    <textarea id="text-input" placeholder="Paste any text here…"></textarea>
+
+    <div class="upload-zone" id="drop-zone">
+      <input type="file" id="pdf-input" accept=".pdf,.txt,.epub" />
+      <span class="upload-icon">📄</span>
+      Drop a <strong>.pdf</strong>, <strong>.epub</strong> or <strong>.txt</strong> file here, or <u>click to browse</u>
+    </div>
+
+    <div class="options-row">
+      <div class="opt-group">
+        <label>WPM</label>
+        <input type="range" id="wpm-slider" min="100" max="1000" step="25" value="300" />
+        <b id="wpm-label" style="color:var(--accent);font-size:13px;">300</b>
+      </div>
+      <div class="opt-group">
+        <label>Chunk</label>
+        <input type="range" id="chunk-slider" min="1" max="4" step="1" value="1" />
+        <b id="chunk-label" style="color:var(--accent);font-size:13px;">1 word</b>
+      </div>
+      <div class="checkpoint-opt">
+        📝 Every
+        <select id="checkpoint-select">
+          <option value="75">~1 paragraph</option>
+          <option value="150" selected>~2–3 paragraphs</option>
+          <option value="300">~half page</option>
+          <option value="500">~1 page</option>
+          <option value="1000">~2 pages</option>
+          <option value="0">No checkpoints</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn-start" id="start-btn">▶ Start Reading</button>
+
+    <!-- ══ QUICK PRINT SECTION ══ -->
+    <div class="qp-section">
+      <div class="qp-header">
+        <span class="qp-label">🔖 Quick Print</span>
+        <span class="qp-desc">Type notes and print them as bookmarks or sticky notes — no reading session needed</span>
+      </div>
+
+      <textarea
+        id="qp-input"
+        class="qp-textarea"
+        placeholder="Write your notes here — one note per line, or separate with a blank line…"
+      ></textarea>
+
+      <div class="qp-controls">
+        <div class="qp-format-group">
+          <button class="qp-format-btn active" id="qp-bookmark-btn" data-mode="bookmark">
+            🔖 Bookmark <span class="qp-size">2 × 6 in</span>
+          </button>
+          <button class="qp-format-btn" id="qp-sticky-btn" data-mode="sticky">
+            📝 Sticky Note <span class="qp-size">3 × 3 in</span>
+          </button>
+        </div>
+        <button class="btn-qp-print" id="qp-print-btn">Print →</button>
+      </div>
+    </div>
+
+    <div class="version-footer">Sorbr v1.5.0 &nbsp;·&nbsp; Speed reading with comprehension</div>
+  </div>
+
+  <!-- ══ READER PANEL ══ -->
+  <div id="reader-panel">
+    <div id="progress-wrap">
+      <div id="progress-track"><div id="progress-fill"></div></div>
+      <div id="checkpoint-markers"></div>
+    </div>
+
+    <div id="word-stage">
+      <div id="current-word">Ready</div>
+      <div id="pause-dot"></div>
+      <div id="punc-label"></div>
+    </div>
+
+    <div id="context-strip">
+      <span class="ctx-prev" id="ctx-prev"></span>
+      <span class="ctx-cur"  id="ctx-cur"></span>
+      <span class="ctx-next" id="ctx-next"></span>
+    </div>
+
+    <div id="controls">
+      <div class="ctrl-group">
+        <button class="ctrl-btn" id="restart-btn"   title="Restart">↩</button>
+        <button class="ctrl-btn" id="skip-back-btn" title="Back 10 words">«</button>
+        <button class="ctrl-btn" id="play-btn"      title="Play/Pause (Space)">▶</button>
+        <button class="ctrl-btn" id="skip-fwd-btn"  title="Forward 10 words">»</button>
+      </div>
+      <div class="wpm-control">
+        <button class="ctrl-btn" id="wpm-down">−</button>
+        <div>
+          <div id="wpm-display">300</div>
+          <div style="font-size:9px;text-align:center;color:var(--muted)">WPM</div>
+        </div>
+        <button class="ctrl-btn" id="wpm-up">+</button>
+      </div>
+      <div class="ctrl-group">
+        <button class="btn-sm" id="back-btn">← New Text</button>
+        <button class="btn-sm purple" id="notes-toggle-btn">📝 Notes<span id="notes-count"></span></button>
+      </div>
+    </div>
+
+    <div class="key-hint">
+      <kbd>Space</kbd> play/pause &nbsp;
+      <kbd>←</kbd><kbd>→</kbd> skip &nbsp;
+      <kbd>↑</kbd><kbd>↓</kbd> speed &nbsp;
+      <kbd>N</kbd> notes
+    </div>
+  </div>
+</main>
+
+
+
+<!-- ══ PRINT PICKER MODAL ══ -->
+<div id="print-picker-modal">
+  <div class="pp-card">
+    <div class="pp-header">
+      <h3>Print Notes As…</h3>
+      <button class="btn-close-sidebar" id="pp-close-btn">✕</button>
+    </div>
+    <div class="pp-options">
+      <button class="pp-option" id="pp-bookmark-btn">
+        <span class="pp-icon">🔖</span>
+        <span class="pp-label">Bookmark</span>
+        <span class="pp-desc">2 × 6 inch — slim, fits inside any book</span>
+      </button>
+      <button class="pp-option" id="pp-sticky-btn">
+        <span class="pp-icon">📝</span>
+        <span class="pp-label">Sticky Note</span>
+        <span class="pp-desc">3 × 3 inch — one note per square</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHAPTER PICKER MODAL ══ -->
+<div id="chapter-modal">
+  <div class="ch-card">
+    <div class="ch-header">
+      <div class="ch-title">
+        <span class="ch-badge" id="ch-badge">📄 PDF</span>
+        <h3 id="ch-filename">document.pdf</h3>
+      </div>
+      <button class="btn-close-sidebar" id="ch-close-btn">✕</button>
+    </div>
+    <p class="ch-subtitle" id="ch-subtitle">Select a chapter or section to read:</p>
+    <div id="ch-list"></div>
+    <div class="ch-footer">
+      <button class="btn-cp skip" id="ch-load-all-btn">Load entire document</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHECKPOINT OVERLAY ══ -->
+<div id="checkpoint-overlay">
+  <div class="cp-card">
+    <!-- Left: scrollable text review -->
+    <div class="cp-text-panel">
+      <div class="cp-text-header">
+        <div class="cp-badge">✦ Checkpoint <span id="cp-number">1</span></div>
+        <h3>Section <b id="cp-section-num">1</b> complete &mdash; <b id="cp-words-read">0</b> of <b id="cp-total-words">0</b> words</h3>
+        <p>Scroll to review what you just read, then write your summary →</p>
+      </div>
+      <div class="cp-text-scroll" id="cp-text-scroll"></div>
+    </div>
+
+    <!-- Right: note input -->
+    <div class="cp-note-panel">
+      <div class="cp-note-title">
+        What's the key idea?
+        <span>Write it in your own words — no looking back needed.</span>
+      </div>
+      <textarea id="summary-input" placeholder="The author argues…&#10;The main point is…&#10;This section covers…"></textarea>
+      <div class="cp-hint">
+        <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to save &amp; continue
+      </div>
+      <div class="cp-actions">
+        <button class="btn-cp primary" id="cp-save-btn">Save &amp; Continue →</button>
+        <button class="btn-cp skip"    id="cp-skip-btn">Skip this checkpoint</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ NOTES SIDEBAR ══ -->
+<div id="notes-sidebar">
+  <div class="sidebar-header">
+    <h3>Your <span>Reading Notes</span></h3>
+    <button class="btn-close-sidebar" id="close-sidebar-btn">✕</button>
+  </div>
+  <div id="notes-list">
+    <div class="notes-empty">No notes yet.<br>Checkpoints will appear here as you read.</div>
+  </div>
+  <div class="sidebar-footer">
+    <button class="btn-export copy-btn"     id="copy-notes-btn">⎘ Copy</button>
+    <button class="btn-export"              id="export-txt-btn">⬇ TXT</button>
+    <button class="btn-export pdf-btn"      id="export-pdf-btn">⬇ PDF</button>
+    <button class="btn-export bookmark-btn" id="bookmark-btn">🔖 Print</button>
+    <button class="btn-export"              id="clear-notes-btn">✕ Clear</button>
+  </div>
+</div>
+
+<!-- ══ FIREWORKS CANVAS ══ -->
+<canvas id="fireworks-canvas" style="position:fixed;inset:0;z-index:99;pointer-events:none;display:none;"></canvas>
+
+<!-- ══ DONE OVERLAY ══ -->
+<div id="done-overlay">
+  <h2>Done! <span>🎉</span></h2>
+  <p id="done-stats"></p>
+  <div class="done-btns">
+    <button class="btn-done"           id="done-restart">Read Again</button>
+    <button class="btn-done purple"    id="done-notes">View Notes</button>
+    <button class="btn-done secondary" id="done-new">New Text</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let words              = [];   // plain word strings
+let tokensMeta         = [];   // { word, paraBreak, sentenceEnd }
+let idx                = 0;
+let wpm                = 300;
+let chunkSize          = 1;
+let playing            = false;
+let advanceTimer       = null;
+let startTime          = null;
+let checkpointInterval = 150;
+let checkpointIndices  = [];
+let nextCpIdx          = 0;
+let checkpointNum      = 0;
+let isFinalCheckpoint  = false;  // true when the end-of-text checkpoint is showing
+let notes              = [];
+let puncDotTimer       = null;
+let puncLabelTimer     = null;
+let loadedTitle        = '';  // chapter name or first line of loaded text
+
+const PUNC = { sentence: 3.2, clause: 1.7, dash: 1.35 };
+
+// ═══════════════════════════════════════════
+//  ELEMENT REFS
+// ═══════════════════════════════════════════
+const inputPanel        = document.getElementById('input-panel');
+const readerPanel       = document.getElementById('reader-panel');
+const urlInput          = document.getElementById('url-input');
+const fetchBtn          = document.getElementById('fetch-btn');
+const fetchStatus       = document.getElementById('fetch-status');
+const textInput         = document.getElementById('text-input');
+const dropZone          = document.getElementById('drop-zone');
+const pdfInput          = document.getElementById('pdf-input');
+const wpmSlider         = document.getElementById('wpm-slider');
+const wpmLabel          = document.getElementById('wpm-label');
+const chunkSlider       = document.getElementById('chunk-slider');
+const chunkLabel        = document.getElementById('chunk-label');
+const checkpointSelect  = document.getElementById('checkpoint-select');
+const startBtn          = document.getElementById('start-btn');
+const currentWordEl     = document.getElementById('current-word');
+const progressFill      = document.getElementById('progress-fill');
+const cpMarkersEl       = document.getElementById('checkpoint-markers');
+const ctxPrev           = document.getElementById('ctx-prev');
+const ctxCur            = document.getElementById('ctx-cur');
+const ctxNext           = document.getElementById('ctx-next');
+const playBtn           = document.getElementById('play-btn');
+const restartBtn        = document.getElementById('restart-btn');
+const skipBackBtn       = document.getElementById('skip-back-btn');
+const skipFwdBtn        = document.getElementById('skip-fwd-btn');
+const wpmDisplay        = document.getElementById('wpm-display');
+const wpmDown           = document.getElementById('wpm-down');
+const wpmUp             = document.getElementById('wpm-up');
+const backBtn           = document.getElementById('back-btn');
+const notesToggleBtn    = document.getElementById('notes-toggle-btn');
+const notesCount        = document.getElementById('notes-count');
+const pauseDot          = document.getElementById('pause-dot');
+const puncLabel         = document.getElementById('punc-label');
+const checkpointOverlay = document.getElementById('checkpoint-overlay');
+const cpNumber          = document.getElementById('cp-number');
+const cpSectionNum      = document.getElementById('cp-section-num');
+const cpWordsRead       = document.getElementById('cp-words-read');
+const cpTotalWords      = document.getElementById('cp-total-words');
+const cpTextScroll      = document.getElementById('cp-text-scroll');
+const summaryInput      = document.getElementById('summary-input');
+const cpSkipBtn         = document.getElementById('cp-skip-btn');
+const cpSaveBtn         = document.getElementById('cp-save-btn');
+const notesSidebar      = document.getElementById('notes-sidebar');
+const notesListEl       = document.getElementById('notes-list');
+const closeSidebarBtn   = document.getElementById('close-sidebar-btn');
+const exportTxtBtn      = document.getElementById('export-txt-btn');
+const exportPdfBtn      = document.getElementById('export-pdf-btn');
+const copyNotesBtn      = document.getElementById('copy-notes-btn');
+const clearNotesBtn     = document.getElementById('clear-notes-btn');
+const bookmarkBtn       = document.getElementById('bookmark-btn');
+const doneOverlay       = document.getElementById('done-overlay');
+const doneStats         = document.getElementById('done-stats');
+const doneRestart       = document.getElementById('done-restart');
+const doneNotes         = document.getElementById('done-notes');
+const doneNew           = document.getElementById('done-new');
+const statTotal         = document.getElementById('stat-total');
+const statIndex         = document.getElementById('stat-index');
+const statEta           = document.getElementById('stat-eta');
+const statNotes         = document.getElementById('stat-notes');
+
+// ═══════════════════════════════════════════
+//  TOKENIZER  (preserves paragraph metadata)
+// ═══════════════════════════════════════════
+function tokenizeMeta(text) {
+  const tokens = [];
+  const parts = text.split(/(\s+)/);
+  let pendingPara = false;
+  for (let i = 0; i < parts.length; i++) {
+    const s = parts[i];
+    if (/^\s+$/.test(s)) {
+      if (/\n[ \t]*\n/.test(s)) pendingPara = true;
+      continue;
+    }
+    if (!s.trim()) continue;
+    tokens.push({
+      word: s,
+      paraBreak:   pendingPara,
+      sentenceEnd: /[.!?]["'»)\]"']*$/.test(s),
+    });
+    pendingPara = false;
+  }
+  return tokens;
+}
+
+function tokenize(text) {
+  return text.split(/\s+/).filter(Boolean);
+}
+
+// ═══════════════════════════════════════════
+//  CHECKPOINT INDEX COMPUTATION
+//  Snaps each target to nearest sentence/para end
+// ═══════════════════════════════════════════
+function computeCheckpoints(tokens, interval) {
+  if (!interval || tokens.length === 0) return [];
+  const results = [];
+  let target = interval;
+  const LOOK = 50;
+
+  while (target < tokens.length) {
+    const limit = Math.min(target + LOOK, tokens.length - 1);
+    let best = -1;
+
+    // 1st preference: paragraph break (fire just before it)
+    for (let i = target; i <= limit; i++) {
+      if (tokens[i].paraBreak) { best = i - 1; break; }
+    }
+    // 2nd preference: sentence end
+    if (best < 0) {
+      for (let i = target; i <= limit; i++) {
+        if (tokens[i].sentenceEnd) { best = i; break; }
+      }
+    }
+    // Fallback
+    if (best < 0) best = target;
+    if (best < 0) best = 0;
+
+    results.push(best);
+    target = best + interval + 1;
+  }
+  return results;
+}
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+let toastTimer = null;
+function showToast(msg, type = '', ms = 2600) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = type ? `show ${type}` : 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = '', ms);
+}
+
+function orp(word) {
+  if (word.length <= 1) return `<span class="orp">${esc(word)}</span>`;
+  const pos = Math.floor((word.length - 1) / 4);
+  return esc(word.slice(0, pos)) +
+    `<span class="orp">${esc(word[pos])}</span>` +
+    esc(word.slice(pos + 1));
+}
+
+function getPuncInfo(word) {
+  const core = word.replace(/["'»)\]"']+$/, '');
+  if (/[.!?]["'»)\]"']*$/.test(word))   return { mult: PUNC.sentence, label: '●●●' };
+  if (/[,;:]$/.test(core))              return { mult: PUNC.clause,   label: '●●' };
+  if (/[—–]/.test(word))               return { mult: PUNC.dash,     label: '●' };
+  return { mult: 1, label: '' };
+}
+
+// ═══════════════════════════════════════════
+//  PROGRESS BAR MARKERS
+// ═══════════════════════════════════════════
+function buildMarkers() {
+  cpMarkersEl.innerHTML = '';
+  checkpointIndices.forEach(pos => {
+    const m = document.createElement('div');
+    m.className  = 'cp-marker';
+    m.style.left = ((pos / Math.max(words.length - 1, 1)) * 100) + '%';
+    m.dataset.pos = pos;
+    cpMarkersEl.appendChild(m);
+  });
+}
+
+// ═══════════════════════════════════════════
+//  RENDER WORD
+// ═══════════════════════════════════════════
+function renderWord() {
+  if (!words.length) return;
+  const chunk = words.slice(idx, idx + chunkSize).join(' ');
+  currentWordEl.innerHTML = orp(chunk);
+  currentWordEl.classList.remove('word-animate');
+  void currentWordEl.offsetWidth;
+  currentWordEl.classList.add('word-animate');
+
+  const win  = 6;
+  const prev = words.slice(Math.max(0, idx - win), idx).join(' ');
+  const next = words.slice(idx + chunkSize, idx + chunkSize + win).join(' ');
+  ctxPrev.textContent = prev ? '…' + prev + ' ' : '';
+  ctxCur.textContent  = chunk;
+  ctxNext.textContent = next ? ' ' + next + '…' : '';
+
+  const pct = ((idx + chunkSize) / words.length) * 100;
+  progressFill.style.width = Math.min(pct, 100) + '%';
+
+  document.querySelectorAll('.cp-marker').forEach(m => {
+    m.classList.toggle('passed', parseInt(m.dataset.pos) <= idx);
+  });
+
+  statIndex.textContent = idx + 1;
+  const rem = Math.ceil((words.length - idx) / wpm * 60);
+  statEta.textContent   = rem >= 60 ? `${Math.floor(rem/60)}m ${rem%60}s` : `${rem}s`;
+}
+
+// ═══════════════════════════════════════════
+//  PLAYBACK  (setTimeout, not setInterval)
+// ═══════════════════════════════════════════
+function scheduleNext(mult) {
+  clearTimeout(advanceTimer);
+  advanceTimer = setTimeout(advance, Math.round(60000 / wpm * mult));
+}
+
+function advance() {
+  if (!playing) return;
+  idx += chunkSize;
+
+  if (idx >= words.length) {
+    idx = words.length - 1;
+    pause();
+    showFinalCheckpoint();
+    return;
+  }
+
+  // Checkpoint?
+  if (nextCpIdx < checkpointIndices.length && idx >= checkpointIndices[nextCpIdx]) {
+    nextCpIdx++;
+    pause();
+    showCheckpoint();
+    return;
+  }
+
+  renderWord();
+
+  // Punctuation pause
+  const lastWord = words[Math.min(idx + chunkSize - 1, words.length - 1)];
+  const { mult, label } = getPuncInfo(lastWord);
+
+  if (mult > 1) {
+    clearTimeout(puncDotTimer);
+    pauseDot.classList.add('visible');
+    puncDotTimer = setTimeout(() => pauseDot.classList.remove('visible'),
+      Math.round(60000 / wpm * mult * 0.7));
+
+    if (mult >= PUNC.sentence) {
+      clearTimeout(puncLabelTimer);
+      puncLabel.textContent = label;
+      puncLabel.classList.add('show');
+      puncLabelTimer = setTimeout(() => puncLabel.classList.remove('show'),
+        Math.round(60000 / wpm * mult * 0.6));
+    }
+  }
+
+  scheduleNext(mult);
+}
+
+function play() {
+  if (playing) return;
+  playing = true;
+  playBtn.textContent = '⏸';
+  playBtn.classList.add('active');
+  if (!startTime) startTime = Date.now();
+  scheduleNext(1);
+}
+
+function pause() {
+  playing = false;
+  playBtn.textContent = '▶';
+  playBtn.classList.remove('active');
+  clearTimeout(advanceTimer);
+  advanceTimer = null;
+}
+
+function togglePlay() { playing ? pause() : play(); }
+
+function setWPM(val) {
+  wpm = Math.max(50, Math.min(2000, val));
+  wpmDisplay.textContent = wpm;
+  wpmSlider.value = wpm;
+  wpmLabel.textContent = wpm;
+}
+
+// ═══════════════════════════════════════════
+//  CHECKPOINT  — build scrollable text view
+// ═══════════════════════════════════════════
+function buildCheckpointTextView(sectionStart, sectionEnd) {
+  // sectionStart = word index where this section began (0 or prev checkpoint + 1)
+  // sectionEnd   = current idx (the checkpoint word)
+
+  // Build paragraph-aware HTML from the section's tokens
+  const sectionTokens = tokensMeta.slice(sectionStart, sectionEnd + 1);
+
+  let html = '';
+  let paraWords = [];
+
+  const flushPara = () => {
+    if (paraWords.length) {
+      html += `<span class="cp-paragraph">${paraWords.join(' ')}</span>`;
+      paraWords = [];
+    }
+  };
+
+  sectionTokens.forEach((t, i) => {
+    const globalIdx = sectionStart + i;
+    const isLast    = globalIdx === sectionEnd;
+    const wordHtml  = isLast
+      ? `<span class="cp-highlight">${esc(t.word)}</span>`
+      : esc(t.word);
+
+    if (t.paraBreak && paraWords.length > 0) flushPara();
+    paraWords.push(wordHtml);
+    if (isLast) flushPara();
+  });
+
+  return html;
+}
+
+function showCheckpoint() {
+  checkpointNum++;
+
+  // Figure out where this section started
+  const prevCpWordIdx = nextCpIdx >= 2 ? checkpointIndices[nextCpIdx - 2] + 1 : 0;
+  const sectionEnd    = checkpointIndices[nextCpIdx - 1]; // the index we just hit
+
+  cpNumber.textContent      = checkpointNum;
+  cpSectionNum.textContent  = checkpointNum;
+  cpWordsRead.textContent   = sectionEnd + 1;
+  cpTotalWords.textContent  = words.length;
+
+  // Populate scrollable text
+  cpTextScroll.innerHTML = buildCheckpointTextView(prevCpWordIdx, sectionEnd);
+
+  // Auto-scroll to bottom so the last word (highlighted) is visible
+  requestAnimationFrame(() => {
+    cpTextScroll.scrollTop = cpTextScroll.scrollHeight;
+  });
+
+  summaryInput.value = '';
+  checkpointOverlay.classList.add('show');
+  setTimeout(() => summaryInput.focus(), 80);
+}
+
+function showFinalCheckpoint() {
+  isFinalCheckpoint = true;
+  checkpointNum++;
+
+  const prevCpWordIdx = checkpointIndices.length > 0
+    ? checkpointIndices[checkpointIndices.length - 1] + 1
+    : 0;
+  const sectionEnd = words.length - 1;
+
+  cpNumber.textContent     = checkpointNum;
+  cpSectionNum.textContent = checkpointNum;
+  cpWordsRead.textContent  = words.length;
+  cpTotalWords.textContent = words.length;
+
+  // Update badge to show "Final"
+  const badge = document.querySelector('.cp-badge');
+  if (badge) badge.innerHTML = '★ Final Checkpoint';
+
+  // Update header title
+  const h3 = document.querySelector('.cp-text-header h3');
+  if (h3) h3.innerHTML = `Reading complete &mdash; <b>${words.length}</b> of <b>${words.length}</b> words`;
+
+  // Update subtext
+  const sub = document.querySelector('.cp-text-header p');
+  if (sub) sub.textContent = 'Review the final section, then write your overall summary →';
+
+  // Update note title
+  const noteTitle = document.querySelector('.cp-note-title');
+  if (noteTitle) noteTitle.innerHTML = `Overall summary <span>What did you take away from this reading?</span>`;
+
+  cpTextScroll.innerHTML = buildCheckpointTextView(prevCpWordIdx, sectionEnd);
+  requestAnimationFrame(() => { cpTextScroll.scrollTop = cpTextScroll.scrollHeight; });
+
+  summaryInput.value = '';
+  summaryInput.placeholder = 'Overall, this piece was about…\nThe key takeaway is…\nI want to remember…';
+  checkpointOverlay.classList.add('show');
+  setTimeout(() => summaryInput.focus(), 80);
+}
+
+function closeCheckpoint(skipped) {
+  const text = summaryInput.value.trim();
+
+  let sectionEnd, prevCpWordIdx;
+  if (isFinalCheckpoint) {
+    sectionEnd      = words.length - 1;
+    prevCpWordIdx   = checkpointIndices.length > 0 ? checkpointIndices[checkpointIndices.length - 1] + 1 : 0;
+  } else {
+    sectionEnd      = checkpointIndices[nextCpIdx - 1] ?? idx;
+    prevCpWordIdx   = nextCpIdx >= 2 ? checkpointIndices[nextCpIdx - 2] + 1 : 0;
+  }
+
+  const excerpt = words.slice(Math.max(sectionEnd - 30, prevCpWordIdx), sectionEnd + 1).join(' ');
+
+  notes.push({
+    checkpoint: checkpointNum,
+    wordsRead:  sectionEnd + 1,
+    pct:        Math.round(((sectionEnd + 1) / words.length) * 100),
+    summary:    (skipped || !text) ? '' : text,
+    skipped:    skipped || !text,
+    excerpt,
+    isFinal:    isFinalCheckpoint,
+  });
+
+  updateNotesUI();
+  checkpointOverlay.classList.remove('show');
+
+  // Restore checkpoint overlay defaults for future reads
+  const badge = document.querySelector('.cp-badge');
+  if (badge) badge.innerHTML = '✦ Checkpoint <span id="cp-number">' + checkpointNum + '</span>';
+  const h3 = document.querySelector('.cp-text-header h3');
+  if (h3) h3.innerHTML = `Section <b id="cp-section-num">${checkpointNum}</b> complete &mdash; <b id="cp-words-read">0</b> of <b id="cp-total-words">0</b> words`;
+  const sub = document.querySelector('.cp-text-header p');
+  if (sub) sub.textContent = 'Scroll to review what you just read, then write your summary →';
+  const noteTitle = document.querySelector('.cp-note-title');
+  if (noteTitle) noteTitle.innerHTML = `What's the key idea? <span>Write it in your own words — no looking back needed.</span>`;
+  summaryInput.placeholder = 'The author argues…\nThe main point is…\nThis section covers…';
+
+  if (isFinalCheckpoint) {
+    isFinalCheckpoint = false;
+    showDone();
+  } else {
+    renderWord();
+    play();
+  }
+}
+
+// ═══════════════════════════════════════════
+//  NOTES SIDEBAR
+// ═══════════════════════════════════════════
+function updateNotesUI() {
+  statNotes.textContent = notes.length;
+  if (notes.length > 0) { notesCount.textContent = notes.length; notesCount.style.display = 'flex'; }
+  else notesCount.style.display = 'none';
+
+  if (!notes.length) {
+    notesListEl.innerHTML = '<div class="notes-empty">No notes yet.<br>Checkpoints will appear here as you read.</div>';
+    return;
+  }
+  notesListEl.innerHTML = notes.map(n => `
+    <div class="note-card${n.isFinal ? ' note-final' : ''}">
+      <div class="note-meta">
+        <span class="note-checkpoint">${n.isFinal ? '★ Final' : `Checkpoint ${n.checkpoint}`}</span>
+        <span class="note-progress">${n.wordsRead} words &middot; ${n.pct}%</span>
+      </div>
+      <div class="note-text${n.skipped ? ' skipped' : ''}">${n.skipped ? 'Skipped' : esc(n.summary)}</div>
+      <div class="note-excerpt">${esc(n.excerpt.slice(0, 140))}…</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════
+//  FIREWORKS
+// ═══════════════════════════════════════════
+(function() {
+  const canvas = document.getElementById('fireworks-canvas');
+  const ctx    = canvas.getContext('2d');
+  let   raf    = null;
+  let   stopAt = 0;
+  const particles = [];
+
+  const COLORS = [
+    '#ffffff','#f0f0f0','#dddddd',
+    '#ffe066','#ff9966','#ff6699',
+    '#66ccff','#99ff99','#cc99ff',
+    '#ffcc00','#00ffcc','#ff4488',
+  ];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  class Particle {
+    constructor(x, y, isStar) {
+      this.x    = x;
+      this.y    = y;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = isStar
+        ? (Math.random() * 5 + 2)
+        : (Math.random() * 8 + 3);
+      this.vx   = Math.cos(angle) * speed;
+      this.vy   = Math.sin(angle) * speed - (isStar ? 0 : 2);
+      this.alpha= 1;
+      this.decay= Math.random() * 0.012 + (isStar ? 0.008 : 0.014);
+      this.color= COLORS[Math.floor(Math.random() * COLORS.length)];
+      this.size = isStar
+        ? (Math.random() * 3 + 1.5)
+        : (Math.random() * 2.5 + 1);
+      this.gravity = 0.12;
+      this.isStar  = isStar;
+      this.trail   = [];
+    }
+    update() {
+      this.trail.push({ x: this.x, y: this.y, alpha: this.alpha });
+      if (this.trail.length > 6) this.trail.shift();
+      this.x    += this.vx;
+      this.y    += this.vy;
+      this.vy   += this.gravity;
+      this.vx   *= 0.98;
+      this.alpha -= this.decay;
+    }
+    draw() {
+      // Trail
+      this.trail.forEach((p, i) => {
+        ctx.globalAlpha = p.alpha * (i / this.trail.length) * 0.3;
+        ctx.fillStyle   = this.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, this.size * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      // Main dot
+      ctx.globalAlpha = Math.max(0, this.alpha);
+      ctx.fillStyle   = this.color;
+      ctx.shadowBlur  = this.isStar ? 8 : 4;
+      ctx.shadowColor = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+    dead() { return this.alpha <= 0; }
+  }
+
+  function burst(x, y) {
+    const count = Math.floor(Math.random() * 30 + 50);
+    for (let i = 0; i < count; i++) {
+      particles.push(new Particle(x, y, false));
+    }
+    // A few slower star-shaped sparkles
+    for (let i = 0; i < 8; i++) {
+      particles.push(new Particle(x, y, true));
+    }
+  }
+
+  function randomBurst() {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height * 0.65 + canvas.height * 0.05;
+    burst(x, y);
+  }
+
+  let burstTimer = null;
+  function scheduleBursts(remaining) {
+    if (Date.now() >= stopAt) return;
+    randomBurst();
+    if (Math.random() < 0.4) {
+      setTimeout(randomBurst, 120 + Math.random() * 180);
+    }
+    burstTimer = setTimeout(() => scheduleBursts(), 400 + Math.random() * 500);
+  }
+
+  function loop() {
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle   = '#0f0f0f';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalAlpha = 1;
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      particles[i].update();
+      particles[i].draw();
+      if (particles[i].dead()) particles.splice(i, 1);
+    }
+
+    if (Date.now() < stopAt || particles.length > 0) {
+      raf = requestAnimationFrame(loop);
+    } else {
+      canvas.style.display = 'none';
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  window.launchFireworks = function(durationMs = 3200) {
+    resize();
+    canvas.style.display = 'block';
+    particles.length = 0;
+    stopAt = Date.now() + durationMs;
+
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    if (burstTimer) { clearTimeout(burstTimer); burstTimer = null; }
+
+    // Immediate opening salvo
+    for (let i = 0; i < 4; i++) {
+      setTimeout(randomBurst, i * 90);
+    }
+    setTimeout(() => scheduleBursts(), 400);
+    raf = requestAnimationFrame(loop);
+  };
+
+  window.addEventListener('resize', resize);
+  resize();
+})();
+
+function showDone() {
+  const elapsed = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+  const mins = Math.floor(elapsed / 60), secs = elapsed % 60;
+  doneStats.textContent = `${words.length} words · ${mins}m ${secs}s · avg ${Math.round(words.length / (elapsed||1) * 60)} wpm · ${notes.length} note${notes.length !== 1 ? 's' : ''}`;
+  doneOverlay.style.display = 'flex';
+  launchFireworks(3500);
+}
+
+// ═══════════════════════════════════════════
+//  START / BACK
+// ═══════════════════════════════════════════
+function startReading() {
+  const raw = textInput.value.trim();
+  if (!raw || raw.length < 5) { showToast('Please add some text first!', 'err'); return; }
+  // Derive title from first line if not set by chapter picker
+  if (!loadedTitle.trim()) {
+    const firstLine = raw.split('\n').find(l => l.trim().length > 2);
+    loadedTitle = firstLine ? firstLine.trim().slice(0, 80) : '';
+  }
+  tokensMeta = tokenizeMeta(raw);
+  if (!tokensMeta.length) { showToast('No words found.', 'err'); return; }
+
+  words              = tokensMeta.map(t => t.word);
+  idx                = 0;
+  startTime          = null;
+  checkpointNum      = 0;
+  nextCpIdx          = 0;
+  notes              = [];
+  checkpointInterval = parseInt(checkpointSelect.value) || 0;
+  chunkSize          = parseInt(chunkSlider.value) || 1;
+  checkpointIndices  = computeCheckpoints(tokensMeta, checkpointInterval);
+
+  updateNotesUI();
+  buildMarkers();
+  statTotal.textContent     = words.length;
+  inputPanel.style.display  = 'none';
+  readerPanel.style.display = 'flex';
+  renderWord();
+  play();
+}
+
+function resetReader() {
+  idx = 0; startTime = null; checkpointNum = 0; notes = []; nextCpIdx = 0;
+  isFinalCheckpoint = false;
+  updateNotesUI(); buildMarkers(); renderWord(); play();
+}
+
+function goBack() {
+  loadedTitle = '';
+  pause();
+  doneOverlay.style.display = 'none';
+  checkpointOverlay.classList.remove('show');
+  notesSidebar.classList.remove('open');
+  readerPanel.style.display = 'none';
+  inputPanel.style.display  = 'flex';
+}
+
+function formatExtractedText(raw) {
+  let t = raw;
+  // Normalize line endings
+  t = t.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  // Collapse spaces/tabs within a line
+  t = t.replace(/[ \t]{2,}/g, ' ');
+  // Soft hyphens and non-breaking spaces
+  t = t.replace(/\u00ad/g, '').replace(/\u00a0/g, ' ');
+  // Fix "word-\ncontinuation" (hyphenation artifacts in PDFs)
+  t = t.replace(/(\w)-\n(\w)/g, '$1$2');
+  // Lines that end mid-sentence (no period) followed by another line → join
+  t = t.replace(/([^\n.!?:;])\n([A-Za-z])/g, '$1 $2');
+  // Ensure paragraph breaks are double newlines
+  t = t.replace(/\n{3,}/g, '\n\n');
+  // Trim leading/trailing whitespace per line
+  t = t.split('\n').map(l => l.trim()).join('\n');
+  // Remove stray single newlines that aren't paragraph breaks
+  t = t.replace(/([^\n])\n([^\n])/g, '$1 $2');
+  // Final cleanup
+  t = t.replace(/\n{3,}/g, '\n\n').trim();
+  return t;
+}
+
+// ═══════════════════════════════════════════
+//  CHAPTER PICKER MODAL
+// ═══════════════════════════════════════════
+const chapterModal   = document.getElementById('chapter-modal');
+const chBadge        = document.getElementById('ch-badge');
+const chFilename     = document.getElementById('ch-filename');
+const chSubtitle     = document.getElementById('ch-subtitle');
+const chList         = document.getElementById('ch-list');
+const chCloseBtn     = document.getElementById('ch-close-btn');
+const chLoadAllBtn   = document.getElementById('ch-load-all-btn');
+
+let chapterData = []; // array of { title, text, wordCount }
+
+function showChapterPicker(filename, type, chapters) {
+  chapterData = chapters;
+  chBadge.textContent   = type === 'epub' ? '📚 EPUB' : '📄 PDF';
+  chFilename.textContent = filename;
+  chSubtitle.textContent = `${chapters.length} section${chapters.length !== 1 ? 's' : ''} found — pick one to read:`;
+
+  chList.innerHTML = chapters.map((ch, i) => `
+    <div class="ch-item" data-idx="${i}">
+      <span class="ch-num">${i + 1}</span>
+      <div class="ch-info">
+        <div class="ch-name">${escHtml(ch.title)}</div>
+        <div class="ch-meta">${ch.wordCount.toLocaleString()} words</div>
+      </div>
+      <span class="ch-arrow">→</span>
+    </div>
+  `).join('');
+
+  chList.querySelectorAll('.ch-item').forEach(el => {
+    el.addEventListener('click', () => {
+      loadChapter(parseInt(el.dataset.idx));
+    });
+  });
+
+  chLoadAllBtn.onclick = () => {
+    const allText = chapters.map(c => c.text).join('\n\n');
+    textInput.value = allText;
+    loadedTitle = chapterData.map(c => c.title).join(', ');
+    showToast(`✓ Loaded all ${tokenize(allText).length.toLocaleString()} words`, 'ok');
+    chapterModal.classList.remove('show');
+  };
+
+  chapterModal.classList.add('show');
+}
+
+function loadChapter(idx) {
+  const ch = chapterData[idx];
+  textInput.value = ch.text;
+  loadedTitle = ch.title;
+  showToast(`✓ "${ch.title}" — ${ch.wordCount.toLocaleString()} words`, 'ok');
+  chapterModal.classList.remove('show');
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+chCloseBtn.addEventListener('click', () => chapterModal.classList.remove('show'));
+// Close on backdrop click
+chapterModal.addEventListener('click', e => {
+  if (e.target === chapterModal) chapterModal.classList.remove('show');
+});
+
+// ═══════════════════════════════════════════
+//  FILE READING
+// ═══════════════════════════════════════════
+function readFile(file) {
+  if (!file) return;
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.txt')) {
+    const r = new FileReader();
+    r.onload = e => {
+      textInput.value = formatExtractedText(e.target.result);
+      showToast(`✓ Loaded ${file.name}`, 'ok');
+    };
+    r.readAsText(file);
+  } else if (name.endsWith('.pdf')) {
+    typeof pdfjsLib === 'undefined' ? loadPDFJS(() => extractPDF(file)) : extractPDF(file);
+  } else if (name.endsWith('.epub')) {
+    loadJSZip(() => extractEPUB(file));
+  } else {
+    showToast('Supported formats: .pdf, .epub, .txt', 'err');
+  }
+}
+
+// ─── PDF.js loader ───
+function loadPDFJS(cb) {
+  if (typeof pdfjsLib !== 'undefined') { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  s.onerror = () => showToast('Could not load PDF library', 'err');
+  s.onload  = () => {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    cb();
+  };
+  document.head.appendChild(s);
+}
+
+// ─── JSZip loader (for EPUB) ───
+function loadJSZip(cb) {
+  if (typeof JSZip !== 'undefined') { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+  s.onerror = () => showToast('Could not load EPUB library', 'err');
+  s.onload  = cb;
+  document.head.appendChild(s);
+}
+
+// ─── PDF extraction with chapter detection ───
+// ─── PDF extraction with accurate chapter detection ───
+async function extractPDF(file) {
+  showToast('Reading PDF…', '', 10000);
+  try {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf, useSystemFonts: true }).promise;
+
+    const outline = await pdf.getOutline();
+    let chapters  = [];
+
+    if (outline && outline.length > 0) {
+      const flat = await flattenOutline(pdf, outline);
+      if (flat.length > 1) {
+        chapters = await buildPDFChapters(pdf, flat);
+      }
+    }
+
+    // Fallback: treat every ~10 pages as a section
+    if (chapters.length <= 1) {
+      chapters = await buildPDFPageChunks(pdf, 10);
+    }
+
+    if (chapters.length > 1) {
+      showChapterPicker(file.name, 'pdf', chapters);
+      showToast('', 'info');
+    } else {
+      textInput.value = chapters[0]?.text || '';
+      showToast(`✓ PDF: ${pdf.numPages} pages, ${tokenize(textInput.value).length.toLocaleString()} words`, 'ok');
+    }
+  } catch(e) {
+    console.error(e);
+    showToast('Could not read PDF — try a different file', 'err');
+  }
+}
+
+// Flatten the outline tree into a sorted [{title, page}] list (top-level only).
+// If the top level has too few entries, also include one level of children.
+async function flattenOutline(pdf, outline) {
+  const items = [];
+  for (const item of outline) {
+    const page = await resolveDestPage(pdf, item.dest);
+    if (page !== null) items.push({ title: cleanTitle(item.title), page });
+    // If top level is sparse (<4 items), include sub-items
+    if (outline.length < 4 && item.items?.length) {
+      for (const sub of item.items) {
+        const sp = await resolveDestPage(pdf, sub.dest);
+        if (sp !== null) items.push({ title: cleanTitle(sub.title), page: sp });
+      }
+    }
+  }
+  // Deduplicate entries that land on the same page (keep first)
+  const seen = new Set();
+  return items
+    .filter(r => { if (seen.has(r.page)) return false; seen.add(r.page); return true; })
+    .sort((a, b) => a.page - b.page);
+}
+
+async function resolveDestPage(pdf, dest) {
+  if (!dest) return null;
+  try {
+    const resolved = typeof dest === 'string' ? await pdf.getDestination(dest) : dest;
+    if (!resolved) return null;
+    return (await pdf.getPageIndex(resolved[0])) + 1; // 1-based
+  } catch { return null; }
+}
+
+function cleanTitle(t) {
+  if (!t) return '';
+  // Remove leading numbering like "1.", "1.2", "Chapter 1 —" etc if redundant
+  return t.trim().replace(/^\d+\.\d*\s*/, '').trim() || t.trim();
+}
+
+async function buildPDFChapters(pdf, outlineItems) {
+  const chapters = [];
+  for (let i = 0; i < outlineItems.length; i++) {
+    const startPage = outlineItems[i].page;
+    const endPage   = (i + 1 < outlineItems.length) ? outlineItems[i + 1].page - 1 : pdf.numPages;
+    if (startPage > endPage) continue;
+    const raw       = await extractPDFPages(pdf, startPage, endPage);
+    const formatted = formatExtractedText(raw);
+    if (tokenize(formatted).length < 20) continue;
+    chapters.push({ title: outlineItems[i].title, text: formatted, wordCount: tokenize(formatted).length, pages: `pp. ${startPage}–${endPage}` });
+  }
+  return chapters;
+}
+
+async function buildPDFPageChunks(pdf, pagesPerChunk) {
+  const chunks = [];
+  for (let start = 1; start <= pdf.numPages; start += pagesPerChunk) {
+    const end = Math.min(start + pagesPerChunk - 1, pdf.numPages);
+    const raw = await extractPDFPages(pdf, start, end);
+    const fmt = formatExtractedText(raw);
+    if (tokenize(fmt).length < 20) continue;
+    const label = pdf.numPages <= pagesPerChunk ? 'Full Document' : `Pages ${start}\u2013${end}`;
+    chunks.push({ title: label, text: fmt, wordCount: tokenize(fmt).length, pages: `pp. ${start}–${end}` });
+  }
+  return chunks;
+}
+
+// Extract text from pages using y-sort for correct reading order
+async function extractPDFPages(pdf, startPage, endPage) {
+  let out = '';
+  for (let p = startPage; p <= endPage; p++) {
+    try {
+      const page    = await pdf.getPage(p);
+      const content = await page.getTextContent({ includeMarkedContent: false });
+      const vp      = page.getViewport({ scale: 1 });
+      const pageH   = vp.height;
+
+      // Bucket items by rounded y (flipped: PDF y=0 is bottom)
+      const lineMap = new Map();
+      for (const item of content.items) {
+        if (!item.str?.trim()) continue;
+        // Flip y so top of page = smaller number
+        const y = Math.round((pageH - item.transform[5]) / 5) * 5;
+        if (!lineMap.has(y)) lineMap.set(y, []);
+        lineMap.get(y).push({ x: item.transform[4], str: item.str });
+      }
+      // Sort lines top-to-bottom, words left-to-right within each line
+      const sortedYs = [...lineMap.keys()].sort((a, b) => a - b);
+      const lines = sortedYs.map(y =>
+        lineMap.get(y).sort((a, b) => a.x - b.x).map(i => i.str).join(' ')
+      );
+      out += lines.join('\n') + '\n\n';
+    } catch {}
+  }
+  return out;
+}
+
+// ─── EPUB extraction ───
+async function extractEPUB(file) {
+  showToast('Reading EPUB…', '', 10000);
+  try {
+    const buf  = await file.arrayBuffer();
+    const zip  = await JSZip.loadAsync(buf);
+
+    // 1. container.xml → OPF path
+    const containerXml = await zip.file('META-INF/container.xml')?.async('string');
+    if (!containerXml) throw new Error('Invalid EPUB: missing container.xml');
+    const opfPath = containerXml.match(/full-path="([^"]+)"/)?.[1];
+    if (!opfPath) throw new Error('Could not find OPF path');
+
+    // 2. Parse OPF
+    const opfXml = await zip.file(opfPath)?.async('string');
+    if (!opfXml) throw new Error('Could not read OPF file');
+    const opfDoc = new DOMParser().parseFromString(opfXml, 'application/xml');
+    const opfBase = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/') + 1) : '';
+
+    // 3. Manifest: id → href
+    const manifest = {};
+    opfDoc.querySelectorAll('manifest item').forEach(el => {
+      const id   = el.getAttribute('id');
+      const href = el.getAttribute('href');
+      const type = el.getAttribute('media-type') || '';
+      if (id && href) manifest[id] = { href, type };
+    });
+
+    // 4. Spine order (content document idref list)
+    const spineRefs = [...opfDoc.querySelectorAll('spine itemref')]
+      .map(el => el.getAttribute('idref'))
+      .filter(Boolean);
+
+    // 5. Build accurate title map from NCX or nav document
+    const titleMap = await buildEPUBTitleMap(zip, opfDoc, opfBase, manifest);
+
+    // 6. Extract each spine item
+    const chapters = [];
+    for (const idref of spineRefs) {
+      const m = manifest[idref];
+      if (!m) continue;
+      // Resolve the file path (handle encoded characters)
+      const filePath = resolveEPUBPath(opfBase, m.href);
+      const raw = await readZipFile(zip, filePath);
+      if (!raw) continue;
+
+      const text = htmlToText(raw);
+      const fmt  = formatExtractedText(text);
+      const wc   = tokenize(fmt).length;
+      if (wc < 30) continue; // skip tiny nav/toc files
+
+      // Map spine item → title via the href fragment (strip query/hash)
+      const hrefBase = m.href.split('#')[0].split('?')[0];
+      const title    = titleMap.get(hrefBase)
+                    || titleMap.get(decodeURIComponent(hrefBase))
+                    || extractFirstHeading(raw)
+                    || `Section ${chapters.length + 1}`;
+
+      chapters.push({ title, text: fmt, wordCount: wc });
+    }
+
+    if (!chapters.length) throw new Error('No readable chapters found');
+
+    if (chapters.length === 1) {
+      textInput.value = chapters[0].text;
+      showToast(`✓ ${chapters[0].wordCount.toLocaleString()} words loaded`, 'ok');
+    } else {
+      showChapterPicker(file.name, 'epub', chapters);
+    }
+  } catch(e) {
+    console.error(e);
+    showToast(`EPUB error: ${e.message}`, 'err');
+  }
+}
+
+// Build a Map of href (without fragment) → title from NCX or nav document
+async function buildEPUBTitleMap(zip, opfDoc, opfBase, manifest) {
+  const map = new Map();
+
+  // ── Try NCX (EPUB 2) ──
+  const ncxId   = opfDoc.querySelector('spine')?.getAttribute('toc');
+  const ncxMeta = ncxId ? manifest[ncxId] : null;
+  if (ncxMeta) {
+    const ncxRaw = await readZipFile(zip, resolveEPUBPath(opfBase, ncxMeta.href));
+    if (ncxRaw) {
+      const ncxDoc = new DOMParser().parseFromString(ncxRaw, 'application/xml');
+      ncxDoc.querySelectorAll('navPoint').forEach(np => {
+        const label   = np.querySelector('navLabel text')?.textContent?.trim() || '';
+        const content = np.querySelector('content');
+        const src     = content?.getAttribute('src') || '';
+        const hrefKey = src.split('#')[0];
+        if (label && hrefKey) map.set(hrefKey, label);
+      });
+    }
+  }
+
+  // ── Try nav document (EPUB 3) ──
+  if (!map.size) {
+    // Find item with properties="nav"
+    let navHref = null;
+    opfDoc.querySelectorAll('manifest item').forEach(el => {
+      if ((el.getAttribute('properties') || '').includes('nav')) {
+        navHref = el.getAttribute('href');
+      }
+    });
+    // Also check for nav in media-type
+    if (!navHref) {
+      for (const [id, m] of Object.entries(manifest)) {
+        if (m.href.endsWith('nav.xhtml') || m.href.endsWith('nav.html')) {
+          navHref = m.href; break;
+        }
+      }
+    }
+    if (navHref) {
+      const navRaw = await readZipFile(zip, resolveEPUBPath(opfBase, navHref));
+      if (navRaw) {
+        const navDoc = new DOMParser().parseFromString(navRaw, 'text/html');
+        // Find the toc nav
+        const tocNav = navDoc.querySelector('nav[epub\\:type="toc"], nav[role="doc-toc"], nav');
+        if (tocNav) {
+          tocNav.querySelectorAll('a').forEach(a => {
+            const href  = (a.getAttribute('href') || '').split('#')[0];
+            const label = a.textContent.trim();
+            if (href && label) map.set(href, label);
+          });
+        }
+      }
+    }
+  }
+
+  return map;
+}
+
+// Safely resolve a path relative to the OPF base directory
+function resolveEPUBPath(base, href) {
+  if (!href) return '';
+  // href may itself contain subdirectory components
+  if (href.startsWith('/')) return href.slice(1); // absolute from root
+  return base + href;
+}
+
+// Try multiple path variants to read a file from the zip
+async function readZipFile(zip, path) {
+  const variants = [path, decodeURIComponent(path), encodeURIComponent(path).replace(/%2F/g, '/')];
+  for (const v of variants) {
+    const entry = zip.file(v) || zip.file(v.replace(/^\//, ''));
+    if (entry) return entry.async('string');
+  }
+  return null;
+}
+
+// Extract the first heading tag text from raw HTML
+function extractFirstHeading(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const h = doc.querySelector('h1,h2,h3,h4,h5,h6');
+  const t = h?.textContent?.trim();
+  return (t && t.length < 120) ? t : null;
+}
+
+function htmlToText(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('script,style,nav,[role="doc-toc"],[epub\\:type="toc"]').forEach(el => el.remove());
+  // Insert paragraph markers before block elements
+  doc.querySelectorAll('p,div,section,article,blockquote,li').forEach(el => {
+    el.insertAdjacentText('beforebegin', '\n');
+    el.insertAdjacentText('afterend', '\n');
+  });
+  doc.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(el => {
+    el.insertAdjacentText('beforebegin', '\n\n');
+    el.insertAdjacentText('afterend', '\n\n');
+  });
+  doc.querySelectorAll('br').forEach(el => el.insertAdjacentText('afterend', '\n'));
+  return (doc.body?.innerText || doc.body?.textContent || '').replace(/\n{4,}/g, '\n\n');
+}
+
+
+dropZone.addEventListener('click', () => pdfInput.click());
+pdfInput.addEventListener('change', e => readFile(e.target.files[0]));
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over'); readFile(e.dataTransfer.files[0]);
+});
+
+function exportPDF() {
+  if (!notes.length) { showToast('No notes to export.', 'err'); return; }
+
+  const date   = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const elapsed = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+  const mins = Math.floor(elapsed/60), secs = elapsed%60;
+  const avgWpm = Math.round(words.length / (elapsed||1) * 60);
+
+  // Annotated text: insert note blocks at checkpoint positions
+  let segments = [], lastWord = 0;
+  notes.forEach(n => {
+    segments.push({ text: words.slice(lastWord, n.wordsRead).join(' '), note: n });
+    lastWord = n.wordsRead;
+  });
+  if (lastWord < words.length) segments.push({ text: words.slice(lastWord).join(' '), note: null });
+
+  const annotatedHTML = segments.map(seg => {
+    const textBlock = `<p class="body-text">${esc(seg.text)}</p>`;
+    if (!seg.note) return textBlock;
+    const n = seg.note;
+    const label = n.isFinal ? '★ Final Checkpoint' : `✦ Checkpoint ${n.checkpoint}`;
+    const noteBlock = n.skipped
+      ? `<div class="note-block skipped"><span class="note-num">${label}</span><br><span class="note-body skipped-label">— skipped —</span></div>`
+      : `<div class="note-block"><span class="note-num">${label}</span><br><blockquote class="note-body"><strong>${esc(n.summary)}</strong></blockquote></div>`;
+    return textBlock + noteBlock;
+  }).join('');
+
+  const summaryHTML = notes.filter(n => !n.skipped).map(n => `
+    <div class="summary-item${n.isFinal ? ' summary-final' : ''}">
+      <div class="summary-header">
+        <span class="cp-label">${n.isFinal ? '★ Final Checkpoint' : `Checkpoint ${n.checkpoint}`}</span>
+        <span class="cp-pos">${n.wordsRead} words · ${n.pct}%</span>
+      </div>
+      <br>
+      <div class="summary-text"><strong>${esc(n.summary)}</strong></div>
+      <br>
+      <div class="summary-excerpt">"…${esc(n.excerpt.slice(0, 180))}…"</div>
+    </div>
+  `).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sorbr Notes</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@400;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Atkinson Hyperlegible',serif;font-size:12pt;line-height:1.85;color:#f0f0f0;background:#0f0f0f}
+.page{max-width:700px;margin:0 auto;padding:48px 44px}
+.cover{border-bottom:3px solid #f0f0f0;padding-bottom:24px;margin-bottom:32px}
+.cover-logo{font-family:'Lexend',sans-serif;font-size:10pt;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#999999666;margin-bottom:12px}
+.cover-logo span{color:#f0f0f0}
+.cover h1{font-family:'Lexend',sans-serif;font-size:24pt;font-weight:700;color:#f0f0f0;margin-bottom:10px}
+.cover-meta{font-size:9.5pt;color:#999999;display:flex;gap:20px;flex-wrap:wrap}
+.cover-meta b{color:#f0f0f0}
+.section-title{font-family:'Lexend',sans-serif;font-size:8.5pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#f0f0f0;border-bottom:1px solid #2e2e2e;padding-bottom:6px;margin:36px 0 20px}
+.body-text{margin-bottom:1.35em;text-align:justify;hyphens:auto;color:#f0f0f0}
+.note-block{border-left:3px solid #f0f0f0;background:#1e1e1e;border-radius:0 5px 5px 0;padding:11px 15px;margin:16px 0 20px;page-break-inside:avoid}
+.note-block.skipped{border-left-color:#666666aaa;background:#111111}
+.note-num{font-family:'Lexend',sans-serif;font-size:8.5pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#f0f0f0;display:block;margin-bottom:5px}
+.note-block.skipped .note-num{color:#666666aaa}
+.note-body{font-size:11pt;font-style:italic;color:#dddddd;line-height:1.7;border:none;padding:0;margin:0}
+.skipped-label{font-size:10pt;color:#555555}
+.summary-item{border:1px solid #2e2e2e;border-radius:5px;padding:16px 18px;margin-bottom:14px;page-break-inside:avoid}
+.summary-item.summary-final{border-color:#f0f0f0;border-width:2px}
+.summary-header{display:flex;justify-content:space-between;margin-bottom:7px}
+.cp-label{font-family:'Lexend',sans-serif;font-size:8.5pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#f0f0f0}
+.cp-pos{font-size:8.5pt;color:#777777}
+.summary-text{font-size:11.5pt;line-height:1.7;color:#f0f0f0;margin-bottom:7px}
+.summary-text strong{font-weight:700}
+.note-body strong{font-weight:700;font-style:normal}
+.summary-excerpt{font-size:9.5pt;color:#777777;font-style:italic;line-height:1.6}
+@media print{body{font-size:10.5pt}.page{padding:32px 36px}.note-block,.summary-item{break-inside:avoid}}
+</style></head><body>
+<div class="page">
+  <div class="cover">
+    <div class="cover-logo">Sor<span>br</span></div>
+    <h1>Reading Notes</h1>
+    <div class="cover-meta">
+      <span>📅 <b>${date}</b></span>
+      <span>📖 <b>${words.length}</b> words</span>
+      <span>⏱ <b>${mins}m ${secs}s</b></span>
+      <span>⚡ <b>${avgWpm} wpm</b></span>
+      <span>✦ <b>${notes.filter(n=>!n.skipped).length}</b> notes</span>
+    </div>
+  </div>
+  <div class="section-title">Summary of Notes</div>
+  ${summaryHTML || '<p style="color:#777777;font-style:italic">No notes saved.</p>'}
+  <div class="section-title">Annotated Full Text</div>
+  ${annotatedHTML}
+</div>
+<script>window.onload=()=>window.print()<\/script>
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  if (!win) { showToast('Allow popups to export PDF', 'err'); return; }
+  win.document.write(html);
+  win.document.close();
+  showToast('Opening print dialog…', 'ok');
+}
+
+// ═══════════════════════════════════════════
+//  URL FETCH  (cleaned up)
+// ═══════════════════════════════════════════
+function setFetchStatus(msg, type) {
+  fetchStatus.textContent = msg;
+  fetchStatus.className   = `fetch-status ${type}`;
+}
+
+fetchBtn.addEventListener('click', async () => {
+  const url = urlInput.value.trim();
+  if (!url) { urlInput.classList.add('error'); setFetchStatus('Please enter a URL first.', 'err'); return; }
+  if (!/^https?:\/\//i.test(url)) { urlInput.classList.add('error'); setFetchStatus('URL must start with http:// or https://', 'err'); return; }
+
+  urlInput.classList.remove('error');
+  fetchBtn.disabled    = true;
+  fetchBtn.innerHTML   = '<span class="spin"></span> Fetching…';
+  setFetchStatus('Fetching page…', 'info');
+
+  try {
+    const res  = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (!json.contents) throw new Error('Empty response');
+
+    const tmp = document.createElement('div');
+    tmp.innerHTML = json.contents;
+    ['script','style','nav','header','footer','aside','figure','figcaption'].forEach(tag =>
+      tmp.querySelectorAll(tag).forEach(el => el.remove()));
+
+    const text = (tmp.innerText || tmp.textContent || '').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+    if (text.length < 30) throw new Error('Could not extract readable text from this page');
+
+    textInput.value = text.slice(0, 60000);
+    const wc = tokenize(text).length;
+    setFetchStatus(`✓ Loaded ${wc.toLocaleString()} words from ${new URL(url).hostname}`, 'ok');
+  } catch(e) {
+    urlInput.classList.add('error');
+    setFetchStatus(`✗ ${e.message || 'Fetch failed'} — try pasting the text directly.`, 'err');
+  } finally {
+    fetchBtn.disabled  = false;
+    fetchBtn.innerHTML = 'Fetch';
+  }
+});
+
+urlInput.addEventListener('input', () => {
+  urlInput.classList.remove('error');
+  if (fetchStatus.className.includes('err')) setFetchStatus('', 'info');
+});
+urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchBtn.click(); });
+
+// ═══════════════════════════════════════════
+//  EXPORT — TXT
+// ═══════════════════════════════════════════
+function exportTxt() {
+  if (!notes.length) { showToast('No notes to export.', 'err'); return; }
+  const body = notes.map(n => {
+    const label = n.isFinal
+      ? `★ FINAL CHECKPOINT (word ${n.wordsRead} · ${n.pct}%)`
+      : `=== Checkpoint ${n.checkpoint} (word ${n.wordsRead} · ${n.pct}%) ===`;
+    const noteLine = n.skipped
+      ? '(skipped)'
+      : n.summary.split('\n').map(l => `  ${l}`).join('\n');
+    return (
+      `${label}\n` +
+      `\n` +
+      `${noteLine}\n` +
+      `\n` +
+      `Context: …${n.excerpt.slice(0, 200)}…`
+    );
+  }).join('\n\n' + '─'.repeat(36) + '\n\n');
+  const blob = new Blob([`SORBR NOTES\n${'═'.repeat(36)}\n\n${body}\n`], { type: 'text/plain' });
+  Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'sorbr-notes.txt' }).click();
+  showToast('TXT exported!', 'ok');
+}
+
+// ═══════════════════════════════════════════
+//  COPY NOTES
+// ═══════════════════════════════════════════
+async function copyNotes() {
+  const written = notes.filter(n => !n.skipped && n.summary.trim());
+  if (!written.length) { showToast('No written notes to copy.', 'err'); return; }
+
+  const text = written.map(n => n.summary.trim()).join('\n\n');
+
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(`${written.length} note${written.length !== 1 ? 's' : ''} copied!`, 'ok');
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;width:1px;height:1px';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try { document.execCommand('copy'); showToast('Notes copied!', 'ok'); }
+    catch { showToast('Copy failed — use TXT export instead', 'err'); }
+    document.body.removeChild(ta);
+  }
+}
+// ═══════════════════════════════════════════
+//  PRINT PICKER
+// ═══════════════════════════════════════════
+const printPickerModal = document.getElementById('print-picker-modal');
+const ppCloseBtn       = document.getElementById('pp-close-btn');
+const ppBookmarkBtn    = document.getElementById('pp-bookmark-btn');
+const ppStickyBtn      = document.getElementById('pp-sticky-btn');
+
+bookmarkBtn.addEventListener('click', () => {
+  const written = notes.filter(n => !n.skipped && n.summary.trim());
+  if (!written.length) { showToast('No notes to print.', 'err'); return; }
+  printPickerModal.classList.add('show');
+});
+ppCloseBtn.addEventListener('click', () => printPickerModal.classList.remove('show'));
+printPickerModal.addEventListener('click', e => {
+  if (e.target === printPickerModal) printPickerModal.classList.remove('show');
+});
+ppBookmarkBtn.addEventListener('click', () => {
+  printPickerModal.classList.remove('show');
+  openPrintWindow('bookmark');
+});
+ppStickyBtn.addEventListener('click', () => {
+  printPickerModal.classList.remove('show');
+  openPrintWindow('sticky');
+});
+
+function openPrintWindow(mode) {
+  const written = notes.filter(n => !n.skipped && n.summary.trim());
+  if (!written.length) { showToast('No notes to print.', 'err'); return; }
+
+  const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  // ── Derive a title for the header ──
+  const cardTitle = loadedTitle.trim()
+    || words.slice(0, 12).join(' ') + (words.length > 12 ? '…' : '');
+
+  // ── Combine all notes into a single card ──
+  const combinedNotes = written.map((n, i) => {
+    const label = n.isFinal ? '★ Final' : `§${n.checkpoint} (${n.pct}%)`;
+    return `<div class="note-block">
+      <span class="note-cp">${label}</span>
+      <span class="note-body">${n.summary.replace(/\n/g, '<br>')}</span>
+    </div>`;
+  }).join('');
+
+  const card = `<div class="card">
+    <div class="card-title">${cardTitle}</div>
+    <div class="card-notes">${combinedNotes}</div>
+    <div class="card-foot">Sorbr &middot; ${date} &middot; ${written.length} note${written.length !== 1 ? 's' : ''}</div>
+  </div>`;
+
+  const isBookmark = mode === 'bookmark';
+
+  const sharedCSS = `
+    @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@600;700&display=swap');
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Atkinson Hyperlegible', sans-serif; background: #fff; color: #111; padding: 10mm; }
+      .page-label {
+        font-family: 'Lexend', sans-serif; font-size: 7pt; font-weight: 700;
+        letter-spacing: .12em; text-transform: uppercase; color: #ccc; margin-bottom: 6mm;
+      }
+      .card {
+        border: 1.5px solid #222; border-radius: 2.5mm;
+        display: flex; flex-direction: column; overflow: hidden;
+        page-break-inside: avoid; break-inside: avoid; background: #fff;
+      }
+      .card-title {
+        font-family: 'Lexend', sans-serif; font-size: 9pt; font-weight: 700;
+        color: #111; padding: 4mm 4mm 3mm;
+        border-bottom: 1.5px solid #222;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        letter-spacing: -0.01em;
+      }
+      .card-notes {
+        flex: 1; overflow: hidden; padding: 3mm 4mm;
+        display: flex; flex-direction: column; gap: 2.5mm;
+      }
+      .note-block { display: flex; flex-direction: column; gap: 0.5mm; }
+      .note-cp {
+        font-family: 'Lexend', sans-serif; font-size: 6pt; font-weight: 700;
+        letter-spacing: .08em; text-transform: uppercase; color: #888;
+      }
+      .note-body { font-size: 8.5pt; line-height: 1.55; color: #111; word-break: break-word; }
+      .card-foot { font-size: 5pt; color: #bbb; text-align: center; border-top: 1px solid #eee; padding: 1.5mm; }
+      @media print { .page-label { display: none; } body { padding: 8mm; } }
+    `;
+
+    const modeCSS = isBookmark
+    ? `.card { width: 51mm; height: 152mm; }`
+    : `.card { width: 76mm; height: 76mm; }`;
+
+    const modeLabel = isBookmark
+    ? 'Bookmark (2 × 6 in)'
+    : 'Sticky Note (3 × 3 in)';
+
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Sorbr ${qpMode === 'bookmark' ? 'Bookmark' : 'Sticky Note'}</title>
+<style>${sharedCSS}${modeCSS}</style></head>
+<body>
+  <div class="page-label">${modeLabel}</div>
+  ${card}
+  <script>window.onload = () => window.print();<\/script>
+</body></html>`;
+
+    const win = window.open('', '_blank');
+    if (!win) { showToast('Allow popups to print', 'err'); return; }
+    win.document.write(html);
+    win.document.close();
+    showToast(`Printing ${isBookmark ? 'bookmark' : 'sticky note'}…`, 'ok');
+}
+
+// Alias kept for compatibility
+function printBookmark() { openPrintWindow('bookmark'); }
+
+// ═══════════════════════════════════════════
+//  CONTROLS
+// ═══════════════════════════════════════════
+wpmSlider.addEventListener('input', () => setWPM(parseInt(wpmSlider.value)));
+chunkSlider.addEventListener('input', () => {
+  chunkSize = parseInt(chunkSlider.value);
+  chunkLabel.textContent = chunkSize === 1 ? '1 word' : `${chunkSize} words`;
+});
+
+startBtn.addEventListener('click', startReading);
+playBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });
+restartBtn.addEventListener('click', () => { pause(); resetReader(); });
+skipBackBtn.addEventListener('click', () => { pause(); idx = Math.max(0, idx - 10); renderWord(); play(); });
+skipFwdBtn.addEventListener('click',  () => { pause(); idx = Math.min(words.length - 1, idx + 10); renderWord(); play(); });
+wpmDown.addEventListener('click', () => setWPM(wpm - 25));
+wpmUp.addEventListener('click',   () => setWPM(wpm + 25));
+backBtn.addEventListener('click',  goBack);
+
+notesToggleBtn.addEventListener('click', () => notesSidebar.classList.toggle('open'));
+closeSidebarBtn.addEventListener('click', () => notesSidebar.classList.remove('open'));
+copyNotesBtn.addEventListener('click', copyNotes);
+exportTxtBtn.addEventListener('click', exportTxt);
+exportPdfBtn.addEventListener('click', exportPDF);
+clearNotesBtn.addEventListener('click', () => { notes = []; updateNotesUI(); showToast('Notes cleared.'); });
+bookmarkBtn.addEventListener('click', printBookmark);
+
+// ── Tap word-stage to play/pause on mobile ──
+document.getElementById('word-stage').addEventListener('click', (e) => {
+  // Ignore taps on child interactive elements (pause-dot, punc-label)
+  if (e.target !== document.getElementById('word-stage') &&
+      e.target !== document.getElementById('current-word') &&
+      !document.getElementById('current-word').contains(e.target)) return;
+  if (readerPanel.style.display !== 'none' && !checkpointOverlay.classList.contains('show')) {
+    togglePlay();
+  }
+});
+
+// ── Swipe left/right on word-stage to skip words ──
+let swipeStartX = 0, swipeStartY = 0;
+const wordStage = document.getElementById('word-stage');
+wordStage.addEventListener('touchstart', e => {
+  swipeStartX = e.touches[0].clientX;
+  swipeStartY = e.touches[0].clientY;
+}, { passive: true });
+wordStage.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - swipeStartX;
+  const dy = e.changedTouches[0].clientY - swipeStartY;
+  // Only count as swipe if horizontal and short enough (not a scroll)
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    if (dx < 0) { pause(); idx = Math.min(words.length - 1, idx + 10); renderWord(); play(); } // swipe left = forward
+    else        { pause(); idx = Math.max(0, idx - 10); renderWord(); play(); }                  // swipe right = back
+  }
+}, { passive: true });
+
+cpSaveBtn.addEventListener('click', () => closeCheckpoint(false));
+cpSkipBtn.addEventListener('click', () => closeCheckpoint(true));
+summaryInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) cpSaveBtn.click();
+});
+
+doneRestart.addEventListener('click', () => { doneOverlay.style.display = 'none'; resetReader(); });
+doneNotes.addEventListener('click',   () => { doneOverlay.style.display = 'none'; notesSidebar.classList.add('open'); });
+doneNew.addEventListener('click',     () => { doneOverlay.style.display = 'none'; goBack(); });
+
+
+// ═══════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (checkpointOverlay.classList.contains('show')) return;
+  if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  if (e.code === 'Space')      { e.preventDefault(); togglePlay(); }
+  if (e.code === 'ArrowRight') { e.preventDefault(); pause(); idx = Math.min(words.length-1, idx+10); renderWord(); play(); }
+  if (e.code === 'ArrowLeft')  { e.preventDefault(); pause(); idx = Math.max(0, idx-10); renderWord(); play(); }
+  if (e.code === 'ArrowUp')    { e.preventDefault(); setWPM(wpm + 25); }
+  if (e.code === 'ArrowDown')  { e.preventDefault(); setWPM(wpm - 25); }
+  if (e.code === 'KeyN')       { notesSidebar.classList.toggle('open'); }
+});
+
+// ═══════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (checkpointOverlay.classList.contains('show')) return;
+  if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+  if (e.code === 'Space')      { e.preventDefault(); togglePlay(); }
+  if (e.code === 'ArrowRight') { e.preventDefault(); pause(); idx = Math.min(words.length-1, idx+10); renderWord(); play(); }
+  if (e.code === 'ArrowLeft')  { e.preventDefault(); pause(); idx = Math.max(0, idx-10); renderWord(); play(); }
+  if (e.code === 'ArrowUp')    { e.preventDefault(); setWPM(wpm + 25); }
+  if (e.code === 'ArrowDown')  { e.preventDefault(); setWPM(wpm - 25); }
+  if (e.code === 'KeyN')       { notesSidebar.classList.toggle('open'); }
+});
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW registration failed:', err));
+    });
+  }
+</script>
+</body>
+</html>

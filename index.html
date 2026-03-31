@@ -9,7 +9,9 @@
 <meta name="theme-color" content="#0f0f0f">
 <title>Sorbr — Speed Reading & Comprehension</title>
 <link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-512.png">
+<link rel="apple-touch-icon" media="(prefers-color-scheme: light)" href="/icons/icon-light-512.png">
+<link rel="apple-touch-icon" media="(prefers-color-scheme: dark)"  href="/icons/icon-512.png">
 <meta name="apple-mobile-web-app-title" content="Sorbr">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Lexend:wght@300;400;600;700&display=swap');
@@ -23,8 +25,31 @@
     --accent2: #ff5555;
     --accent3: #eeeeee;
     --text: #f0f0f0;
-    --muted: #555555;
+    --muted: #666666;
+    --word-color: #ffffff;
+    --grid-line: rgba(255,255,255,0.025);
+    --btn-start-bg: #ffffff;
+    --btn-start-text: #0f0f0f;
     --word-size: clamp(44px, 9vw, 90px);
+    --logo-src: url('/icons/SORBR_Dark_Transparent.png');
+  }
+
+  /* ── Light mode ── */
+  body.light {
+    --bg: #e8f0f8;
+    --surface: #ffffff;
+    --surface2: #f0f5fb;
+    --border: #c5d5e8;
+    --accent: #2176ae;
+    --accent2: #e05252;
+    --accent3: #1a5f8f;
+    --text: #1a2a3a;
+    --muted: #6a84a0;
+    --word-color: #1a2a3a;
+    --grid-line: rgba(33,118,174,0.07);
+    --btn-start-bg: #2176ae;
+    --btn-start-text: #ffffff;
+    --logo-src: url('/icons/SORBR_transparent.png');
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -43,14 +68,15 @@
     line-height: 1.6;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    transition: background 0.25s, color 0.25s;
   }
 
   body::before {
     content: '';
     position: fixed; inset: 0;
     background-image:
-      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
     background-size: 40px 40px;
     pointer-events: none; z-index: 0;
   }
@@ -72,6 +98,28 @@
     header { padding: 14px 16px; padding-top: max(14px, env(safe-area-inset-top)); }
     .logo img { height: 30px; }
   }
+
+  /* ── Theme toggle ── */
+  .theme-toggle {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 10px;
+    display: flex; align-items: center; gap: 7px;
+    cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+    font-size: 13px; color: var(--muted);
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--text); }
+  .toggle-track {
+    width: 32px; height: 18px; border-radius: 9px;
+    background: var(--border); position: relative;
+    transition: background 0.2s; flex-shrink: 0;
+  }
+  body.light .toggle-track { background: var(--accent); }
+  .toggle-thumb {
+    position: absolute; top: 3px; left: 3px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--muted); transition: transform 0.2s, background 0.2s;
+  }
+  body.light .toggle-thumb { transform: translateX(14px); background: #fff; }
   .stats-bar { display: flex; gap: 12px; font-size: 10px; color: var(--muted); flex-wrap: wrap; }
   .stats-bar b { color: var(--accent); }
   @media (max-width: 480px) {
@@ -162,7 +210,7 @@
     cursor: pointer; border-radius: 4px; transition: all 0.2s;
     min-height: 48px; touch-action: manipulation;
   }
-  .btn-start:hover { background: var(--accent); color: #0f0f0f; }
+  .btn-start:hover { background: var(--btn-start-bg); color: var(--btn-start-text); }
 
   /* ═══════════════ READER PANEL ═══════════════ */
   #reader-panel { display: none; flex: 1; flex-direction: column; min-height: 0; }
@@ -185,15 +233,16 @@
   #word-stage::before {
     content: ''; position: absolute; left: 50%; top: 50%;
     transform: translate(-50%, -50%); width: 2px; height: 48px;
-    background: rgba(255,255,255,0.06); border-radius: 1px; pointer-events: none;
+    background: var(--border); border-radius: 1px; pointer-events: none;
   }
 
   #current-word {
     font-family: 'Lexend', sans-serif; font-weight: 600;
     font-size: var(--word-size); letter-spacing: 0.04em;
+    color: var(--text);
     text-align: center; position: relative; line-height: 1.15;
   }
-  #current-word .orp { color: #666666; }
+  #current-word .orp { color: var(--muted); }
 
   #pause-dot {
     position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%);
@@ -523,7 +572,10 @@
   .version-footer {
     font-size: 11px; color: var(--muted); text-align: center;
     margin-top: 4px; letter-spacing: 0.04em; opacity: 0.7;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
   }
+  .kofi-wrap { opacity: 1; }
+  .kofi-wrap img { height: 36px !important; }
 
   /* ── Mobile sidebar: full-width on small screens ── */
   @media (max-width: 500px) {
@@ -818,13 +870,17 @@
 <body>
 
 <header>
-  <div class="logo"><img src="/icons/SORBR_transparent.png" alt="Sorbr" /></div>
+  <div class="logo"><img id="logo-img" src="/icons/SORBR_Dark_Transparent.png" alt="Sorbr" /></div>
   <div class="stats-bar" id="stats-bar">
     <span>WORDS: <b id="stat-total">0</b></span>
     <span>POS: <b id="stat-index">0</b></span>
     <span>ETA: <b id="stat-eta">—</b></span>
     <span>NOTES: <b id="stat-notes">0</b></span>
   </div>
+  <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">
+    <span id="theme-icon">🌙</span>
+    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+  </button>
 </header>
 
 <main>
@@ -903,7 +959,14 @@
       </div>
     </div>
 
-    <div class="version-footer">Sorbr v1.6.0 &nbsp;·&nbsp; Speed reading with comprehension</div>
+    <div class="version-footer">
+      <span>Sorbr v1.6.0 &nbsp;·&nbsp; Speed reading with comprehension</span>
+      <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
+      <div class="kofi-wrap">
+        <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+        <script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'T6T31WZMZV');kofiwidget2.draw();</script>
+      </div>
+    </div>
   </div>
 
   <!-- ══ READER PANEL ══ -->
@@ -2536,6 +2599,40 @@ document.addEventListener('keydown', e => {
   if (e.code === 'ArrowDown')  { e.preventDefault(); setWPM(wpm - 25); }
   if (e.code === 'KeyN')       { notesSidebar.classList.toggle('open'); }
 });
+
+// ═══════════════════════════════════════════
+//  THEME TOGGLE
+// ═══════════════════════════════════════════
+const themeToggleBtn = document.getElementById('theme-toggle');
+const themeIcon      = document.getElementById('theme-icon');
+const logoImg        = document.getElementById('logo-img');
+
+function applyTheme(isLight) {
+  if (isLight) {
+    document.body.classList.add('light');
+    themeIcon.textContent = '☀️';
+    logoImg.src = '/icons/SORBR_transparent.png';
+  } else {
+    document.body.classList.remove('light');
+    themeIcon.textContent = '🌙';
+    logoImg.src = '/icons/SORBR_Dark_Transparent.png';
+  }
+  localStorage.setItem('sorbr-theme', isLight ? 'light' : 'dark');
+}
+
+themeToggleBtn.addEventListener('click', () => {
+  applyTheme(!document.body.classList.contains('light'));
+});
+
+// On load: respect saved preference, then system preference
+(function() {
+  const saved = localStorage.getItem('sorbr-theme');
+  if (saved) {
+    applyTheme(saved === 'light');
+  } else {
+    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches);
+  }
+})();
 </script>
 <script>
   if ('serviceWorker' in navigator) {

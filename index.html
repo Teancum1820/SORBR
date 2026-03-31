@@ -11,6 +11,7 @@
 <link rel="icon" type="image/png" href="/icons/logo-3d-light.png">
 <link rel="shortcut icon" href="/icons/logo-3d-light.png">
 <link rel="manifest" href="/manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <link rel="apple-touch-icon" href="/icons/logo-3d-light.png">
 <link rel="apple-touch-icon" media="(prefers-color-scheme: light)" href="/icons/logo-3d-light.png">
 <link rel="apple-touch-icon" media="(prefers-color-scheme: dark)"  href="/icons/logo-3d-dark.png">
@@ -340,6 +341,93 @@
     font-size: 11px; color: var(--muted); letter-spacing: 0.06em;
     text-transform: uppercase; overflow: hidden; text-overflow: ellipsis;
     white-space: nowrap; flex: 1; min-width: 0;
+  }
+
+  /* ═══════════════ CLOUD / AUTH ═══════════════ */
+  .cloud-btn {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 10px;
+    display: flex; align-items: center; gap: 6px;
+    cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+    font-size: 13px; color: var(--muted);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cloud-btn:hover { border-color: var(--accent); color: var(--text); }
+  .cloud-btn.signed-in  { border-color: #2dae6a; color: #2dae6a; }
+  .cloud-btn.syncing    { border-color: var(--accent3); color: var(--accent3); animation: pulse 1.2s infinite; }
+  .cloud-btn.sync-error { border-color: var(--accent2); color: var(--accent2); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .cloud-btn-icon { font-size: 15px; line-height: 1; }
+  .cloud-btn-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  @media (max-width: 480px) { .cloud-btn-label { display: none; } }
+
+  /* Auth modal */
+  #auth-modal {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px); padding: 20px;
+  }
+  #auth-modal.open { display: flex; }
+  .auth-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px 24px; width: 100%; max-width: 380px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5); position: relative;
+  }
+  .auth-card-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .auth-card-sub { font-size: 13px; color: var(--muted); margin-bottom: 22px; line-height: 1.5; }
+  .auth-input {
+    width: 100%; padding: 10px 12px; margin-bottom: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text); font-size: 14px;
+    font-family: inherit; outline: none; transition: border-color 0.15s;
+  }
+  .auth-input:focus { border-color: var(--accent); }
+  .auth-primary-btn {
+    width: 100%; padding: 11px; margin-bottom: 10px;
+    background: var(--btn-start-bg); color: var(--btn-start-text);
+    border: none; border-radius: 6px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: opacity 0.15s;
+  }
+  .auth-primary-btn:hover { opacity: 0.88; }
+  .auth-primary-btn:disabled { opacity: 0.5; cursor: default; }
+  .auth-switch { font-size: 12px; color: var(--muted); text-align: center; margin-top: 2px; }
+  .auth-switch a { color: var(--accent); cursor: pointer; }
+  .auth-error {
+    font-size: 12px; color: var(--accent2); margin-bottom: 10px;
+    background: rgba(224,82,82,0.1); border-radius: 4px;
+    padding: 7px 10px; display: none;
+  }
+  .auth-error.show { display: block; }
+  .auth-close-btn {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; color: var(--muted); font-size: 18px;
+    cursor: pointer; line-height: 1; padding: 4px;
+  }
+  .auth-divider { height: 1px; background: var(--border); margin: 18px 0; }
+  .auth-user-email {
+    font-size: 13px; color: var(--text); margin-bottom: 14px;
+    word-break: break-all; padding: 8px 10px;
+    background: var(--surface2); border-radius: 6px;
+  }
+  .auth-user-email span { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); display: block; margin-bottom: 2px; }
+  .auth-secondary-btn {
+    width: 100%; padding: 9px; margin-bottom: 8px;
+    background: none; border: 1px solid var(--border);
+    color: var(--text); border-radius: 6px; font-size: 13px;
+    cursor: pointer; font-family: inherit; transition: border-color 0.15s, color 0.15s;
+  }
+  .auth-secondary-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .auth-danger-btn {
+    width: 100%; padding: 9px;
+    background: none; border: 1px solid var(--accent2);
+    color: var(--accent2); border-radius: 6px; font-size: 13px;
+    cursor: pointer; font-family: inherit; transition: background 0.15s;
+  }
+  .auth-danger-btn:hover { background: rgba(224,82,82,0.1); }
+  .auth-sync-status {
+    font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px;
+    min-height: 16px;
   }
 
   #notes-count {
@@ -1167,11 +1255,52 @@
     <span>ETA: <b id="stat-eta">—</b></span>
     <span>NOTES: <b id="stat-notes">0</b></span>
   </div>
-  <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">
-    <span id="theme-icon">🌙</span>
-    <div class="toggle-track"><div class="toggle-thumb"></div></div>
-  </button>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+    <button class="cloud-btn" id="cloud-btn" title="Cloud sync / Sign in">
+      <span class="cloud-btn-icon" id="cloud-icon">☁</span>
+      <span class="cloud-btn-label" id="cloud-label">Sign In</span>
+    </button>
+    <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">
+      <span id="theme-icon">🌙</span>
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    </button>
+  </div>
 </header>
+
+<!-- ══ AUTH MODAL ══ -->
+<div id="auth-modal">
+  <div class="auth-card">
+    <button class="auth-close-btn" id="auth-close-btn">✕</button>
+
+    <!-- Sign-in / Sign-up form -->
+    <div id="auth-form-section">
+      <div class="auth-card-title" id="auth-title">Cloud Sync</div>
+      <div class="auth-card-sub" id="auth-subtitle">Sign in to save your library across devices.</div>
+      <div class="auth-error" id="auth-error"></div>
+      <input class="auth-input" id="auth-email" type="email" placeholder="Email" autocomplete="email" />
+      <input class="auth-input" id="auth-password" type="password" placeholder="Password" autocomplete="current-password" />
+      <button class="auth-primary-btn" id="auth-submit-btn">Sign In</button>
+      <div class="auth-switch">
+        <span id="auth-switch-text">No account?</span>
+        <a id="auth-switch-link">Sign up</a>
+      </div>
+    </div>
+
+    <!-- Signed-in view -->
+    <div id="auth-user-section" style="display:none">
+      <div class="auth-card-title">Cloud Sync</div>
+      <div class="auth-card-sub">Your library is synced to the cloud.</div>
+      <div class="auth-user-email">
+        <span>Signed in as</span>
+        <span id="auth-user-email-text"></span>
+      </div>
+      <button class="auth-secondary-btn" id="auth-sync-now-btn">⟳ Sync Now</button>
+      <div class="auth-divider"></div>
+      <button class="auth-danger-btn" id="auth-signout-btn">Sign Out</button>
+      <div class="auth-sync-status" id="auth-sync-status"></div>
+    </div>
+  </div>
+</div>
 
 <main>
   <!-- ══ INPUT PANEL ══ -->
@@ -3758,6 +3887,346 @@ async function initSampleBook() {
 
 // Run sample book init after DB is ready
 openDB().then(() => initSampleBook()).catch(() => {});
+
+// ═══════════════════════════════════════════
+//  SUPABASE — CLOUD SYNC
+// ═══════════════════════════════════════════
+const SUPABASE_URL = 'https://hjjmnhgqvekuddwzmppq.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhqam1uaGdxdmVrdWRkd3ptcHBxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5ODAxNDQsImV4cCI6MjA5MDU1NjE0NH0.zfZO58fwfq8PlbNZObe-pq4bcAxGnITO2YwiBFVUzEI';
+const BUCKET      = 'sorbr-library';
+
+let sbClient  = null;   // Supabase client
+let sbUser    = null;   // current auth user
+
+// Initialise the Supabase client (the UMD bundle exposes window.supabase)
+function initSupabase() {
+  if (sbClient) return;
+  if (!window.supabase) { console.warn('Supabase SDK not loaded'); return; }
+  sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: true, storageKey: 'sorbr-auth' }
+  });
+
+  // Listen to auth state changes
+  sbClient.auth.onAuthStateChange((event, session) => {
+    sbUser = session?.user ?? null;
+    updateCloudUI();
+    if (sbUser && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+      syncAllFromCloud();
+    }
+  });
+
+  // Restore existing session on load
+  sbClient.auth.getSession().then(({ data }) => {
+    sbUser = data.session?.user ?? null;
+    updateCloudUI();
+    if (sbUser) syncAllFromCloud();
+  });
+}
+
+// ── Cloud status UI ──────────────────────────────────────────────────────────
+const cloudBtn      = document.getElementById('cloud-btn');
+const cloudIcon     = document.getElementById('cloud-icon');
+const cloudLabel    = document.getElementById('cloud-label');
+const authModal     = document.getElementById('auth-modal');
+const authSyncStat  = document.getElementById('auth-sync-status');
+
+function setCloudState(state) {
+  cloudBtn.className = 'cloud-btn';
+  if (state === 'signed-in')  { cloudBtn.classList.add('signed-in');  cloudIcon.textContent = '☁'; cloudLabel.textContent = 'Synced';   }
+  if (state === 'syncing')    { cloudBtn.classList.add('syncing');     cloudIcon.textContent = '↻'; cloudLabel.textContent = 'Syncing…'; }
+  if (state === 'error')      { cloudBtn.classList.add('sync-error'); cloudIcon.textContent = '☁'; cloudLabel.textContent = 'Sync err'; }
+  if (state === 'signed-out') {                                        cloudIcon.textContent = '☁'; cloudLabel.textContent = 'Sign In';  }
+}
+
+function updateCloudUI() {
+  const formSec = document.getElementById('auth-form-section');
+  const userSec = document.getElementById('auth-user-section');
+  if (sbUser) {
+    formSec.style.display = 'none';
+    userSec.style.display = 'block';
+    document.getElementById('auth-user-email-text').textContent = sbUser.email;
+    setCloudState('signed-in');
+  } else {
+    formSec.style.display = 'block';
+    userSec.style.display = 'none';
+    setCloudState('signed-out');
+  }
+}
+
+// ── Auth modal UI ────────────────────────────────────────────────────────────
+let authMode = 'signin'; // 'signin' | 'signup'
+
+cloudBtn.addEventListener('click', () => { authModal.classList.add('open'); });
+document.getElementById('auth-close-btn').addEventListener('click', () => authModal.classList.remove('open'));
+authModal.addEventListener('click', e => { if (e.target === authModal) authModal.classList.remove('open'); });
+
+document.getElementById('auth-switch-link').addEventListener('click', () => {
+  authMode = authMode === 'signin' ? 'signup' : 'signin';
+  const isSignUp = authMode === 'signup';
+  document.getElementById('auth-title').textContent    = isSignUp ? 'Create Account' : 'Cloud Sync';
+  document.getElementById('auth-subtitle').textContent = isSignUp
+    ? 'Create a free account to sync your library.'
+    : 'Sign in to save your library across devices.';
+  document.getElementById('auth-submit-btn').textContent  = isSignUp ? 'Sign Up' : 'Sign In';
+  document.getElementById('auth-switch-text').textContent = isSignUp ? 'Have an account?' : 'No account?';
+  document.getElementById('auth-switch-link').textContent = isSignUp ? 'Sign in' : 'Sign up';
+  document.getElementById('auth-error').classList.remove('show');
+});
+
+document.getElementById('auth-submit-btn').addEventListener('click', async () => {
+  if (!sbClient) { initSupabase(); }
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl    = document.getElementById('auth-error');
+  const btn      = document.getElementById('auth-submit-btn');
+  errEl.classList.remove('show');
+  if (!email || !password) { errEl.textContent = 'Please enter email and password.'; errEl.classList.add('show'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '…';
+  try {
+    let res;
+    if (authMode === 'signup') {
+      res = await sbClient.auth.signUp({ email, password });
+      if (res.error) throw res.error;
+      if (res.data.user && !res.data.session) {
+        errEl.textContent = 'Check your email to confirm your account, then sign in.';
+        errEl.classList.add('show');
+        btn.disabled = false; btn.textContent = 'Sign Up'; return;
+      }
+    } else {
+      res = await sbClient.auth.signInWithPassword({ email, password });
+      if (res.error) throw res.error;
+    }
+    authModal.classList.remove('open');
+    document.getElementById('auth-password').value = '';
+  } catch (e) {
+    errEl.textContent = e.message || 'Authentication failed.';
+    errEl.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = authMode === 'signup' ? 'Sign Up' : 'Sign In';
+  }
+});
+
+document.getElementById('auth-signout-btn').addEventListener('click', async () => {
+  if (sbClient) await sbClient.auth.signOut();
+  sbUser = null;
+  updateCloudUI();
+  authModal.classList.remove('open');
+  showToast('Signed out.');
+});
+
+document.getElementById('auth-sync-now-btn').addEventListener('click', () => {
+  authSyncStat.textContent = '';
+  syncAllFromCloud();
+});
+
+// ── Cloud sync helpers ───────────────────────────────────────────────────────
+
+// Upload a single book's large data to Storage, metadata to DB
+async function cloudPushBook(book) {
+  if (!sbClient || !sbUser) return;
+  const uid = sbUser.id;
+
+  // Upload content
+  const contentBytes = new TextEncoder().encode(book.content || '');
+  await sbClient.storage.from(BUCKET)
+    .upload(`${uid}/${book.id}/content`, contentBytes, { contentType: 'text/plain; charset=utf-8', upsert: true });
+
+  // Upload chapters JSON (includes full chapter text)
+  if (book.chapters && book.chapters.length) {
+    const chapBytes = new TextEncoder().encode(JSON.stringify(book.chapters));
+    await sbClient.storage.from(BUCKET)
+      .upload(`${uid}/${book.id}/chapters`, chapBytes, { contentType: 'application/json', upsert: true });
+  }
+
+  // Upload cover image (base64 data URL → binary)
+  if (book.coverImage) {
+    try {
+      const [header, b64] = book.coverImage.split(',');
+      const mime = (header.match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
+      const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      await sbClient.storage.from(BUCKET)
+        .upload(`${uid}/${book.id}/cover`, bytes, { contentType: mime, upsert: true });
+    } catch (_) {}
+  }
+
+  // Upsert metadata row
+  const meta = {
+    id:            book.id,
+    user_id:       uid,
+    title:         book.title,
+    type:          book.type,
+    total_words:   book.totalWords || 0,
+    position:      book.position   || 0,
+    progress:      book.progress   || 0,
+    notes:         book.notes      || [],
+    wpm:           book.wpm        || 300,
+    date_added:    book.dateAdded,
+    last_read:     book.lastRead   || null,
+    read_chapters: book.readChapters || [],
+    has_cover:     !!book.coverImage,
+    has_chapters:  !!(book.chapters && book.chapters.length),
+  };
+  const { error } = await sbClient.from('library_books').upsert(meta);
+  if (error) throw error;
+}
+
+// Download a book from cloud and save to local IndexedDB (no re-upload)
+async function cloudPullBook(meta) {
+  const uid = sbUser.id;
+
+  // Download content
+  const { data: cBlob, error: cErr } = await sbClient.storage
+    .from(BUCKET).download(`${uid}/${meta.id}/content`);
+  if (cErr || !cBlob) return null;
+  const content = await cBlob.text();
+
+  // Download chapters
+  let chapters = null;
+  if (meta.has_chapters) {
+    const { data: chBlob } = await sbClient.storage
+      .from(BUCKET).download(`${uid}/${meta.id}/chapters`);
+    if (chBlob) {
+      try { chapters = JSON.parse(await chBlob.text()); } catch (_) {}
+    }
+  }
+
+  // Download cover
+  let coverImage = null;
+  if (meta.has_cover) {
+    const { data: covBlob } = await sbClient.storage
+      .from(BUCKET).download(`${uid}/${meta.id}/cover`);
+    if (covBlob) {
+      coverImage = await new Promise(res => {
+        const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(covBlob);
+      });
+    }
+  }
+
+  return {
+    id:           meta.id,
+    title:        meta.title,
+    type:         meta.type,
+    content,
+    chapters,
+    coverImage,
+    totalWords:   meta.total_words,
+    position:     meta.position,
+    progress:     meta.progress,
+    notes:        meta.notes || [],
+    wpm:          meta.wpm || 300,
+    dateAdded:    meta.date_added,
+    lastRead:     meta.last_read,
+    readChapters: meta.read_chapters || [],
+  };
+}
+
+// Delete a book's cloud data (metadata + storage files)
+async function cloudDeleteBook(bookId) {
+  if (!sbClient || !sbUser) return;
+  const uid = sbUser.id;
+  await sbClient.from('library_books').delete().eq('id', bookId).eq('user_id', uid);
+  await sbClient.storage.from(BUCKET).remove([
+    `${uid}/${bookId}/content`,
+    `${uid}/${bookId}/chapters`,
+    `${uid}/${bookId}/cover`,
+  ]);
+}
+
+// Full two-way sync: pull cloud → local, push local → cloud
+async function syncAllFromCloud() {
+  if (!sbClient || !sbUser) return;
+  setCloudState('syncing');
+  authSyncStat.textContent = 'Syncing…';
+  try {
+    const { data: cloudMetas, error } = await sbClient
+      .from('library_books').select('*').eq('user_id', sbUser.id);
+    if (error) throw error;
+
+    const localBooks = await dbGetAll();
+    const localMap   = new Map(localBooks.map(b => [b.id, b]));
+    const cloudIds   = new Set((cloudMetas || []).map(m => m.id));
+
+    // Pull books from cloud that are newer than local (or not local at all)
+    for (const meta of (cloudMetas || [])) {
+      const local = localMap.get(meta.id);
+      const cloudNewer = (meta.last_read || 0) > (local?.lastRead || 0);
+      if (!local || cloudNewer) {
+        const book = await cloudPullBook(meta);
+        if (book) {
+          // Write to IndexedDB directly without triggering a re-upload
+          await dbPutLocal(book);
+        }
+      }
+    }
+
+    // Push local books that are absent from cloud
+    for (const local of localBooks) {
+      if (!cloudIds.has(local.id)) {
+        await cloudPushBook(local);
+      }
+    }
+
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setCloudState('signed-in');
+    authSyncStat.textContent = `Last synced ${now}`;
+    renderLibrary();
+  } catch (e) {
+    console.error('Cloud sync error:', e);
+    setCloudState('error');
+    authSyncStat.textContent = 'Sync failed — check connection.';
+  }
+}
+
+// Write to local IndexedDB only (used when pulling from cloud to avoid re-upload loop)
+async function dbPutLocal(book) {
+  const d = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx  = d.transaction(STORE, 'readwrite');
+    const req = tx.objectStore(STORE).put(book);
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+// Wrap the existing addToLibrary to also push to cloud
+const _origAddToLibrary = addToLibrary;
+addToLibrary = async function(title, content, type, coverImage, chapters) {
+  const book = await _origAddToLibrary(title, content, type, coverImage, chapters);
+  if (sbClient && sbUser) cloudPushBook(book).catch(console.warn);
+  return book;
+};
+
+// Wrap saveProgressToLibrary to also push progress to cloud (throttled)
+let _cloudSavePending = false;
+const _origSaveProgress = saveProgressToLibrary;
+saveProgressToLibrary = async function() {
+  await _origSaveProgress();
+  if (sbClient && sbUser && !_cloudSavePending && activeBookId) {
+    _cloudSavePending = true;
+    setTimeout(async () => {
+      _cloudSavePending = false;
+      const book = await dbGet(activeBookId);
+      if (book) cloudPushBook(book).catch(console.warn);
+    }, 5000); // debounce: push at most every 5 s during reading
+  }
+};
+
+// Wrap deleteBook to also remove from cloud (only if local delete succeeded)
+const _origDeleteBook = deleteBook;
+deleteBook = async function(id) {
+  const wasPresent = !!(await dbGet(id));
+  await _origDeleteBook(id);
+  const stillPresent = !!(await dbGet(id));
+  if (wasPresent && !stillPresent && sbClient && sbUser) {
+    cloudDeleteBook(id).catch(console.warn);
+  }
+};
+
+// Initialise Supabase on load
+initSupabase();
 </script>
 <script>
   if ('serviceWorker' in navigator) {

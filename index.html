@@ -4051,7 +4051,9 @@ async function cloudPushBook(book) {
   // Upload cover image (base64 data URL → binary)
   if (book.coverImage) {
     try {
-      const [header, b64] = book.coverImage.split(',');
+      const parts = book.coverImage.split(',');
+      if (parts.length !== 2) throw new Error('Invalid cover image data URL');
+      const [header, b64] = parts;
       const mime = (header.match(/data:([^;]+)/) || [])[1] || 'image/jpeg';
       const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
       await sbClient.storage.from(BUCKET)

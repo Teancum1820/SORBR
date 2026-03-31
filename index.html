@@ -58,15 +58,20 @@
   /* ═══════════════ HEADER ═══════════════ */
   header {
     position: relative; z-index: 10;
-    padding: 12px 20px;
+    padding: 14px 20px;
     padding-left: max(20px, env(safe-area-inset-left));
     padding-right: max(20px, env(safe-area-inset-right));
+    padding-top: max(14px, env(safe-area-inset-top));
     display: flex; align-items: center; justify-content: space-between;
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
+    background: var(--bg);
   }
-  .logo { font-size: 16px; font-weight: 700; letter-spacing: 0.03em; }
-  .logo span { color: var(--accent); }
+  .logo img { height: 36px; width: auto; display: block; }
+  @media (max-width: 480px) {
+    header { padding: 14px 16px; padding-top: max(14px, env(safe-area-inset-top)); }
+    .logo img { height: 30px; }
+  }
   .stats-bar { display: flex; gap: 12px; font-size: 10px; color: var(--muted); flex-wrap: wrap; }
   .stats-bar b { color: var(--accent); }
   @media (max-width: 480px) {
@@ -96,46 +101,7 @@
   }
   .panel-title span { color: var(--accent); }
 
-  /* URL input row */
-  .url-row { display: flex; width: 100%; max-width: 660px; }
-  .url-row input {
-    flex: 1; background: var(--surface); border: 1px solid var(--border);
-    border-right: none; color: var(--text);
-    font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 14px;
-    padding: 13px 14px; outline: none; transition: border-color 0.2s;
-    border-radius: 4px 0 0 4px; letter-spacing: 0.02em;
-    -webkit-appearance: none;
-  }
-  .url-row input:focus { border-color: var(--accent); }
-  .url-row input::placeholder { color: var(--muted); }
-  .url-row input.error { border-color: var(--accent2); }
-
-  .btn-fetch {
-    background: var(--accent); color: #0f0f0f;
-    border: none; font-family: 'Lexend', sans-serif; font-weight: 700; font-size: 12px;
-    letter-spacing: 0.06em; padding: 12px 18px; cursor: pointer;
-    border-radius: 0 4px 4px 0; transition: background 0.15s, transform 0.1s;
-    text-transform: uppercase; white-space: nowrap; min-width: 80px;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .btn-fetch:hover:not(:disabled) { background: #dddddd; }
-  .btn-fetch:active:not(:disabled) { transform: scale(0.97); }
-  .btn-fetch:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  .fetch-status {
-    width: 100%; max-width: 660px; font-size: 12px; min-height: 18px;
-    display: flex; align-items: center; gap: 8px;
-    margin-top: -8px;
-  }
-  .fetch-status.ok   { color: #4caf50; }
-  .fetch-status.err  { color: var(--accent2); }
-  .fetch-status.info { color: var(--muted); }
-
-  .divider {
-    display: flex; align-items: center; gap: 14px;
-    width: 100%; max-width: 660px; color: var(--muted); font-size: 12px;
-  }
-  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  /* fetch-status kept for potential future use */
 
   #text-input {
     width: 100%; max-width: 660px;
@@ -718,10 +684,37 @@
   @media (max-width: 500px) {
     #input-panel { gap: 12px; padding: 16px 12px; }
     .panel-title { font-size: clamp(20px, 7vw, 32px); }
-    #text-input { height: 80px; }
-    .qp-textarea { height: 80px; }
+    #text-input { height: 180px; }
+    .qp-textarea { height: 120px; }
     .upload-zone { padding: 12px; }
   }
+
+  /* ═══════════════ TABS ═══════════════ */
+  .tab-bar {
+    display: flex; width: 100%; max-width: 660px;
+    border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; flex-shrink: 0;
+  }
+  .tab-btn {
+    flex: 1; background: var(--surface); border: none;
+    color: var(--muted); font-family: 'Lexend', sans-serif;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase; padding: 11px 8px;
+    cursor: pointer; transition: all 0.15s;
+    border-right: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .tab-btn:last-child { border-right: none; }
+  .tab-btn.active {
+    background: var(--accent); color: #0f0f0f;
+  }
+  .tab-btn:not(.active):hover { background: var(--surface2); color: var(--text); }
+
+  .tab-panel { display: none; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+  .tab-panel.active { display: flex; }
+
+  /* Bigger text input */
+  #text-input { height: 180px; }
 
   /* ── On really short screens (landscape phone) hide the panel title ── */
   @media (max-height: 500px) {
@@ -825,7 +818,7 @@
 <body>
 
 <header>
-  <div class="logo">Sor<span>br</span></div>
+  <div class="logo"><img src="/icons/SORBR_transparent.png" alt="Sorbr" /></div>
   <div class="stats-bar" id="stats-bar">
     <span>WORDS: <b id="stat-total">0</b></span>
     <span>POS: <b id="stat-index">0</b></span>
@@ -839,74 +832,78 @@
   <div id="input-panel">
     <div class="panel-title">Read faster.<br><span>Absorb deeper.</span></div>
 
-    <div class="url-row">
-      <input type="text" id="url-input" placeholder="Paste a URL to fetch article text…" />
-      <button class="btn-fetch" id="fetch-btn">Fetch</button>
-    </div>
-    <div class="fetch-status info" id="fetch-status"></div>
-
-    <div class="divider">or paste text / drop a PDF, EPUB, or TXT below</div>
-    <textarea id="text-input" placeholder="Paste any text here…"></textarea>
-
-    <div class="upload-zone" id="drop-zone">
-      <input type="file" id="pdf-input" accept=".pdf,.txt,.epub" />
-      <span class="upload-icon">📄</span>
-      Drop a <strong>.pdf</strong>, <strong>.epub</strong> or <strong>.txt</strong> file here, or <u>click to browse</u>
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-read-btn" onclick="switchTab('read')">📖 Read</button>
+      <button class="tab-btn" id="tab-print-btn" onclick="switchTab('print')">🔖 Print Notes</button>
     </div>
 
-    <div class="options-row">
-      <div class="opt-group">
-        <label>WPM</label>
-        <input type="range" id="wpm-slider" min="100" max="1000" step="25" value="300" />
-        <b id="wpm-label" style="color:var(--accent);font-size:13px;">300</b>
-      </div>
-      <div class="opt-group">
-        <label>Chunk</label>
-        <input type="range" id="chunk-slider" min="1" max="4" step="1" value="1" />
-        <b id="chunk-label" style="color:var(--accent);font-size:13px;">1 word</b>
-      </div>
-      <div class="checkpoint-opt">
-        📝 Every
-        <select id="checkpoint-select">
-          <option value="75">~1 paragraph</option>
-          <option value="150" selected>~2–3 paragraphs</option>
-          <option value="300">~half page</option>
-          <option value="500">~1 page</option>
-          <option value="1000">~2 pages</option>
-          <option value="0">No checkpoints</option>
-        </select>
-      </div>
-    </div>
+    <!-- READ TAB -->
+    <div class="tab-panel active" id="tab-read">
+      <textarea id="text-input" placeholder="Paste any text here…"></textarea>
 
-    <button class="btn-start" id="start-btn">▶ Start Reading</button>
-
-    <!-- ══ QUICK PRINT SECTION ══ -->
-    <div class="qp-section">
-      <div class="qp-header">
-        <span class="qp-label">🔖 Quick Print</span>
-        <span class="qp-desc">Type notes and print them as bookmarks or sticky notes — no reading session needed</span>
+      <div class="upload-zone" id="drop-zone">
+        <input type="file" id="pdf-input" accept=".pdf,.txt,.epub" />
+        <span class="upload-icon">📄</span>
+        Drop a <strong>.pdf</strong>, <strong>.epub</strong> or <strong>.txt</strong> file here, or <u>click to browse</u>
       </div>
 
-      <textarea
-        id="qp-input"
-        class="qp-textarea"
-        placeholder="Write your notes here — one note per line, or separate with a blank line…"
-      ></textarea>
-
-      <div class="qp-controls">
-        <div class="qp-format-group">
-          <button class="qp-format-btn active" id="qp-bookmark-btn" data-mode="bookmark">
-            🔖 Bookmark <span class="qp-size">2 × 6 in</span>
-          </button>
-          <button class="qp-format-btn" id="qp-sticky-btn" data-mode="sticky">
-            📝 Sticky Note <span class="qp-size">3 × 3 in</span>
-          </button>
+      <div class="options-row">
+        <div class="opt-group">
+          <label>WPM</label>
+          <input type="range" id="wpm-slider" min="100" max="1000" step="25" value="300" />
+          <b id="wpm-label" style="color:var(--accent);font-size:13px;">300</b>
         </div>
-        <button class="btn-qp-print" id="qp-print-btn">Print →</button>
+        <div class="opt-group">
+          <label>Chunk</label>
+          <input type="range" id="chunk-slider" min="1" max="4" step="1" value="1" />
+          <b id="chunk-label" style="color:var(--accent);font-size:13px;">1 word</b>
+        </div>
+        <div class="checkpoint-opt">
+          📝 Every
+          <select id="checkpoint-select">
+            <option value="75">~1 paragraph</option>
+            <option value="150" selected>~2–3 paragraphs</option>
+            <option value="300">~half page</option>
+            <option value="500">~1 page</option>
+            <option value="1000">~2 pages</option>
+            <option value="0">No checkpoints</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-start" id="start-btn">▶ Start Reading</button>
+    </div>
+
+    <!-- PRINT NOTES TAB -->
+    <div class="tab-panel" id="tab-print">
+      <div class="qp-section" style="width:100%;max-width:660px;">
+        <div class="qp-header">
+          <span class="qp-label">🔖 Quick Print</span>
+          <span class="qp-desc">Type notes and print them as bookmarks or sticky notes — no reading session needed</span>
+        </div>
+
+        <textarea
+          id="qp-input"
+          class="qp-textarea"
+          placeholder="Write your notes here — one note per line, or separate with a blank line…"
+        ></textarea>
+
+        <div class="qp-controls">
+          <div class="qp-format-group">
+            <button class="qp-format-btn active" id="qp-bookmark-btn" data-mode="bookmark">
+              🔖 Bookmark <span class="qp-size">2 × 6 in</span>
+            </button>
+            <button class="qp-format-btn" id="qp-sticky-btn" data-mode="sticky">
+              📝 Sticky Note <span class="qp-size">3 × 3 in</span>
+            </button>
+          </div>
+          <button class="btn-qp-print" id="qp-print-btn">Print →</button>
+        </div>
       </div>
     </div>
 
-    <div class="version-footer">Sorbr v1.5.0 &nbsp;·&nbsp; Speed reading with comprehension</div>
+    <div class="version-footer">Sorbr v1.6.0 &nbsp;·&nbsp; Speed reading with comprehension</div>
   </div>
 
   <!-- ══ READER PANEL ══ -->
@@ -1094,9 +1091,6 @@ const PUNC = { sentence: 3.2, clause: 1.7, dash: 1.35 };
 // ═══════════════════════════════════════════
 const inputPanel        = document.getElementById('input-panel');
 const readerPanel       = document.getElementById('reader-panel');
-const urlInput          = document.getElementById('url-input');
-const fetchBtn          = document.getElementById('fetch-btn');
-const fetchStatus       = document.getElementById('fetch-status');
 const textInput         = document.getElementById('text-input');
 const dropZone          = document.getElementById('drop-zone');
 const pdfInput          = document.getElementById('pdf-input');
@@ -1106,6 +1100,14 @@ const chunkSlider       = document.getElementById('chunk-slider');
 const chunkLabel        = document.getElementById('chunk-label');
 const checkpointSelect  = document.getElementById('checkpoint-select');
 const startBtn          = document.getElementById('start-btn');
+
+// ── Tab switching ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab + '-btn').classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
 const currentWordEl     = document.getElementById('current-word');
 const progressFill      = document.getElementById('progress-fill');
 const cpMarkersEl       = document.getElementById('checkpoint-markers');
@@ -2281,56 +2283,6 @@ body{font-family:'Atkinson Hyperlegible',serif;font-size:12pt;line-height:1.85;c
   win.document.close();
   showToast('Opening print dialog…', 'ok');
 }
-
-// ═══════════════════════════════════════════
-//  URL FETCH  (cleaned up)
-// ═══════════════════════════════════════════
-function setFetchStatus(msg, type) {
-  fetchStatus.textContent = msg;
-  fetchStatus.className   = `fetch-status ${type}`;
-}
-
-fetchBtn.addEventListener('click', async () => {
-  const url = urlInput.value.trim();
-  if (!url) { urlInput.classList.add('error'); setFetchStatus('Please enter a URL first.', 'err'); return; }
-  if (!/^https?:\/\//i.test(url)) { urlInput.classList.add('error'); setFetchStatus('URL must start with http:// or https://', 'err'); return; }
-
-  urlInput.classList.remove('error');
-  fetchBtn.disabled    = true;
-  fetchBtn.innerHTML   = '<span class="spin"></span> Fetching…';
-  setFetchStatus('Fetching page…', 'info');
-
-  try {
-    const res  = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json = await res.json();
-    if (!json.contents) throw new Error('Empty response');
-
-    const tmp = document.createElement('div');
-    tmp.innerHTML = json.contents;
-    ['script','style','nav','header','footer','aside','figure','figcaption'].forEach(tag =>
-      tmp.querySelectorAll(tag).forEach(el => el.remove()));
-
-    const text = (tmp.innerText || tmp.textContent || '').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
-    if (text.length < 30) throw new Error('Could not extract readable text from this page');
-
-    textInput.value = text.slice(0, 60000);
-    const wc = tokenize(text).length;
-    setFetchStatus(`✓ Loaded ${wc.toLocaleString()} words from ${new URL(url).hostname}`, 'ok');
-  } catch(e) {
-    urlInput.classList.add('error');
-    setFetchStatus(`✗ ${e.message || 'Fetch failed'} — try pasting the text directly.`, 'err');
-  } finally {
-    fetchBtn.disabled  = false;
-    fetchBtn.innerHTML = 'Fetch';
-  }
-});
-
-urlInput.addEventListener('input', () => {
-  urlInput.classList.remove('error');
-  if (fetchStatus.className.includes('err')) setFetchStatus('', 'info');
-});
-urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchBtn.click(); });
 
 // ═══════════════════════════════════════════
 //  EXPORT — TXT

@@ -2671,11 +2671,6 @@ function showDone() {
   const mins = Math.floor(elapsed / 60), secs = elapsed % 60;
   doneStats.textContent = `${words.length} words · ${mins}m ${secs}s · avg ${Math.round(words.length / (elapsed||1) * 60)} wpm · ${notes.length} note${notes.length !== 1 ? 's' : ''}`;
   doneOverlay.style.display = 'flex';
-function showDone() {
-  const elapsed = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
-  const mins = Math.floor(elapsed / 60), secs = elapsed % 60;
-  doneStats.textContent = `${words.length} words · ${mins}m ${secs}s · avg ${Math.round(words.length / (elapsed||1) * 60)} wpm · ${notes.length} note${notes.length !== 1 ? 's' : ''}`;
-  doneOverlay.style.display = 'flex';
   // Mark book as 100% complete and auto-mark chapter as read
   if (activeBookId) {
     dbGet(activeBookId).then(book => {

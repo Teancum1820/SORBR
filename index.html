@@ -97,6 +97,7 @@
     background: var(--bg);
   }
   .logo img { height: 36px; width: auto; display: block; }
+  .logo a { display: block; cursor: pointer; }
   @media (max-width: 480px) {
     header { padding: 14px 16px; padding-top: max(14px, env(safe-area-inset-top)); }
     .logo img { height: 30px; }
@@ -1248,7 +1249,7 @@
 <body>
 
 <header>
-  <div class="logo"><img id="logo-img" src="/icons/logo-3d-light.png" alt="Sorbr" /></div>
+  <div class="logo"><a id="logo-link" href="#" title="Go to home"><img id="logo-img" src="/icons/logo-3d-light.png" alt="Sorbr" /></a></div>
   <div class="stats-bar" id="stats-bar">
     <span>WORDS: <b id="stat-total">0</b></span>
     <span>POS: <b id="stat-index">0</b></span>
@@ -3852,6 +3853,12 @@ function applyTheme(isLight) {
 
 themeToggleBtn.addEventListener('click', () => {
   applyTheme(!document.body.classList.contains('light'));
+});
+
+document.getElementById('logo-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  readerPanel.style.display = 'none';
+  inputPanel.style.display  = 'flex';
 });
 
 // On load: respect saved preference, then system preference

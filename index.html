@@ -811,8 +811,45 @@
   }
   .lib-empty .lib-empty-icon { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.4; }
 
-  /* Book card */
-  .book-card {
+  .btn-lib-upload {
+    background: var(--accent); color: var(--btn-start-text);
+    border: none; font-family: 'Lexend', sans-serif; font-weight: 700;
+    font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 9px 14px; border-radius: 4px; cursor: pointer;
+    transition: opacity 0.15s; white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-lib-upload:hover { opacity: 0.85; }
+
+  /* Book card cover — supports both image and gradient */
+  .book-card-cover {
+    height: 140px; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, var(--surface2) 0%, var(--border) 100%);
+    flex-shrink: 0;
+  }
+  .book-card-cover img {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block; position: absolute; inset: 0;
+  }
+  .book-card-cover .cover-emoji {
+    font-size: 44px; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+    position: relative; z-index: 1;
+  }
+  .book-card-cover .book-type-badge {
+    position: absolute; top: 8px; right: 8px; z-index: 2;
+    background: rgba(0,0,0,0.55); color: #fff;
+    font-family: 'Lexend', sans-serif; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 6px; border-radius: 3px;
+    backdrop-filter: blur(4px);
+  }
+  .book-card-cover .book-reading-badge {
+    position: absolute; bottom: 8px; right: 8px; z-index: 2;
+    background: var(--accent); color: var(--btn-start-text);
+    font-family: 'Lexend', sans-serif; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 6px; border-radius: 3px;
+  }
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 10px; overflow: hidden;
     display: flex; flex-direction: column;
@@ -823,19 +860,7 @@
     border-color: var(--accent); transform: translateY(-2px);
     box-shadow: 0 6px 24px rgba(0,0,0,0.18);
   }
-  .book-card-cover {
-    height: 110px; display: flex; align-items: center; justify-content: center;
-    font-size: 42px; position: relative; overflow: hidden;
-    background: linear-gradient(135deg, var(--surface2) 0%, var(--border) 100%);
-    flex-shrink: 0;
-  }
-  .book-card-cover .book-type-badge {
-    position: absolute; top: 8px; right: 8px;
-    background: var(--bg); color: var(--muted);
-    font-family: 'Lexend', sans-serif; font-size: 9px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 3px 6px; border-radius: 3px; border: 1px solid var(--border);
-  }
+
   .book-card-body { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
   .book-card-title {
     font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 600;
@@ -1199,6 +1224,8 @@
           <option value="progress">Progress</option>
           <option value="title">Title</option>
         </select>
+        <button class="btn-lib-upload" id="lib-upload-btn" title="Add book to library">+ Add Book</button>
+        <input type="file" id="lib-file-input" accept=".pdf,.epub,.txt" style="display:none" />
       </div>
       <div class="lib-grid" id="lib-grid" style="max-width:660px;"></div>
     </div>
@@ -1372,6 +1399,7 @@
   <div class="bdo-header">
     <button class="bdo-back" id="bdo-back-btn">← Library</button>
     <div class="bdo-title" id="bdo-title">Book Title</div>
+    <button class="bdo-resume-btn" id="bdo-chapters-btn" style="display:none;background:var(--surface);color:var(--text);border:1px solid var(--border);margin-right:6px;">📑 Chapters</button>
     <button class="bdo-resume-btn" id="bdo-resume-btn">▶ Resume</button>
   </div>
   <div class="bdo-body">
@@ -1552,14 +1580,16 @@ async function saveProgressToLibrary() {
   await dbPut(book);
 }
 
-// Add a new book to the library (or update if same title+content)
-async function addToLibrary(title, content, type) {
+// Add a new book to the library
+async function addToLibrary(title, content, type, coverImage, chapters) {
   const id = 'book_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
   const book = {
     id,
     title:       title || 'Untitled',
     type:        type || 'text',
     content,
+    chapters:    chapters || null,   // array of {title, text, wordCount} or null
+    coverImage:  coverImage || null, // base64 data URL or null
     totalWords:  tokenize(content).length,
     position:    0,
     progress:    0,
@@ -1616,13 +1646,17 @@ async function renderLibrary() {
     const emoji     = COVER_EMOJI[book.type] || '📖';
     const grad      = colorForId(book.id);
     const isActive  = book.id === activeBookId;
+    const hasChapters = book.chapters && book.chapters.length > 1;
+
+    const coverHTML = book.coverImage
+      ? `<img src="${book.coverImage}" alt="Cover" /><span class="book-type-badge">${book.type.toUpperCase()}</span>`
+      : `<span class="cover-emoji">${emoji}</span><span class="book-type-badge">${book.type.toUpperCase()}</span>`;
 
     return `
     <div class="book-card${isActive ? ' active' : ''}" data-id="${book.id}">
       <div class="book-card-cover" style="background:${grad}">
-        <span style="font-size:44px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4))">${emoji}</span>
-        <span class="book-type-badge">${book.type.toUpperCase()}</span>
-        ${isActive ? '<span class="book-type-badge" style="top:auto;bottom:8px;background:var(--accent);color:#0f0f0f;border-color:var(--accent)">READING</span>' : ''}
+        ${coverHTML}
+        ${isActive ? '<span class="book-reading-badge">READING</span>' : ''}
       </div>
       <div class="book-card-body">
         <div class="book-card-title">${esc(book.title)}</div>
@@ -1637,6 +1671,7 @@ async function renderLibrary() {
       </div>
       <div class="book-card-actions">
         <button class="book-action-btn" onclick="event.stopPropagation();openBookDetail('${book.id}')">📋 Notes</button>
+        ${hasChapters ? `<button class="book-action-btn" onclick="event.stopPropagation();openLibraryChapterPicker('${book.id}')">📑 Chapters</button>` : ''}
         <button class="book-action-btn" onclick="event.stopPropagation();resumeBook('${book.id}')">▶ Read</button>
         <button class="book-action-btn danger" onclick="event.stopPropagation();deleteBook('${book.id}')">🗑</button>
       </div>
@@ -1679,6 +1714,13 @@ async function openBookDetail(id) {
     remMins > 0 ? `~${remMins} min left` : 'Complete';
 
   document.getElementById('bdo-wpm-val').textContent = detailBookWpm;
+
+  // Show/hide chapters button
+  const chapBtn = document.getElementById('bdo-chapters-btn');
+  if (chapBtn) {
+    chapBtn.style.display = (book.chapters && book.chapters.length > 1) ? 'inline-flex' : 'none';
+    chapBtn.onclick = () => { closeBookDetail(); openLibraryChapterPicker(id); };
+  }
 
   // Render notes
   renderDetailNotes(book);
@@ -1828,6 +1870,284 @@ async function exportDetailPdf() {
 
 // Auto-save progress every 30 seconds while reading
 setInterval(saveProgressToLibrary, 30000);
+
+// ═══════════════════════════════════════════
+//  LIBRARY — COVER EXTRACTION
+// ═══════════════════════════════════════════
+
+// Extract the first page of a PDF as a base64 cover image
+async function extractPDFCover(file) {
+  try {
+    if (typeof pdfjsLib === 'undefined') {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        s.onload = () => {
+          pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          resolve();
+        };
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    const buf  = await file.arrayBuffer();
+    const pdf  = await pdfjsLib.getDocument({ data: buf, useSystemFonts: true }).promise;
+    const page = await pdf.getPage(1);
+    const vp   = page.getViewport({ scale: 1.5 });
+    const canvas = document.createElement('canvas');
+    canvas.width  = vp.width;
+    canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+    return canvas.toDataURL('image/jpeg', 0.7);
+  } catch (e) {
+    console.warn('PDF cover extraction failed:', e);
+    return null;
+  }
+}
+
+// Extract the cover image from an EPUB zip
+async function extractEPUBCover(file) {
+  try {
+    if (typeof JSZip === 'undefined') {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    const buf = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(buf);
+
+    // Parse OPF to find cover
+    const containerXml = await zip.file('META-INF/container.xml')?.async('string');
+    if (!containerXml) return null;
+    const opfPath = containerXml.match(/full-path="([^"]+)"/)?.[1];
+    if (!opfPath) return null;
+    const opfXml  = await zip.file(opfPath)?.async('string');
+    if (!opfXml)  return null;
+    const opfDoc  = new DOMParser().parseFromString(opfXml, 'application/xml');
+    const opfBase = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/') + 1) : '';
+
+    // Strategy 1: <meta name="cover" content="id"/> in OPF
+    let coverHref = null;
+    const coverMeta = opfDoc.querySelector('meta[name="cover"]');
+    if (coverMeta) {
+      const coverId = coverMeta.getAttribute('content');
+      const item    = opfDoc.querySelector(`manifest item[id="${coverId}"]`);
+      coverHref     = item?.getAttribute('href');
+    }
+
+    // Strategy 2: item with properties="cover-image"
+    if (!coverHref) {
+      const item = opfDoc.querySelector('manifest item[properties~="cover-image"]');
+      coverHref  = item?.getAttribute('href');
+    }
+
+    // Strategy 3: guess common cover filenames
+    if (!coverHref) {
+      const guesses = ['cover.jpg','cover.jpeg','cover.png','images/cover.jpg',
+                       'Images/cover.jpg','OEBPS/cover.jpg','cover/cover.jpg'];
+      for (const g of guesses) {
+        if (zip.file(g) || zip.file(opfBase + g)) { coverHref = g; break; }
+      }
+    }
+
+    if (!coverHref) return null;
+
+    const imgPath = coverHref.startsWith('/') ? coverHref.slice(1) : opfBase + coverHref;
+    const imgEntry = zip.file(imgPath) || zip.file(decodeURIComponent(imgPath));
+    if (!imgEntry) return null;
+
+    const imgData  = await imgEntry.async('base64');
+    const ext      = imgPath.split('.').pop().toLowerCase();
+    const mime     = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+    return `data:${mime};base64,${imgData}`;
+  } catch (e) {
+    console.warn('EPUB cover extraction failed:', e);
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════
+//  LIBRARY — UPLOAD HANDLER
+// ═══════════════════════════════════════════
+async function handleLibraryUpload(file) {
+  if (!file) return;
+  const name = file.name.toLowerCase();
+  const type = name.endsWith('.pdf') ? 'pdf' : name.endsWith('.epub') ? 'epub' : 'txt';
+  const title = file.name.replace(/\.(pdf|epub|txt)$/i, '');
+
+  showToast(`Adding "${title}" to library…`, 'info', 8000);
+
+  let coverImage = null;
+  let chapters   = null;
+  let content    = '';
+
+  try {
+    if (type === 'pdf') {
+      // Extract cover from page 1
+      coverImage = await extractPDFCover(file);
+
+      // Extract all text + chapters
+      if (typeof pdfjsLib === 'undefined') {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          s.onload = () => {
+            pdfjsLib.GlobalWorkerOptions.workerSrc =
+              'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            resolve();
+          };
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      const buf = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buf, useSystemFonts: true }).promise;
+      const outline = await pdf.getOutline();
+      let rawChapters = [];
+
+      if (outline && outline.length > 0) {
+        const flat = await flattenOutline(pdf, outline);
+        if (flat.length > 1) rawChapters = await buildPDFChapters(pdf, flat);
+      }
+      if (rawChapters.length <= 1) rawChapters = await buildPDFPageChunks(pdf, 10);
+
+      chapters = rawChapters;
+      content  = rawChapters.map(c => c.text).join('\n\n');
+
+    } else if (type === 'epub') {
+      // Extract cover image
+      coverImage = await extractEPUBCover(file);
+
+      // Extract chapters using existing EPUB logic (adapted)
+      if (typeof JSZip === 'undefined') {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+          s.onload = resolve; s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
+      const buf  = await file.arrayBuffer();
+      const zip  = await JSZip.loadAsync(buf);
+      const containerXml = await zip.file('META-INF/container.xml')?.async('string');
+      const opfPath = containerXml?.match(/full-path="([^"]+)"/)?.[1];
+      const opfXml  = opfPath ? await zip.file(opfPath)?.async('string') : null;
+      if (!opfXml) throw new Error('Invalid EPUB');
+      const opfDoc  = new DOMParser().parseFromString(opfXml, 'application/xml');
+      const opfBase = opfPath.includes('/') ? opfPath.slice(0, opfPath.lastIndexOf('/') + 1) : '';
+
+      const manifest = {};
+      opfDoc.querySelectorAll('manifest item').forEach(el => {
+        const id = el.getAttribute('id'), href = el.getAttribute('href');
+        if (id && href) manifest[id] = { href };
+      });
+      const spineRefs = [...opfDoc.querySelectorAll('spine itemref')]
+        .map(el => el.getAttribute('idref')).filter(Boolean);
+      const titleMap  = await buildEPUBTitleMap(zip, opfDoc, opfBase, manifest);
+
+      const rawChapters = [];
+      for (const idref of spineRefs) {
+        const m = manifest[idref];
+        if (!m) continue;
+        const filePath = resolveEPUBPath(opfBase, m.href);
+        const raw = await readZipFile(zip, filePath);
+        if (!raw) continue;
+        const fmt = formatExtractedText(htmlToText(raw));
+        const wc  = tokenize(fmt).length;
+        if (wc < 30) continue;
+        const hrefBase = m.href.split('#')[0].split('?')[0];
+        const chTitle  = titleMap.get(hrefBase) || titleMap.get(decodeURIComponent(hrefBase))
+                      || extractFirstHeading(raw) || `Section ${rawChapters.length + 1}`;
+        rawChapters.push({ title: chTitle, text: fmt, wordCount: wc });
+      }
+      if (!rawChapters.length) throw new Error('No readable content found');
+      chapters = rawChapters;
+      content  = rawChapters.map(c => c.text).join('\n\n');
+
+    } else {
+      // Plain text
+      content = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload  = e => resolve(formatExtractedText(e.target.result));
+        r.onerror = reject;
+        r.readAsText(file);
+      });
+    }
+
+    const book = await addToLibrary(title, content, type, coverImage, chapters);
+    showToast(`✓ "${title}" added to library!`, 'ok');
+    renderLibrary();
+
+  } catch (e) {
+    console.error(e);
+    showToast(`Failed to add book: ${e.message}`, 'err');
+  }
+}
+
+// ═══════════════════════════════════════════
+//  LIBRARY — CHAPTER PICKER
+// ═══════════════════════════════════════════
+async function openLibraryChapterPicker(bookId) {
+  const book = await dbGet(bookId);
+  if (!book || !book.chapters) return;
+
+  // Reuse the existing chapter modal but wire it to load into the reader from library
+  chBadge.textContent    = book.type === 'epub' ? '📚 EPUB' : '📄 ' + book.type.toUpperCase();
+  chFilename.textContent = book.title;
+  chSubtitle.textContent = `${book.chapters.length} chapter${book.chapters.length !== 1 ? 's' : ''} — pick one to read:`;
+
+  chList.innerHTML = book.chapters.map((ch, i) => `
+    <div class="ch-item" data-idx="${i}">
+      <span class="ch-num">${i + 1}</span>
+      <div class="ch-info">
+        <div class="ch-name">${escHtml(ch.title)}</div>
+        <div class="ch-meta">${ch.wordCount.toLocaleString()} words</div>
+      </div>
+      <span class="ch-arrow">→</span>
+    </div>`).join('');
+
+  chList.querySelectorAll('.ch-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const ch = book.chapters[parseInt(el.dataset.idx)];
+      chapterModal.classList.remove('show');
+      // Load this chapter and start reading, linked to the library book
+      textInput.value           = ch.text;
+      textInput.dataset.sourceType = book.type;
+      loadedTitle               = ch.title;
+      activeBookId              = bookId;
+      setWPM(book.wpm || wpm);
+      // Switch to read tab and start
+      switchTab('read');
+      setTimeout(() => startReading(), 50);
+    });
+  });
+
+  chLoadAllBtn.onclick = () => {
+    textInput.value           = book.content;
+    textInput.dataset.sourceType = book.type;
+    loadedTitle               = book.title;
+    activeBookId              = bookId;
+    setWPM(book.wpm || wpm);
+    chapterModal.classList.remove('show');
+    switchTab('read');
+    setTimeout(() => startReading(), 50);
+  };
+
+  chapterModal.classList.add('show');
+}
+
+// Wire up library upload button
+document.getElementById('lib-upload-btn').addEventListener('click', () => {
+  document.getElementById('lib-file-input').click();
+});
+document.getElementById('lib-file-input').addEventListener('change', e => {
+  handleLibraryUpload(e.target.files[0]);
+  e.target.value = ''; // reset so same file can be re-added
+});
 
 // Library search & sort listeners
 document.getElementById('lib-search').addEventListener('input', renderLibrary);
@@ -2458,7 +2778,7 @@ function startReading() {
   // Save to library if not already an active book
   if (!activeBookId) {
     const srcType = textInput.dataset.sourceType || 'text';
-    addToLibrary(loadedTitle, raw, srcType).then(book => {
+    addToLibrary(loadedTitle, raw, srcType, null, null).then(book => {
       activeBookId = book.id;
     });
   }

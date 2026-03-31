@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f0f0f">
 <title>Sorbr — Speed Reading & Comprehension</title>
+<link rel="icon" type="image/png" href="/icons/SORBR_transparent.png">
+<link rel="shortcut icon" href="/icons/SORBR_transparent.png">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/icon-512.png">
 <link rel="apple-touch-icon" media="(prefers-color-scheme: light)" href="/icons/icon-light-512.png">
@@ -710,6 +712,8 @@
   }
   .ch-item:hover { background: var(--surface); border-color: var(--border); }
   .ch-item:active { transform: scale(0.99); }
+  .ch-item.ch-read { opacity: 0.5; }
+  .ch-item.ch-read .ch-name { text-decoration: line-through; color: var(--muted); }
   .ch-num {
     font-size: 10px; color: var(--muted); font-family: 'Lexend', sans-serif;
     min-width: 28px; text-align: right; flex-shrink: 0;
@@ -721,6 +725,18 @@
   }
   .ch-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .ch-arrow { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+  .ch-read-toggle {
+    background: transparent; border: 1px solid var(--border); border-radius: 50%;
+    width: 22px; height: 22px; flex-shrink: 0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--muted); transition: all 0.15s;
+    line-height: 1;
+  }
+  .ch-read-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .ch-item.ch-read .ch-read-toggle {
+    background: var(--accent); border-color: var(--accent);
+    color: var(--btn-start-text);
+  }
 
   .ch-footer {
     padding: 12px 16px; border-top: 1px solid var(--border);
@@ -772,11 +788,11 @@
   body.light .tab-btn.active { color: #fff; }
 
   /* ═══════════════ LIBRARY ═══════════════ */
-  #tab-library { align-items: stretch; }
+  #tab-library { align-items: center; }
 
   .lib-toolbar {
     display: flex; align-items: center; justify-content: space-between;
-    gap: 10px; flex-wrap: wrap;
+    gap: 10px; flex-wrap: wrap; width: 100%; max-width: 660px;
   }
   .lib-toolbar-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
   .lib-search {
@@ -798,7 +814,7 @@
   .lib-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 14px; width: 100%;
+    gap: 14px; width: 100%; max-width: 660px;
   }
   @media (max-width: 420px) {
     .lib-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -1122,7 +1138,7 @@
 <body>
 
 <header>
-  <div class="logo"><img id="logo-img" src="/icons/SORBR_Dark_Transparent.png" alt="Sorbr" /></div>
+  <div class="logo"><img id="logo-img" src="/icons/SORBR_transparent.png" alt="Sorbr" /></div>
   <div class="stats-bar" id="stats-bar">
     <span>WORDS: <b id="stat-total">0</b></span>
     <span>POS: <b id="stat-index">0</b></span>
@@ -1227,7 +1243,7 @@
         <button class="btn-lib-upload" id="lib-upload-btn" title="Add book to library">+ Add Book</button>
         <input type="file" id="lib-file-input" accept=".pdf,.epub,.txt" style="display:none" />
       </div>
-      <div class="lib-grid" id="lib-grid" style="max-width:660px;"></div>
+      <div class="lib-grid" id="lib-grid"></div>
     </div>
 
     <div class="version-footer">
@@ -2095,42 +2111,70 @@ async function openLibraryChapterPicker(bookId) {
   const book = await dbGet(bookId);
   if (!book || !book.chapters) return;
 
-  // Reuse the existing chapter modal but wire it to load into the reader from library
+  // Ensure readChapters array exists on the book
+  if (!book.readChapters) { book.readChapters = []; }
+
   chBadge.textContent    = book.type === 'epub' ? '📚 EPUB' : '📄 ' + book.type.toUpperCase();
   chFilename.textContent = book.title;
   chSubtitle.textContent = `${book.chapters.length} chapter${book.chapters.length !== 1 ? 's' : ''} — pick one to read:`;
 
-  chList.innerHTML = book.chapters.map((ch, i) => `
-    <div class="ch-item" data-idx="${i}">
-      <span class="ch-num">${i + 1}</span>
-      <div class="ch-info">
-        <div class="ch-name">${escHtml(ch.title)}</div>
-        <div class="ch-meta">${ch.wordCount.toLocaleString()} words</div>
-      </div>
-      <span class="ch-arrow">→</span>
-    </div>`).join('');
+  const renderChapterList = () => {
+    chList.innerHTML = book.chapters.map((ch, i) => {
+      const isRead = book.readChapters.includes(i);
+      return `
+      <div class="ch-item${isRead ? ' ch-read' : ''}" data-idx="${i}">
+        <span class="ch-num">${i + 1}</span>
+        <div class="ch-info">
+          <div class="ch-name">${escHtml(ch.title)}</div>
+          <div class="ch-meta">${ch.wordCount.toLocaleString()} words${isRead ? ' · ✓ Read' : ''}</div>
+        </div>
+        <button class="ch-read-toggle" data-idx="${i}" title="${isRead ? 'Mark as unread' : 'Mark as read'}">✓</button>
+        <span class="ch-arrow">→</span>
+      </div>`;
+    }).join('');
 
-  chList.querySelectorAll('.ch-item').forEach(el => {
-    el.addEventListener('click', () => {
-      const ch = book.chapters[parseInt(el.dataset.idx)];
-      chapterModal.classList.remove('show');
-      // Load this chapter and start reading, linked to the library book
-      textInput.value           = ch.text;
-      textInput.dataset.sourceType = book.type;
-      loadedTitle               = ch.title;
-      activeBookId              = bookId;
-      setWPM(book.wpm || wpm);
-      // Switch to read tab and start
-      switchTab('read');
-      setTimeout(() => startReading(), 50);
+    // Mark-as-read toggle buttons
+    chList.querySelectorAll('.ch-read-toggle').forEach(btn => {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        const i = parseInt(btn.dataset.idx);
+        const idx2 = book.readChapters.indexOf(i);
+        if (idx2 === -1) {
+          book.readChapters.push(i);
+        } else {
+          book.readChapters.splice(idx2, 1);
+        }
+        // Recalculate overall progress from read chapters
+        book.progress = Math.round((book.readChapters.length / book.chapters.length) * 100);
+        await dbPut(book);
+        renderChapterList();
+      });
     });
-  });
+
+    // Chapter item click → read
+    chList.querySelectorAll('.ch-item').forEach(el => {
+      el.addEventListener('click', e => {
+        if (e.target.classList.contains('ch-read-toggle')) return;
+        const ch = book.chapters[parseInt(el.dataset.idx)];
+        chapterModal.classList.remove('show');
+        textInput.value              = ch.text;
+        textInput.dataset.sourceType = book.type;
+        loadedTitle                  = ch.title;
+        activeBookId                 = bookId;
+        setWPM(book.wpm || wpm);
+        switchTab('read');
+        setTimeout(() => startReading(), 50);
+      });
+    });
+  };
+
+  renderChapterList();
 
   chLoadAllBtn.onclick = () => {
-    textInput.value           = book.content;
+    textInput.value              = book.content;
     textInput.dataset.sourceType = book.type;
-    loadedTitle               = book.title;
-    activeBookId              = bookId;
+    loadedTitle                  = book.title;
+    activeBookId                 = bookId;
     setWPM(book.wpm || wpm);
     chapterModal.classList.remove('show');
     switchTab('read');
@@ -2735,16 +2779,29 @@ function showDone() {
   doneStats.textContent = `${words.length} words · ${mins}m ${secs}s · avg ${Math.round(words.length / (elapsed||1) * 60)} wpm · ${notes.length} note${notes.length !== 1 ? 's' : ''}`;
   doneOverlay.style.display = 'flex';
   launchFireworks(3500);
-  // Mark book as 100% complete
+  // Mark book as 100% complete and auto-mark chapter as read
   if (activeBookId) {
     dbGet(activeBookId).then(book => {
       if (book) {
         book.position   = words.length - 1;
-        book.progress   = 100;
         book.lastRead   = Date.now();
         book.notes      = notes.slice();
         book.wpm        = wpm;
         book.totalWords = words.length;
+        // Auto-mark the current chapter as read if we can match by title
+        if (book.chapters && loadedTitle) {
+          const chIdx = book.chapters.findIndex(c => c.title === loadedTitle);
+          if (chIdx !== -1) {
+            if (!book.readChapters) book.readChapters = [];
+            if (!book.readChapters.includes(chIdx)) book.readChapters.push(chIdx);
+            // Progress = proportion of chapters read
+            book.progress = Math.round((book.readChapters.length / book.chapters.length) * 100);
+          } else {
+            book.progress = 100;
+          }
+        } else {
+          book.progress = 100;
+        }
         dbPut(book);
       }
     });
@@ -3659,12 +3716,11 @@ function applyTheme(isLight) {
   if (isLight) {
     document.body.classList.add('light');
     themeIcon.textContent = '☀️';
-    logoImg.src = '/icons/SORBR_transparent.png';
   } else {
     document.body.classList.remove('light');
     themeIcon.textContent = '🌙';
-    logoImg.src = '/icons/SORBR_Dark_Transparent.png';
   }
+  logoImg.src = '/icons/SORBR_transparent.png';
   localStorage.setItem('sorbr-theme', isLight ? 'light' : 'dark');
 }
 

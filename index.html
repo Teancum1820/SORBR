@@ -768,6 +768,233 @@
   /* Bigger text input */
   #text-input { height: 180px; }
 
+  /* ── Light mode tab active fix ── */
+  body.light .tab-btn.active { color: #fff; }
+
+  /* ═══════════════ LIBRARY ═══════════════ */
+  #tab-library { align-items: stretch; }
+
+  .lib-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .lib-toolbar-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .lib-search {
+    flex: 1; min-width: 0; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-size: 13px; padding: 9px 12px; border-radius: 4px; outline: none;
+    transition: border-color 0.2s; -webkit-appearance: none;
+  }
+  .lib-search:focus { border-color: var(--accent); }
+  .lib-search::placeholder { color: var(--muted); }
+  .lib-sort {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-size: 12px; padding: 9px 10px; border-radius: 4px; outline: none;
+    cursor: pointer; -webkit-appearance: none; white-space: nowrap;
+  }
+  .lib-sort option { background: var(--surface2); }
+
+  .lib-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px; width: 100%;
+  }
+  @media (max-width: 420px) {
+    .lib-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  }
+
+  .lib-empty {
+    grid-column: 1 / -1; text-align: center;
+    padding: 48px 16px; color: var(--muted);
+    font-size: 14px; line-height: 1.8;
+  }
+  .lib-empty .lib-empty-icon { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.4; }
+
+  /* Book card */
+  .book-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+    display: flex; flex-direction: column;
+    cursor: pointer; transition: border-color 0.18s, transform 0.15s, box-shadow 0.18s;
+    position: relative;
+  }
+  .book-card:hover {
+    border-color: var(--accent); transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+  }
+  .book-card-cover {
+    height: 110px; display: flex; align-items: center; justify-content: center;
+    font-size: 42px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, var(--surface2) 0%, var(--border) 100%);
+    flex-shrink: 0;
+  }
+  .book-card-cover .book-type-badge {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--bg); color: var(--muted);
+    font-family: 'Lexend', sans-serif; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 6px; border-radius: 3px; border: 1px solid var(--border);
+  }
+  .book-card-body { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .book-card-title {
+    font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 600;
+    color: var(--text); line-height: 1.35;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .book-card-meta {
+    font-size: 10px; color: var(--muted); display: flex; flex-direction: column; gap: 3px;
+  }
+  .book-progress-bar {
+    height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 2px;
+  }
+  .book-progress-fill {
+    height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s;
+  }
+  .book-progress-label {
+    font-size: 10px; color: var(--accent); font-weight: 700;
+    font-family: 'Lexend', sans-serif;
+  }
+  .book-notes-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; color: var(--muted);
+  }
+  .book-card-actions {
+    display: flex; border-top: 1px solid var(--border); flex-shrink: 0;
+  }
+  .book-action-btn {
+    flex: 1; background: transparent; border: none; border-right: 1px solid var(--border);
+    color: var(--muted); font-size: 11px; padding: 8px 4px;
+    cursor: pointer; transition: background 0.12s, color 0.12s;
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+  }
+  .book-action-btn:last-child { border-right: none; }
+  .book-action-btn:hover { background: var(--surface2); color: var(--text); }
+  .book-action-btn.danger:hover { background: rgba(255,85,85,0.12); color: var(--accent2); }
+
+  /* Book detail overlay */
+  #book-detail-overlay {
+    display: none; position: fixed; inset: 0; z-index: 60;
+    background: var(--bg); flex-direction: column; overflow: hidden;
+  }
+  #book-detail-overlay.show { display: flex; }
+  .bdo-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0; background: var(--bg);
+    padding-top: max(14px, env(safe-area-inset-top));
+  }
+  .bdo-back {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text); font-size: 14px; padding: 8px 14px;
+    border-radius: 4px; cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+  }
+  .bdo-back:hover { border-color: var(--accent); color: var(--accent); }
+  .bdo-title {
+    flex: 1; min-width: 0;
+    font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 700;
+    color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .bdo-resume-btn {
+    background: var(--accent); color: var(--btn-start-text);
+    border: none; font-family: 'Lexend', sans-serif; font-weight: 700;
+    font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 10px 18px; border-radius: 4px; cursor: pointer;
+    transition: opacity 0.15s; flex-shrink: 0; white-space: nowrap;
+  }
+  .bdo-resume-btn:hover { opacity: 0.85; }
+
+  .bdo-body {
+    flex: 1; overflow-y: auto; padding: 20px;
+    display: flex; flex-direction: column; gap: 20px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .bdo-stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  }
+  @media (max-width: 480px) { .bdo-stats-row { grid-template-columns: repeat(2, 1fr); } }
+  .bdo-stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; text-align: center;
+  }
+  .bdo-stat-val {
+    font-family: 'Lexend', sans-serif; font-size: 20px; font-weight: 700;
+    color: var(--accent); display: block; line-height: 1.2;
+  }
+  .bdo-stat-lbl {
+    font-size: 10px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.06em; margin-top: 3px; display: block;
+  }
+
+  .bdo-progress-section { display: flex; flex-direction: column; gap: 6px; }
+  .bdo-progress-bar {
+    height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;
+  }
+  .bdo-progress-fill {
+    height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s;
+  }
+  .bdo-progress-label {
+    font-size: 12px; color: var(--muted); display: flex; justify-content: space-between;
+  }
+
+  .bdo-wpm-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px;
+  }
+  .bdo-wpm-label { font-size: 12px; color: var(--muted); flex: 1; }
+  .bdo-wpm-val {
+    font-family: 'Lexend', sans-serif; font-size: 18px; font-weight: 700; color: var(--accent);
+    min-width: 50px; text-align: center;
+  }
+  .bdo-wpm-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); width: 32px; height: 32px; border-radius: 4px;
+    cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s;
+  }
+  .bdo-wpm-btn:hover { background: var(--border); }
+
+  .bdo-section-title {
+    font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+    margin-bottom: -8px;
+  }
+
+  .bdo-notes-list { display: flex; flex-direction: column; gap: 10px; }
+  .bdo-note-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .bdo-note-card.final { border-color: var(--accent); }
+  .bdo-note-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; color: var(--muted);
+  }
+  .bdo-note-label {
+    font-family: 'Lexend', sans-serif; font-weight: 700; font-size: 10px;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent);
+  }
+  .bdo-note-text { font-size: 13px; color: var(--text); line-height: 1.6; }
+  .bdo-note-excerpt { font-size: 11px; color: var(--muted); font-style: italic; line-height: 1.5; }
+  .bdo-no-notes {
+    text-align: center; padding: 24px; color: var(--muted); font-size: 13px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  }
+  .bdo-export-row {
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .bdo-export-btn {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-size: 12px; padding: 9px 14px; border-radius: 4px;
+    cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+  }
+  .bdo-export-btn:hover { border-color: var(--accent); color: var(--accent); }
+
   /* ── On really short screens (landscape phone) hide the panel title ── */
   @media (max-height: 500px) {
     .panel-title { display: none; }
@@ -891,7 +1118,8 @@
     <!-- Tab bar -->
     <div class="tab-bar">
       <button class="tab-btn active" id="tab-read-btn" onclick="switchTab('read')">📖 Read</button>
-      <button class="tab-btn" id="tab-print-btn" onclick="switchTab('print')">🔖 Print Notes</button>
+      <button class="tab-btn" id="tab-library-btn" onclick="switchTab('library')">📚 Library</button>
+      <button class="tab-btn" id="tab-print-btn" onclick="switchTab('print')">🔖 Print</button>
     </div>
 
     <!-- READ TAB -->
@@ -957,6 +1185,22 @@
           <button class="btn-qp-print" id="qp-print-btn">Print →</button>
         </div>
       </div>
+    </div>
+
+    <!-- LIBRARY TAB -->
+    <div class="tab-panel" id="tab-library">
+      <div class="lib-toolbar" style="width:100%;max-width:660px;">
+        <div class="lib-toolbar-left">
+          <input class="lib-search" id="lib-search" type="search" placeholder="Search your library…" />
+        </div>
+        <select class="lib-sort" id="lib-sort">
+          <option value="recent">Last read</option>
+          <option value="added">Date added</option>
+          <option value="progress">Progress</option>
+          <option value="title">Title</option>
+        </select>
+      </div>
+      <div class="lib-grid" id="lib-grid" style="max-width:660px;"></div>
     </div>
 
     <div class="version-footer">
@@ -1123,6 +1367,43 @@
   </div>
 </div>
 
+<!-- ══ BOOK DETAIL OVERLAY ══ -->
+<div id="book-detail-overlay">
+  <div class="bdo-header">
+    <button class="bdo-back" id="bdo-back-btn">← Library</button>
+    <div class="bdo-title" id="bdo-title">Book Title</div>
+    <button class="bdo-resume-btn" id="bdo-resume-btn">▶ Resume</button>
+  </div>
+  <div class="bdo-body">
+    <div class="bdo-stats-row">
+      <div class="bdo-stat"><span class="bdo-stat-val" id="bdo-stat-pct">0%</span><span class="bdo-stat-lbl">Progress</span></div>
+      <div class="bdo-stat"><span class="bdo-stat-val" id="bdo-stat-words">0</span><span class="bdo-stat-lbl">Words</span></div>
+      <div class="bdo-stat"><span class="bdo-stat-val" id="bdo-stat-notes">0</span><span class="bdo-stat-lbl">Notes</span></div>
+      <div class="bdo-stat"><span class="bdo-stat-val" id="bdo-stat-last">—</span><span class="bdo-stat-lbl">Last Read</span></div>
+    </div>
+
+    <div class="bdo-progress-section">
+      <div class="bdo-progress-bar"><div class="bdo-progress-fill" id="bdo-progress-fill"></div></div>
+      <div class="bdo-progress-label">
+        <span id="bdo-progress-words-label">0 of 0 words read</span>
+        <span id="bdo-progress-eta">—</span>
+      </div>
+    </div>
+
+    <div class="bdo-wpm-row">
+      <span class="bdo-wpm-label">📖 Reading speed for this book</span>
+      <button class="bdo-wpm-btn" id="bdo-wpm-down">−</button>
+      <span class="bdo-wpm-val" id="bdo-wpm-val">300</span>
+      <span style="font-size:10px;color:var(--muted)">WPM</span>
+      <button class="bdo-wpm-btn" id="bdo-wpm-up">+</button>
+    </div>
+
+    <div class="bdo-section-title">Reading Notes</div>
+    <div class="bdo-export-row" id="bdo-export-row"></div>
+    <div class="bdo-notes-list" id="bdo-notes-list"></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -1170,7 +1451,387 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + tab + '-btn').classList.add('active');
   document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'library') renderLibrary();
 }
+
+// ═══════════════════════════════════════════
+//  LIBRARY  (IndexedDB)
+// ═══════════════════════════════════════════
+const DB_NAME    = 'sorbr-library';
+const DB_VERSION = 1;
+const STORE      = 'books';
+let   db         = null;
+let   activeBookId = null;  // the book currently loaded in the reader
+
+// Emoji covers by type
+const COVER_EMOJI = { pdf: '📕', epub: '📗', txt: '📄', text: '📝' };
+const COVER_COLORS = [
+  'linear-gradient(135deg,#1a3a5c,#2176ae)',
+  'linear-gradient(135deg,#2d1a5c,#7b4ae2)',
+  'linear-gradient(135deg,#1a4a2e,#2dae6a)',
+  'linear-gradient(135deg,#4a2a1a,#c4682d)',
+  'linear-gradient(135deg,#3a1a2e,#ae2d7b)',
+  'linear-gradient(135deg,#1a3a3a,#2daeae)',
+  'linear-gradient(135deg,#3a3a1a,#aeae2d)',
+];
+
+function colorForId(id) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return COVER_COLORS[h % COVER_COLORS.length];
+}
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (db) { resolve(db); return; }
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE)) {
+        const s = d.createObjectStore(STORE, { keyPath: 'id' });
+        s.createIndex('lastRead', 'lastRead', { unique: false });
+        s.createIndex('dateAdded', 'dateAdded', { unique: false });
+      }
+    };
+    req.onsuccess  = e => { db = e.target.result; resolve(db); };
+    req.onerror    = e => reject(e.target.error);
+  });
+}
+
+async function dbGet(id) {
+  const d = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx  = d.transaction(STORE, 'readonly');
+    const req = tx.objectStore(STORE).get(id);
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function dbPut(book) {
+  const d = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx  = d.transaction(STORE, 'readwrite');
+    const req = tx.objectStore(STORE).put(book);
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function dbDelete(id) {
+  const d = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx  = d.transaction(STORE, 'readwrite');
+    const req = tx.objectStore(STORE).delete(id);
+    req.onsuccess = e => resolve();
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function dbGetAll() {
+  const d = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx  = d.transaction(STORE, 'readonly');
+    const req = tx.objectStore(STORE).getAll();
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+// Save current reading session progress back to the active book
+async function saveProgressToLibrary() {
+  if (!activeBookId || !words.length) return;
+  const book = await dbGet(activeBookId);
+  if (!book) return;
+  book.position    = idx;
+  book.progress    = Math.round((idx / Math.max(words.length - 1, 1)) * 100);
+  book.lastRead    = Date.now();
+  book.notes       = notes.slice();
+  book.wpm         = wpm;
+  book.totalWords  = words.length;
+  await dbPut(book);
+}
+
+// Add a new book to the library (or update if same title+content)
+async function addToLibrary(title, content, type) {
+  const id = 'book_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+  const book = {
+    id,
+    title:       title || 'Untitled',
+    type:        type || 'text',
+    content,
+    totalWords:  tokenize(content).length,
+    position:    0,
+    progress:    0,
+    notes:       [],
+    wpm:         wpm,
+    dateAdded:   Date.now(),
+    lastRead:    null,
+  };
+  await dbPut(book);
+  return book;
+}
+
+function relativeDate(ts) {
+  if (!ts) return 'Never';
+  const diff = Date.now() - ts;
+  if (diff < 60000)   return 'Just now';
+  if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+  if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
+  return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+async function renderLibrary() {
+  const grid       = document.getElementById('lib-grid');
+  const searchVal  = (document.getElementById('lib-search')?.value || '').toLowerCase();
+  const sortVal    = document.getElementById('lib-sort')?.value || 'recent';
+
+  grid.innerHTML = '<div class="lib-empty"><span class="lib-empty-icon">⏳</span>Loading…</div>';
+
+  let books = await dbGetAll();
+
+  // Filter
+  if (searchVal) books = books.filter(b => b.title.toLowerCase().includes(searchVal));
+
+  // Sort
+  if (sortVal === 'recent')   books.sort((a, b) => (b.lastRead || 0) - (a.lastRead || 0));
+  if (sortVal === 'added')    books.sort((a, b) => b.dateAdded - a.dateAdded);
+  if (sortVal === 'progress') books.sort((a, b) => b.progress - a.progress);
+  if (sortVal === 'title')    books.sort((a, b) => a.title.localeCompare(b.title));
+
+  if (!books.length) {
+    grid.innerHTML = `
+      <div class="lib-empty">
+        <span class="lib-empty-icon">📚</span>
+        ${searchVal ? 'No books match your search.' : 'Your library is empty.<br>Start reading to save books here.'}
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = books.map(book => {
+    const pct       = book.progress || 0;
+    const noteCount = (book.notes || []).filter(n => !n.skipped && n.summary).length;
+    const lastRead  = relativeDate(book.lastRead);
+    const emoji     = COVER_EMOJI[book.type] || '📖';
+    const grad      = colorForId(book.id);
+    const isActive  = book.id === activeBookId;
+
+    return `
+    <div class="book-card${isActive ? ' active' : ''}" data-id="${book.id}">
+      <div class="book-card-cover" style="background:${grad}">
+        <span style="font-size:44px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4))">${emoji}</span>
+        <span class="book-type-badge">${book.type.toUpperCase()}</span>
+        ${isActive ? '<span class="book-type-badge" style="top:auto;bottom:8px;background:var(--accent);color:#0f0f0f;border-color:var(--accent)">READING</span>' : ''}
+      </div>
+      <div class="book-card-body">
+        <div class="book-card-title">${esc(book.title)}</div>
+        <div class="book-card-meta">
+          <div class="book-progress-label">${pct}% complete</div>
+          <div class="book-progress-bar"><div class="book-progress-fill" style="width:${pct}%"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:2px;">
+            <span class="book-notes-badge">📝 ${noteCount} note${noteCount !== 1 ? 's' : ''}</span>
+            <span style="font-size:10px;color:var(--muted)">${lastRead}</span>
+          </div>
+        </div>
+      </div>
+      <div class="book-card-actions">
+        <button class="book-action-btn" onclick="event.stopPropagation();openBookDetail('${book.id}')">📋 Notes</button>
+        <button class="book-action-btn" onclick="event.stopPropagation();resumeBook('${book.id}')">▶ Read</button>
+        <button class="book-action-btn danger" onclick="event.stopPropagation();deleteBook('${book.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Card click → open detail
+  grid.querySelectorAll('.book-card').forEach(card => {
+    card.addEventListener('click', () => openBookDetail(card.dataset.id));
+  });
+}
+
+// ── Book Detail ──
+let detailBookId  = null;
+let detailBookWpm = 300;
+
+async function openBookDetail(id) {
+  const book = await dbGet(id);
+  if (!book) return;
+  detailBookId  = id;
+  detailBookWpm = book.wpm || 300;
+
+  const overlay = document.getElementById('book-detail-overlay');
+  document.getElementById('bdo-title').textContent     = book.title;
+  document.getElementById('bdo-stat-pct').textContent  = (book.progress || 0) + '%';
+  document.getElementById('bdo-stat-words').textContent = (book.totalWords || 0).toLocaleString();
+  const noteCount = (book.notes || []).filter(n => !n.skipped && n.summary).length;
+  document.getElementById('bdo-stat-notes').textContent = noteCount;
+  document.getElementById('bdo-stat-last').textContent  = book.lastRead ? relativeDate(book.lastRead) : '—';
+
+  const pct = book.progress || 0;
+  document.getElementById('bdo-progress-fill').style.width = pct + '%';
+  const wordsRead = Math.round((pct / 100) * (book.totalWords || 0));
+  document.getElementById('bdo-progress-words-label').textContent =
+    `${wordsRead.toLocaleString()} of ${(book.totalWords || 0).toLocaleString()} words read`;
+
+  const remWords = (book.totalWords || 0) - wordsRead;
+  const remMins  = Math.ceil(remWords / (book.wpm || 300));
+  document.getElementById('bdo-progress-eta').textContent =
+    remMins > 0 ? `~${remMins} min left` : 'Complete';
+
+  document.getElementById('bdo-wpm-val').textContent = detailBookWpm;
+
+  // Render notes
+  renderDetailNotes(book);
+
+  overlay.classList.add('show');
+}
+
+function renderDetailNotes(book) {
+  const list      = document.getElementById('bdo-notes-list');
+  const exportRow = document.getElementById('bdo-export-row');
+  const written   = (book.notes || []).filter(n => !n.skipped && n.summary);
+
+  if (!written.length) {
+    list.innerHTML = '<div class="bdo-no-notes">No notes yet — start reading to add checkpoints.</div>';
+    exportRow.innerHTML = '';
+    return;
+  }
+
+  list.innerHTML = written.map(n => `
+    <div class="bdo-note-card${n.isFinal ? ' final' : ''}">
+      <div class="bdo-note-meta">
+        <span class="bdo-note-label">${n.isFinal ? '★ Final Summary' : `Checkpoint ${n.checkpoint}`}</span>
+        <span>${n.pct}% · ${n.wordsRead} words</span>
+      </div>
+      <div class="bdo-note-text">${esc(n.summary)}</div>
+      ${n.excerpt ? `<div class="bdo-note-excerpt">"${esc(n.excerpt.slice(0, 120))}…"</div>` : ''}
+    </div>`).join('');
+
+  exportRow.innerHTML = `
+    <button class="bdo-export-btn" onclick="exportDetailTxt()">⬇ TXT</button>
+    <button class="bdo-export-btn" onclick="exportDetailPdf()">⬇ PDF</button>
+    <button class="bdo-export-btn" onclick="copyDetailNotes()">⎘ Copy</button>`;
+}
+
+function closeBookDetail() {
+  document.getElementById('book-detail-overlay').classList.remove('show');
+  detailBookId = null;
+}
+
+// WPM controls in detail view
+document.getElementById('bdo-wpm-down').addEventListener('click', async () => {
+  detailBookWpm = Math.max(50, detailBookWpm - 25);
+  document.getElementById('bdo-wpm-val').textContent = detailBookWpm;
+  if (detailBookId) {
+    const book = await dbGet(detailBookId);
+    if (book) { book.wpm = detailBookWpm; await dbPut(book); }
+  }
+});
+document.getElementById('bdo-wpm-up').addEventListener('click', async () => {
+  detailBookWpm = Math.min(2000, detailBookWpm + 25);
+  document.getElementById('bdo-wpm-val').textContent = detailBookWpm;
+  if (detailBookId) {
+    const book = await dbGet(detailBookId);
+    if (book) { book.wpm = detailBookWpm; await dbPut(book); }
+  }
+});
+
+document.getElementById('bdo-back-btn').addEventListener('click', closeBookDetail);
+document.getElementById('bdo-resume-btn').addEventListener('click', () => {
+  if (detailBookId) resumeBook(detailBookId);
+});
+
+async function resumeBook(id) {
+  closeBookDetail();
+  const book = await dbGet(id);
+  if (!book) return;
+
+  // Load into reader
+  textInput.value = book.content;
+  loadedTitle     = book.title;
+  activeBookId    = id;
+
+  // Set WPM
+  setWPM(book.wpm || 300);
+  wpmSlider.value = wpm;
+
+  // Start reading
+  tokensMeta         = tokenizeMeta(book.content);
+  words              = tokensMeta.map(t => t.word);
+  idx                = book.position || 0;
+  startTime          = null;
+  checkpointNum      = 0;
+  nextCpIdx          = 0;
+  notes              = (book.notes || []).slice();
+  checkpointInterval = parseInt(checkpointSelect.value) || 150;
+  chunkSize          = parseInt(chunkSlider.value) || 1;
+  checkpointIndices  = computeCheckpoints(tokensMeta, checkpointInterval);
+
+  // Fast-forward checkpoint counter to match saved position
+  checkpointNum = notes.length;
+  nextCpIdx = checkpointIndices.filter(ci => ci <= idx).length;
+
+  updateNotesUI();
+  buildMarkers();
+  statTotal.textContent     = words.length;
+  inputPanel.style.display  = 'none';
+  readerPanel.style.display = 'flex';
+  renderWord();
+  play();
+  showToast(`Resuming "${book.title}" at ${book.progress || 0}%`);
+}
+
+async function deleteBook(id) {
+  if (!confirm('Delete this book and all its notes?')) return;
+  await dbDelete(id);
+  if (activeBookId === id) activeBookId = null;
+  renderLibrary();
+  showToast('Book deleted.');
+}
+
+// Export helpers for detail view
+async function exportDetailTxt() {
+  const book    = await dbGet(detailBookId);
+  if (!book) return;
+  const written = (book.notes || []).filter(n => !n.skipped && n.summary);
+  if (!written.length) { showToast('No notes to export.', 'err'); return; }
+  const text = `${book.title}\nExported from Sorbr\n${'─'.repeat(40)}\n\n` +
+    written.map(n => `[${n.isFinal ? 'Final' : 'CP ' + n.checkpoint}] ${n.pct}%\n${n.summary}`).join('\n\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+  a.download = book.title.replace(/[^a-z0-9]/gi, '_').slice(0, 40) + '_notes.txt';
+  a.click();
+}
+
+async function copyDetailNotes() {
+  const book    = await dbGet(detailBookId);
+  if (!book) return;
+  const written = (book.notes || []).filter(n => !n.skipped && n.summary);
+  const text    = written.map(n => `[${n.isFinal ? 'Final' : 'CP ' + n.checkpoint}] ${n.summary}`).join('\n\n');
+  navigator.clipboard.writeText(text).then(() => showToast('Notes copied!', 'ok'));
+}
+
+async function exportDetailPdf() {
+  const book    = await dbGet(detailBookId);
+  if (!book) return;
+  const written = (book.notes || []).filter(n => !n.skipped && n.summary);
+  if (!written.length) { showToast('No notes to export.', 'err'); return; }
+  // Reuse the existing exportPDF logic by temporarily loading these notes
+  const savedNotes   = notes;
+  const savedTitle   = loadedTitle;
+  notes              = written;
+  loadedTitle        = book.title;
+  exportPDF();
+  notes              = savedNotes;
+  loadedTitle        = savedTitle;
+}
+
+// Auto-save progress every 30 seconds while reading
+setInterval(saveProgressToLibrary, 30000);
+
+// Library search & sort listeners
+document.getElementById('lib-search').addEventListener('input', renderLibrary);
+document.getElementById('lib-sort').addEventListener('change', renderLibrary);
 const currentWordEl     = document.getElementById('current-word');
 const progressFill      = document.getElementById('progress-fill');
 const cpMarkersEl       = document.getElementById('checkpoint-markers');
@@ -1354,6 +2015,9 @@ function renderWord() {
   statIndex.textContent = idx + 1;
   const rem = Math.ceil((words.length - idx) / wpm * 60);
   statEta.textContent   = rem >= 60 ? `${Math.floor(rem/60)}m ${rem%60}s` : `${rem}s`;
+
+  // Debounced library save every ~50 words
+  if (activeBookId && idx % 50 === 0) saveProgressToLibrary();
 }
 
 // ═══════════════════════════════════════════
@@ -1557,6 +2221,7 @@ function closeCheckpoint(skipped) {
   });
 
   updateNotesUI();
+  saveProgressToLibrary();
   checkpointOverlay.classList.remove('show');
 
   // Restore checkpoint overlay defaults for future reads
@@ -1750,6 +2415,20 @@ function showDone() {
   doneStats.textContent = `${words.length} words · ${mins}m ${secs}s · avg ${Math.round(words.length / (elapsed||1) * 60)} wpm · ${notes.length} note${notes.length !== 1 ? 's' : ''}`;
   doneOverlay.style.display = 'flex';
   launchFireworks(3500);
+  // Mark book as 100% complete
+  if (activeBookId) {
+    dbGet(activeBookId).then(book => {
+      if (book) {
+        book.position   = words.length - 1;
+        book.progress   = 100;
+        book.lastRead   = Date.now();
+        book.notes      = notes.slice();
+        book.wpm        = wpm;
+        book.totalWords = words.length;
+        dbPut(book);
+      }
+    });
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -1776,6 +2455,14 @@ function startReading() {
   chunkSize          = parseInt(chunkSlider.value) || 1;
   checkpointIndices  = computeCheckpoints(tokensMeta, checkpointInterval);
 
+  // Save to library if not already an active book
+  if (!activeBookId) {
+    const srcType = textInput.dataset.sourceType || 'text';
+    addToLibrary(loadedTitle, raw, srcType).then(book => {
+      activeBookId = book.id;
+    });
+  }
+
   updateNotesUI();
   buildMarkers();
   statTotal.textContent     = words.length;
@@ -1792,6 +2479,8 @@ function resetReader() {
 }
 
 function goBack() {
+  saveProgressToLibrary();   // persist position & notes before leaving
+  activeBookId = null;
   loadedTitle = '';
   pause();
   doneOverlay.style.display = 'none';
@@ -1799,6 +2488,8 @@ function goBack() {
   notesSidebar.classList.remove('open');
   readerPanel.style.display = 'none';
   inputPanel.style.display  = 'flex';
+  textInput.value = '';
+  textInput.dataset.sourceType = '';
 }
 
 function formatExtractedText(raw) {
@@ -1899,12 +2590,18 @@ function readFile(file) {
     const r = new FileReader();
     r.onload = e => {
       textInput.value = formatExtractedText(e.target.result);
+      textInput.dataset.sourceType = 'txt';
+      loadedTitle = file.name.replace(/\.txt$/i, '');
       showToast(`✓ Loaded ${file.name}`, 'ok');
     };
     r.readAsText(file);
   } else if (name.endsWith('.pdf')) {
+    textInput.dataset.sourceType = 'pdf';
+    loadedTitle = file.name.replace(/\.pdf$/i, '');
     typeof pdfjsLib === 'undefined' ? loadPDFJS(() => extractPDF(file)) : extractPDF(file);
   } else if (name.endsWith('.epub')) {
+    textInput.dataset.sourceType = 'epub';
+    loadedTitle = file.name.replace(/\.epub$/i, '');
     loadJSZip(() => extractEPUB(file));
   } else {
     showToast('Supported formats: .pdf, .epub, .txt', 'err');
@@ -2396,7 +3093,7 @@ async function copyNotes() {
   }
 }
 // ═══════════════════════════════════════════
-//  PRINT PICKER
+//  PRINT PICKER  (from reader notes sidebar)
 // ═══════════════════════════════════════════
 const printPickerModal = document.getElementById('print-picker-modal');
 const ppCloseBtn       = document.getElementById('pp-close-btn');
@@ -2414,84 +3111,115 @@ printPickerModal.addEventListener('click', e => {
 });
 ppBookmarkBtn.addEventListener('click', () => {
   printPickerModal.classList.remove('show');
-  openPrintWindow('bookmark');
+  openPrintWindow('bookmark', notes, loadedTitle);
 });
 ppStickyBtn.addEventListener('click', () => {
   printPickerModal.classList.remove('show');
-  openPrintWindow('sticky');
+  openPrintWindow('sticky', notes, loadedTitle);
 });
 
-function openPrintWindow(mode) {
-  const written = notes.filter(n => !n.skipped && n.summary.trim());
+// ═══════════════════════════════════════════
+//  QUICK PRINT TAB  (standalone, no session needed)
+// ═══════════════════════════════════════════
+let qpMode = 'bookmark';
+
+const qpBookmarkBtn = document.getElementById('qp-bookmark-btn');
+const qpStickyBtn   = document.getElementById('qp-sticky-btn');
+const qpPrintBtn    = document.getElementById('qp-print-btn');
+const qpInput       = document.getElementById('qp-input');
+
+qpBookmarkBtn.addEventListener('click', () => {
+  qpMode = 'bookmark';
+  qpBookmarkBtn.classList.add('active');
+  qpStickyBtn.classList.remove('active');
+});
+qpStickyBtn.addEventListener('click', () => {
+  qpMode = 'sticky';
+  qpStickyBtn.classList.add('active');
+  qpBookmarkBtn.classList.remove('active');
+});
+
+qpPrintBtn.addEventListener('click', () => {
+  const raw = qpInput.value.trim();
+  if (!raw) { showToast('Write some notes first!', 'err'); return; }
+
+  // Convert textarea lines/paragraphs into note objects
+  const blocks = raw.split(/\n\s*\n/).map(b => b.trim()).filter(Boolean);
+  const fakeNotes = blocks.map((b, i) => ({
+    checkpoint: i + 1,
+    pct: Math.round(((i + 1) / blocks.length) * 100),
+    summary: b,
+    skipped: false,
+    isFinal: i === blocks.length - 1,
+  }));
+
+  openPrintWindow(qpMode, fakeNotes, 'My Notes');
+});
+
+// ═══════════════════════════════════════════
+//  OPEN PRINT WINDOW  (shared by both paths)
+// ═══════════════════════════════════════════
+function openPrintWindow(mode, sourceNotes, title) {
+  const written = (sourceNotes || []).filter(n => !n.skipped && n.summary && n.summary.trim());
   if (!written.length) { showToast('No notes to print.', 'err'); return; }
 
-  const date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const date      = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const cardTitle = (title || '').trim() || 'Notes';
+  const isBookmark = mode === 'bookmark';
 
-  // ── Derive a title for the header ──
-  const cardTitle = loadedTitle.trim()
-    || words.slice(0, 12).join(' ') + (words.length > 12 ? '…' : '');
-
-  // ── Combine all notes into a single card ──
-  const combinedNotes = written.map((n, i) => {
+  const combinedNotes = written.map(n => {
     const label = n.isFinal ? '★ Final' : `§${n.checkpoint} (${n.pct}%)`;
     return `<div class="note-block">
       <span class="note-cp">${label}</span>
-      <span class="note-body">${n.summary.replace(/\n/g, '<br>')}</span>
+      <span class="note-body">${String(n.summary).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</span>
     </div>`;
   }).join('');
 
   const card = `<div class="card">
-    <div class="card-title">${cardTitle}</div>
+    <div class="card-title">${String(cardTitle).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
     <div class="card-notes">${combinedNotes}</div>
     <div class="card-foot">Sorbr &middot; ${date} &middot; ${written.length} note${written.length !== 1 ? 's' : ''}</div>
   </div>`;
 
-  const isBookmark = mode === 'bookmark';
-
   const sharedCSS = `
     @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@600;700&display=swap');
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Atkinson Hyperlegible', sans-serif; background: #fff; color: #111; padding: 10mm; }
-      .page-label {
-        font-family: 'Lexend', sans-serif; font-size: 7pt; font-weight: 700;
-        letter-spacing: .12em; text-transform: uppercase; color: #ccc; margin-bottom: 6mm;
-      }
-      .card {
-        border: 1.5px solid #222; border-radius: 2.5mm;
-        display: flex; flex-direction: column; overflow: hidden;
-        page-break-inside: avoid; break-inside: avoid; background: #fff;
-      }
-      .card-title {
-        font-family: 'Lexend', sans-serif; font-size: 9pt; font-weight: 700;
-        color: #111; padding: 4mm 4mm 3mm;
-        border-bottom: 1.5px solid #222;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        letter-spacing: -0.01em;
-      }
-      .card-notes {
-        flex: 1; overflow: hidden; padding: 3mm 4mm;
-        display: flex; flex-direction: column; gap: 2.5mm;
-      }
-      .note-block { display: flex; flex-direction: column; gap: 0.5mm; }
-      .note-cp {
-        font-family: 'Lexend', sans-serif; font-size: 6pt; font-weight: 700;
-        letter-spacing: .08em; text-transform: uppercase; color: #888;
-      }
-      .note-body { font-size: 8.5pt; line-height: 1.55; color: #111; word-break: break-word; }
-      .card-foot { font-size: 5pt; color: #bbb; text-align: center; border-top: 1px solid #eee; padding: 1.5mm; }
-      @media print { .page-label { display: none; } body { padding: 8mm; } }
-    `;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Atkinson Hyperlegible', sans-serif; background: #fff; color: #111; padding: 10mm; }
+    .page-label {
+      font-family: 'Lexend', sans-serif; font-size: 7pt; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase; color: #ccc; margin-bottom: 6mm;
+    }
+    .card {
+      border: 1.5px solid #222; border-radius: 2.5mm;
+      display: flex; flex-direction: column; overflow: hidden;
+      page-break-inside: avoid; break-inside: avoid; background: #fff;
+    }
+    .card-title {
+      font-family: 'Lexend', sans-serif; font-size: 9pt; font-weight: 700;
+      color: #111; padding: 4mm 4mm 3mm;
+      border-bottom: 1.5px solid #222;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      letter-spacing: -0.01em;
+    }
+    .card-notes {
+      flex: 1; overflow: hidden; padding: 3mm 4mm;
+      display: flex; flex-direction: column; gap: 2.5mm;
+    }
+    .note-block { display: flex; flex-direction: column; gap: 0.5mm; }
+    .note-cp {
+      font-family: 'Lexend', sans-serif; font-size: 6pt; font-weight: 700;
+      letter-spacing: .08em; text-transform: uppercase; color: #888;
+    }
+    .note-body { font-size: 8.5pt; line-height: 1.55; color: #111; word-break: break-word; }
+    .card-foot { font-size: 5pt; color: #bbb; text-align: center; border-top: 1px solid #eee; padding: 1.5mm; }
+    @media print { .page-label { display: none; } body { padding: 8mm; } }
+  `;
 
-    const modeCSS = isBookmark
-    ? `.card { width: 51mm; height: 152mm; }`
-    : `.card { width: 76mm; height: 76mm; }`;
+  const modeCSS   = isBookmark ? `.card { width: 51mm; height: 152mm; }` : `.card { width: 76mm; height: 76mm; }`;
+  const modeLabel = isBookmark ? 'Bookmark (2 × 6 in)' : 'Sticky Note (3 × 3 in)';
 
-    const modeLabel = isBookmark
-    ? 'Bookmark (2 × 6 in)'
-    : 'Sticky Note (3 × 3 in)';
-
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Sorbr ${qpMode === 'bookmark' ? 'Bookmark' : 'Sticky Note'}</title>
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Sorbr ${isBookmark ? 'Bookmark' : 'Sticky Note'}</title>
 <style>${sharedCSS}${modeCSS}</style></head>
 <body>
   <div class="page-label">${modeLabel}</div>
@@ -2499,15 +3227,15 @@ function openPrintWindow(mode) {
   <script>window.onload = () => window.print();<\/script>
 </body></html>`;
 
-    const win = window.open('', '_blank');
-    if (!win) { showToast('Allow popups to print', 'err'); return; }
-    win.document.write(html);
-    win.document.close();
-    showToast(`Printing ${isBookmark ? 'bookmark' : 'sticky note'}…`, 'ok');
+  const win = window.open('', '_blank');
+  if (!win) { showToast('Allow popups to print', 'err'); return; }
+  win.document.write(html);
+  win.document.close();
+  showToast(`Printing ${isBookmark ? 'bookmark' : 'sticky note'}…`, 'ok');
 }
 
 // Alias kept for compatibility
-function printBookmark() { openPrintWindow('bookmark'); }
+function printBookmark() { openPrintWindow('bookmark', notes, loadedTitle); }
 
 // ═══════════════════════════════════════════
 //  CONTROLS

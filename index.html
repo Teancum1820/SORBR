@@ -7,7 +7,45 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f0f0f">
-<title>Sorbr — Speed Reading & Comprehension</title>
+<title>Sorbr — Free Speed Reading App | Read Faster Online</title>
+<meta name="description" content="Sorbr is a free speed reading app that helps you read faster and retain more. Use RSVP speed reading, track comprehension with notes, and sync your library across devices. Read PDFs, EPUBs, and web articles at 2–5× your normal pace.">
+<meta name="keywords" content="speed reading, speed reader, speed reading app, read faster, RSVP reading, speed reading online, free speed reader, rapid serial visual presentation, reading speed, comprehension, read faster online, speed reading tool, reading trainer">
+<link rel="canonical" href="https://www.sorbr.com/">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.sorbr.com/">
+<meta property="og:title" content="Sorbr — Free Speed Reading App">
+<meta property="og:description" content="Read 2–5× faster with Sorbr's RSVP speed reader. Load PDFs, EPUBs, web articles, or paste any text. Free, no account needed.">
+<meta property="og:image" content="https://www.sorbr.com/icons/SORBR.png">
+<meta property="og:site_name" content="Sorbr">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sorbr — Free Speed Reading App">
+<meta name="twitter:description" content="Read 2–5× faster with Sorbr's RSVP speed reader. Load PDFs, EPUBs, web articles, or paste any text.">
+<meta name="twitter:image" content="https://www.sorbr.com/icons/SORBR.png">
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Sorbr",
+  "url": "https://www.sorbr.com/",
+  "description": "Free speed reading app using RSVP (Rapid Serial Visual Presentation) to help you read faster with better comprehension.",
+  "applicationCategory": "EducationApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "RSVP speed reading",
+    "PDF reader",
+    "EPUB reader",
+    "Web article reader",
+    "Reading comprehension notes",
+    "Cloud library sync",
+    "Offline support"
+  ],
+  "author": { "@type": "Person", "name": "Caleb Day" }
+}
+</script>
 <link rel="icon" type="image/png" href="/icons/logo-3d-light.png">
 <link rel="shortcut icon" href="/icons/logo-3d-light.png">
 <link rel="manifest" href="/manifest.json">
@@ -96,11 +134,14 @@
     flex-shrink: 0;
     background: var(--bg);
   }
-  .logo img { height: 36px; width: auto; display: block; }
-  .logo a { display: block; cursor: pointer; }
+  .logo img { height: 40px; width: auto; display: block; object-fit: contain; }
+  .logo a { display: block; cursor: pointer; line-height: 0; }
+  @media (min-width: 769px) {
+    .logo img { height: 44px; }
+  }
   @media (max-width: 480px) {
     header { padding: 14px 16px; padding-top: max(14px, env(safe-area-inset-top)); }
-    .logo img { height: 30px; }
+    .logo img { height: 34px; }
   }
 
   /* ── Theme toggle ── */
@@ -153,7 +194,34 @@
   }
   .panel-title span { color: var(--accent); }
 
-  /* fetch-status kept for potential future use */
+  /* ── URL fetch input ── */
+  .url-fetch-row {
+    display: flex; gap: 8px; width: 100%; max-width: 660px; align-items: stretch;
+  }
+  .url-fetch-input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 14px;
+    padding: 10px 13px; border-radius: 4px; outline: none;
+    transition: border-color 0.2s; min-width: 0;
+    -webkit-appearance: none;
+  }
+  .url-fetch-input:focus { border-color: var(--accent); }
+  .url-fetch-input::placeholder { color: var(--muted); }
+  .url-fetch-btn {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 10px 16px; border-radius: 4px; cursor: pointer; white-space: nowrap;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    min-height: 42px; touch-action: manipulation; flex-shrink: 0;
+  }
+  .url-fetch-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .url-fetch-btn:disabled { opacity: 0.5; cursor: default; }
+  .url-fetch-status {
+    font-size: 11px; color: var(--muted); text-align: center;
+    min-height: 16px; width: 100%; max-width: 660px;
+  }
+  .url-fetch-status.error { color: var(--accent2); }
 
   #text-input {
     width: 100%; max-width: 660px;
@@ -320,6 +388,26 @@
   @media (max-width: 400px) {
     #back-btn { font-size: 0; width: 34px; padding: 6px; }
     #back-btn::before { content: '←'; font-size: 14px; }
+  }
+
+  /* Mobile-friendly controls: tighter on small screens */
+  @media (max-width: 480px) {
+    #controls {
+      padding: 8px 10px;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      gap: 5px;
+    }
+    .ctrl-btn { width: 36px; height: 36px; font-size: 13px; }
+    #play-btn  { width: 44px; height: 44px; font-size: 16px; }
+    .ctrl-group { gap: 3px; }
+    #wpm-display { font-size: 15px; min-width: 38px; }
+    .wpm-control { gap: 3px; }
+    .btn-sm { font-size: 9px; padding: 5px 7px; min-height: 30px; }
+  }
+  @media (max-width: 360px) {
+    .ctrl-btn { width: 32px; height: 32px; font-size: 12px; }
+    #play-btn  { width: 40px; height: 40px; font-size: 15px; }
+    #notes-toggle-btn .notes-label { display: none; }
   }
 
   /* ── Reader header (back button + title) ── */
@@ -1317,6 +1405,14 @@
 
     <!-- READ TAB -->
     <div class="tab-panel active" id="tab-read">
+      <div class="url-fetch-row">
+        <input class="url-fetch-input" id="url-fetch-input" type="url"
+          placeholder="Paste a webpage URL to extract its text…"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+        <button class="url-fetch-btn" id="url-fetch-btn">Fetch</button>
+      </div>
+      <div class="url-fetch-status" id="url-fetch-status"></div>
+
       <textarea id="text-input" placeholder="Paste any text here…"></textarea>
 
       <div class="upload-zone" id="drop-zone">
@@ -1399,7 +1495,7 @@
     </div>
 
     <div class="version-footer">
-      <span>Sorbr v1.6.0 &nbsp;·&nbsp; Speed reading with comprehension</span>
+      <span>Sorbr v1.7.0 &nbsp;·&nbsp; Speed reading with comprehension</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
       <div class="kofi-wrap">
         <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
@@ -1448,7 +1544,7 @@
       </div>
       <div class="ctrl-group">
         <button class="btn-sm" id="back-btn">← New Text</button>
-        <button class="btn-sm purple" id="notes-toggle-btn">📝 Notes<span id="notes-count"></span></button>
+        <button class="btn-sm purple" id="notes-toggle-btn">📝 <span class="notes-label">Notes</span><span id="notes-count"></span></button>
       </div>
     </div>
 
@@ -3010,6 +3106,85 @@ chapterModal.addEventListener('click', e => {
 });
 
 // ═══════════════════════════════════════════
+//  URL → TEXT FETCHER
+// ═══════════════════════════════════════════
+const urlFetchInput  = document.getElementById('url-fetch-input');
+const urlFetchBtn    = document.getElementById('url-fetch-btn');
+const urlFetchStatus = document.getElementById('url-fetch-status');
+
+// Strips HTML tags and decodes entities, returning clean readable text
+function htmlToText(html) {
+  // Remove scripts, styles, nav, header, footer, aside
+  html = html.replace(/<(script|style|noscript|nav|header|footer|aside|figure|figcaption|iframe|svg)[^>]*>[\s\S]*?<\/\1>/gi, ' ');
+  // Remove all remaining tags
+  html = html.replace(/<[^>]+>/g, ' ');
+  // Decode common HTML entities
+  html = html
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&mdash;/g, '—')
+    .replace(/&ndash;/g, '–')
+    .replace(/&hellip;/g, '…')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(n))
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)));
+  return formatExtractedText(html);
+}
+
+// Extract a readable title from HTML
+function extractTitle(html) {
+  const m = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  return m ? m[1].trim().replace(/\s*[|\-–—].*$/, '').trim() : '';
+}
+
+async function fetchUrlText() {
+  const raw = urlFetchInput.value.trim();
+  if (!raw) return;
+
+  let url = raw;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  urlFetchBtn.disabled = true;
+  urlFetchStatus.textContent = 'Fetching…';
+  urlFetchStatus.className = 'url-fetch-status';
+
+  // Use allorigins CORS proxy (returns JSON: { contents: '<html…>' })
+  const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+
+  try {
+    const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    const html = json.contents;
+    if (!html || html.length < 50) throw new Error('No content returned');
+
+    const text = htmlToText(html).trim();
+    if (text.length < 30) throw new Error('Could not extract readable text from this page');
+
+    textInput.value = text;
+    loadedTitle = extractTitle(html) || new URL(url).hostname;
+    urlFetchStatus.textContent = `✓ Loaded "${loadedTitle}" — ${text.split(/\s+/).length.toLocaleString()} words`;
+    urlFetchInput.value = '';
+    showToast(`✓ Fetched article from ${new URL(url).hostname}`, 'ok');
+  } catch (e) {
+    let msg = e.message || 'Fetch failed';
+    if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+      msg = 'Network error — check your connection';
+    }
+    urlFetchStatus.textContent = '✗ ' + msg;
+    urlFetchStatus.className = 'url-fetch-status error';
+  } finally {
+    urlFetchBtn.disabled = false;
+  }
+}
+
+urlFetchBtn.addEventListener('click', fetchUrlText);
+urlFetchInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchUrlText(); });
+
+// ═══════════════════════════════════════════
 //  FILE READING
 // ═══════════════════════════════════════════
 function readFile(file) {
@@ -3909,8 +4084,22 @@ let sbUser    = null;   // current auth user
 function initSupabase() {
   if (sbClient) return;
   if (!window.supabase) { console.warn('Supabase SDK not loaded'); return; }
+
+  // Immediately restore sign-in state from localStorage to avoid flash of "Sign In"
+  try {
+    const raw = localStorage.getItem('sorbr-auth');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const user = parsed?.user ?? parsed?.currentSession?.user ?? null;
+      if (user) {
+        sbUser = user;
+        updateCloudUI();
+      }
+    }
+  } catch (_) {}
+
   sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: { persistSession: true, storageKey: 'sorbr-auth' }
+    auth: { persistSession: true, storageKey: 'sorbr-auth', autoRefreshToken: true, detectSessionInUrl: false }
   });
 
   // Listen to auth state changes
@@ -3922,7 +4111,7 @@ function initSupabase() {
     }
   });
 
-  // Restore existing session on load
+  // Restore existing session on load (authoritative)
   sbClient.auth.getSession().then(({ data }) => {
     sbUser = data.session?.user ?? null;
     updateCloudUI();

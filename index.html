@@ -7,20 +7,20 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f0f0f">
-<title>Sorbr — Free Speed Reading App | Read Faster Online</title>
+<title>Sorbr — Speed Reader with Comprehension Checkpoints</title>
 <meta name="description" content="Sorbr is a free speed reading app that helps you read faster and retain more. Use RSVP speed reading, track comprehension with notes, and sync your library across devices. Read PDFs, EPUBs, and web articles at 2–5× your normal pace.">
 <meta name="keywords" content="speed reading, speed reader, speed reading app, read faster, RSVP reading, speed reading online, free speed reader, rapid serial visual presentation, reading speed, comprehension, read faster online, speed reading tool, reading trainer">
 <link rel="canonical" href="https://www.sorbr.com/">
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.sorbr.com/">
-<meta property="og:title" content="Sorbr — Free Speed Reading App">
+<meta property="og:title" content="Sorbr — Speed Reader with Comprehension Checkpoints">
 <meta property="og:description" content="Read 2–5× faster with Sorbr's RSVP speed reader. Load PDFs, EPUBs, web articles, or paste any text. Free, no account needed.">
 <meta property="og:image" content="https://www.sorbr.com/icons/SORBR.png">
 <meta property="og:site_name" content="Sorbr">
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Sorbr — Free Speed Reading App">
+<meta name="twitter:title" content="Sorbr — Speed Reader with Comprehension Checkpoints">
 <meta name="twitter:description" content="Read 2–5× faster with Sorbr's RSVP speed reader. Load PDFs, EPUBs, web articles, or paste any text.">
 <meta name="twitter:image" content="https://www.sorbr.com/icons/SORBR.png">
 <!-- Structured Data -->
@@ -46,13 +46,14 @@
   "author": { "@type": "Person", "name": "Caleb Day" }
 }
 </script>
-<link rel="icon" type="image/png" href="/icons/logo-3d-light.png">
-<link rel="shortcut icon" href="/icons/logo-3d-light.png">
+<link rel="icon" type="image/png" href="/icons/Dark.png">
+<link rel="icon" type="image/png" href="/icons/Light.png" media="(prefers-color-scheme: light)">
+<link rel="shortcut icon" href="/icons/Dark.png">
 <link rel="manifest" href="/manifest.json">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<link rel="apple-touch-icon" href="/icons/logo-3d-light.png">
-<link rel="apple-touch-icon" media="(prefers-color-scheme: light)" href="/icons/logo-3d-light.png">
-<link rel="apple-touch-icon" media="(prefers-color-scheme: dark)"  href="/icons/logo-3d-dark.png">
+<link rel="apple-touch-icon" href="/icons/Dark.png">
+<link rel="apple-touch-icon" media="(prefers-color-scheme: light)" href="/icons/Light.png">
+<link rel="apple-touch-icon" media="(prefers-color-scheme: dark)"  href="/icons/Dark.png">
 <meta name="apple-mobile-web-app-title" content="Sorbr">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Lexend:wght@300;400;600;700&display=swap');
@@ -188,40 +189,16 @@
     overscroll-behavior-y: contain;
   }
 
-  .panel-title {
-    font-size: clamp(22px, 6vw, 40px); font-weight: 700;
-    letter-spacing: 0.01em; text-align: center; line-height: 1.2;
+  .panel-logo-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
   }
-  .panel-title span { color: var(--accent); }
-
-  /* ── URL fetch input ── */
-  .url-fetch-row {
-    display: flex; gap: 8px; width: 100%; max-width: 660px; align-items: stretch;
+  .panel-logo-img {
+    height: clamp(80px, 20vw, 160px); width: auto; display: block; object-fit: contain;
   }
-  .url-fetch-input {
-    flex: 1; background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 14px;
-    padding: 10px 13px; border-radius: 4px; outline: none;
-    transition: border-color 0.2s; min-width: 0;
-    -webkit-appearance: none;
+  .panel-tagline {
+    font-size: clamp(13px, 3vw, 17px); font-weight: 400; color: var(--muted);
+    letter-spacing: 0.02em; text-align: center;
   }
-  .url-fetch-input:focus { border-color: var(--accent); }
-  .url-fetch-input::placeholder { color: var(--muted); }
-  .url-fetch-btn {
-    background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    font-family: 'Lexend', sans-serif; font-size: 12px; font-weight: 600;
-    letter-spacing: 0.05em; text-transform: uppercase;
-    padding: 10px 16px; border-radius: 4px; cursor: pointer; white-space: nowrap;
-    transition: border-color 0.15s, color 0.15s, background 0.15s;
-    min-height: 42px; touch-action: manipulation; flex-shrink: 0;
-  }
-  .url-fetch-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .url-fetch-btn:disabled { opacity: 0.5; cursor: default; }
-  .url-fetch-status {
-    font-size: 11px; color: var(--muted); text-align: center;
-    min-height: 16px; width: 100%; max-width: 660px;
-  }
-  .url-fetch-status.error { color: var(--accent2); }
 
   #text-input {
     width: 100%; max-width: 660px;
@@ -1394,7 +1371,10 @@
 <main>
   <!-- ══ INPUT PANEL ══ -->
   <div id="input-panel">
-    <div class="panel-title">Read faster.<br><span>Absorb deeper.</span></div>
+    <div class="panel-logo-wrap">
+      <img id="panel-logo-img" src="/icons/logo-3d-dark.png" alt="Sorbr" class="panel-logo-img" />
+      <div class="panel-tagline">Speed Reader with Comprehension Checkpoints</div>
+    </div>
 
     <!-- Tab bar -->
     <div class="tab-bar">
@@ -1405,14 +1385,6 @@
 
     <!-- READ TAB -->
     <div class="tab-panel active" id="tab-read">
-      <div class="url-fetch-row">
-        <input class="url-fetch-input" id="url-fetch-input" type="url"
-          placeholder="Paste a webpage URL to extract its text…"
-          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
-        <button class="url-fetch-btn" id="url-fetch-btn">Fetch</button>
-      </div>
-      <div class="url-fetch-status" id="url-fetch-status"></div>
-
       <textarea id="text-input" placeholder="Paste any text here…"></textarea>
 
       <div class="upload-zone" id="drop-zone">
@@ -1495,7 +1467,7 @@
     </div>
 
     <div class="version-footer">
-      <span>Sorbr v1.7.0 &nbsp;·&nbsp; Speed reading with comprehension</span>
+      <span>Sorbr v1.7.1 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
       <div class="kofi-wrap">
         <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
@@ -3106,85 +3078,6 @@ chapterModal.addEventListener('click', e => {
 });
 
 // ═══════════════════════════════════════════
-//  URL → TEXT FETCHER
-// ═══════════════════════════════════════════
-const urlFetchInput  = document.getElementById('url-fetch-input');
-const urlFetchBtn    = document.getElementById('url-fetch-btn');
-const urlFetchStatus = document.getElementById('url-fetch-status');
-
-// Strips HTML tags and decodes entities, returning clean readable text
-function htmlToText(html) {
-  // Remove scripts, styles, nav, header, footer, aside
-  html = html.replace(/<(script|style|noscript|nav|header|footer|aside|figure|figcaption|iframe|svg)[^>]*>[\s\S]*?<\/\1>/gi, ' ');
-  // Remove all remaining tags
-  html = html.replace(/<[^>]+>/g, ' ');
-  // Decode common HTML entities
-  html = html
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&mdash;/g, '—')
-    .replace(/&ndash;/g, '–')
-    .replace(/&hellip;/g, '…')
-    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(n))
-    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16)));
-  return formatExtractedText(html);
-}
-
-// Extract a readable title from HTML
-function extractTitle(html) {
-  const m = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  return m ? m[1].trim().replace(/\s*[|\-–—].*$/, '').trim() : '';
-}
-
-async function fetchUrlText() {
-  const raw = urlFetchInput.value.trim();
-  if (!raw) return;
-
-  let url = raw;
-  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-
-  urlFetchBtn.disabled = true;
-  urlFetchStatus.textContent = 'Fetching…';
-  urlFetchStatus.className = 'url-fetch-status';
-
-  // Use allorigins CORS proxy (returns JSON: { contents: '<html…>' })
-  const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
-
-  try {
-    const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    const html = json.contents;
-    if (!html || html.length < 50) throw new Error('No content returned');
-
-    const text = htmlToText(html).trim();
-    if (text.length < 30) throw new Error('Could not extract readable text from this page');
-
-    textInput.value = text;
-    loadedTitle = extractTitle(html) || new URL(url).hostname;
-    urlFetchStatus.textContent = `✓ Loaded "${loadedTitle}" — ${text.split(/\s+/).length.toLocaleString()} words`;
-    urlFetchInput.value = '';
-    showToast(`✓ Fetched article from ${new URL(url).hostname}`, 'ok');
-  } catch (e) {
-    let msg = e.message || 'Fetch failed';
-    if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-      msg = 'Network error — check your connection';
-    }
-    urlFetchStatus.textContent = '✗ ' + msg;
-    urlFetchStatus.className = 'url-fetch-status error';
-  } finally {
-    urlFetchBtn.disabled = false;
-  }
-}
-
-urlFetchBtn.addEventListener('click', fetchUrlText);
-urlFetchInput.addEventListener('keydown', e => { if (e.key === 'Enter') fetchUrlText(); });
-
-// ═══════════════════════════════════════════
 //  FILE READING
 // ═══════════════════════════════════════════
 function readFile(file) {
@@ -4012,16 +3905,19 @@ document.addEventListener('keydown', e => {
 const themeToggleBtn = document.getElementById('theme-toggle');
 const themeIcon      = document.getElementById('theme-icon');
 const logoImg        = document.getElementById('logo-img');
+const panelLogoImg   = document.getElementById('panel-logo-img');
 
 function applyTheme(isLight) {
   if (isLight) {
     document.body.classList.add('light');
     themeIcon.textContent = '☀️';
     logoImg.src = '/icons/logo-3d-light.png';
+    if (panelLogoImg) panelLogoImg.src = '/icons/logo-3d-light.png';
   } else {
     document.body.classList.remove('light');
     themeIcon.textContent = '🌙';
     logoImg.src = '/icons/logo-3d-dark.png';
+    if (panelLogoImg) panelLogoImg.src = '/icons/logo-3d-dark.png';
   }
   localStorage.setItem('sorbr-theme', isLight ? 'light' : 'dark');
 }

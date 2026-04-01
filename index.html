@@ -46,15 +46,12 @@
   "author": { "@type": "Person", "name": "Caleb Day" }
 }
 </script>
-<link rel="icon" type="image/png" href="/icons/Dark.png">
-<link rel="icon" type="image/png" href="/icons/Light.png" media="(prefers-color-scheme: light)">
-<link rel="shortcut icon" href="/icons/Dark.png">
+<link rel="icon" type="image/png" href="/icons/app_Icon.png">
+<link rel="shortcut icon" href="/icons/app_Icon.png">
 <link rel="manifest" href="/manifest.json">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script defer src="https://cloud.umami.is/script.js" data-website-id="b4d9d3f6-212a-41a0-9990-625a4c0a5755"></script>
-<link rel="apple-touch-icon" href="/icons/Dark.png">
-<link rel="apple-touch-icon" media="(prefers-color-scheme: light)" href="/icons/Light.png">
-<link rel="apple-touch-icon" media="(prefers-color-scheme: dark)"  href="/icons/Dark.png">
+<link rel="apple-touch-icon" href="/icons/app_Icon.png">
 <meta name="apple-mobile-web-app-title" content="Sorbr">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Lexend:wght@300;400;600;700&display=swap');
@@ -1315,7 +1312,6 @@
 <body>
 
 <header>
-  <div class="logo"><a id="logo-link" href="#" title="Go to home"><img id="logo-img" src="/icons/logo-3d-light.png" alt="Sorbr" /></a></div>
   <div class="stats-bar" id="stats-bar">
     <span>WORDS: <b id="stat-total">0</b></span>
     <span>POS: <b id="stat-index">0</b></span>
@@ -3905,19 +3901,16 @@ document.addEventListener('keydown', e => {
 // ═══════════════════════════════════════════
 const themeToggleBtn = document.getElementById('theme-toggle');
 const themeIcon      = document.getElementById('theme-icon');
-const logoImg        = document.getElementById('logo-img');
 const panelLogoImg   = document.getElementById('panel-logo-img');
 
 function applyTheme(isLight) {
   if (isLight) {
     document.body.classList.add('light');
     themeIcon.textContent = '☀️';
-    logoImg.src = '/icons/logo-3d-light.png';
     if (panelLogoImg) panelLogoImg.src = '/icons/logo-3d-light.png';
   } else {
     document.body.classList.remove('light');
     themeIcon.textContent = '🌙';
-    logoImg.src = '/icons/logo-3d-dark.png';
     if (panelLogoImg) panelLogoImg.src = '/icons/logo-3d-dark.png';
   }
   localStorage.setItem('sorbr-theme', isLight ? 'light' : 'dark');
@@ -3927,11 +3920,6 @@ themeToggleBtn.addEventListener('click', () => {
   applyTheme(!document.body.classList.contains('light'));
 });
 
-document.getElementById('logo-link').addEventListener('click', (e) => {
-  e.preventDefault();
-  readerPanel.style.display = 'none';
-  inputPanel.style.display  = 'flex';
-});
 
 // On load: respect saved preference, then system preference
 (function() {

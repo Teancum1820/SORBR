@@ -54,7 +54,8 @@
 <link rel="apple-touch-icon" href="/icons/app_Icon.png">
 <meta name="apple-mobile-web-app-title" content="Sorbr">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Lexend:wght@300;400;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Lexend:wght@300;400;600;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
+  @import url('https://fonts.cdnfonts.com/css/opendyslexic');
 
   :root {
     --bg: #0f0f0f;
@@ -72,6 +73,11 @@
     --btn-start-text: #0f0f0f;
     --word-size: clamp(44px, 9vw, 90px);
     --logo-src: url('/icons/logo-3d-dark.png');
+    --font-body: 'Atkinson Hyperlegible', sans-serif;
+    --font-reader: 'Lexend', sans-serif;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
   }
 
   /* ── Light mode ── */
@@ -97,7 +103,7 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-family: var(--font-body);
     height: 100vh;
     height: 100dvh;
     display: flex;
@@ -201,7 +207,7 @@
   #text-input {
     width: 100%; max-width: 660px;
     background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 14px;
+    font-family: var(--font-body); font-size: 14px;
     padding: 13px; height: 100px; resize: vertical; outline: none;
     border-radius: 4px; transition: border-color 0.2s;
     line-height: 1.8; letter-spacing: 0.02em;
@@ -284,7 +290,7 @@
   }
 
   #current-word {
-    font-family: 'Lexend', sans-serif; font-weight: 600;
+    font-family: var(--font-reader); font-weight: 600;
     font-size: var(--word-size); letter-spacing: 0.04em;
     color: var(--text);
     text-align: center; position: relative; line-height: 1.15;
@@ -611,7 +617,7 @@
   #summary-input {
     flex: 1; min-height: 140px;
     background: var(--surface); border: 1px solid var(--border); color: var(--text);
-    font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 13px;
+    font-family: var(--font-body); font-size: 13px;
     padding: 12px 14px; border-radius: 4px; resize: none;
     outline: none; line-height: 1.8; letter-spacing: 0.02em;
     transition: border-color 0.2s;
@@ -1307,6 +1313,158 @@
     border-radius: 50%; animation: spin 0.65s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ═══════════════ SETTINGS CARD ═══════════════ */
+  .settings-card {
+    width: 100%; max-width: 660px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-md); overflow: hidden;
+  }
+  .settings-section {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .settings-section:last-child { border-bottom: none; }
+  .settings-label {
+    font-family: 'Lexend', sans-serif; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    margin-bottom: 10px; display: block;
+  }
+  .settings-row {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .settings-row .opt-group {
+    flex: 1; min-width: 120px;
+  }
+  .settings-row .checkpoint-opt {
+    width: 100%;
+    border: none; padding: 0; background: transparent;
+  }
+
+  /* ── Font buttons ── */
+  .font-row {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .font-btn {
+    padding: 7px 14px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface2); color: var(--muted);
+    cursor: pointer; font-size: 13px; transition: all 0.15s;
+    touch-action: manipulation; min-height: 36px; line-height: 1;
+    white-space: nowrap;
+  }
+  .font-btn:hover { border-color: var(--accent); color: var(--text); }
+  .font-btn.active {
+    border-color: var(--accent); color: var(--accent);
+    background: rgba(255,255,255,0.05);
+  }
+  body.light .font-btn.active { background: rgba(33,118,174,0.08); }
+  .font-btn[data-font="serif"]    { font-family: 'Lora', serif; }
+  .font-btn[data-font="dyslexic"] { font-family: 'OpenDyslexic', sans-serif; font-size: 12px; }
+  .font-btn[data-font="atkinson"] { font-family: 'Atkinson Hyperlegible', sans-serif; }
+  .font-btn[data-font="lexend"]   { font-family: 'Lexend', sans-serif; }
+
+  /* ── Color swatches ── */
+  .color-row {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .color-swatch {
+    width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: all 0.15s;
+    touch-action: manipulation; flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .color-swatch:hover { transform: scale(1.12); }
+  .color-swatch.active {
+    border-color: var(--text);
+    box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--text);
+    transform: scale(1.1);
+  }
+
+  /* ═══════════════ MOBILE OVERHAUL ═══════════════ */
+
+  /* Better upload zone on mobile */
+  .upload-zone {
+    border-radius: var(--radius-md);
+  }
+
+  /* Cleaner tab bar */
+  .tab-bar {
+    border-radius: var(--radius-md);
+  }
+  .tab-btn {
+    border-radius: 0;
+    min-height: 44px;
+  }
+  .tab-btn:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+  .tab-btn:last-child  { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+
+  /* Better start button */
+  .btn-start {
+    border-radius: var(--radius-md);
+    width: 100%; max-width: 660px;
+    padding: 15px 44px; font-size: 15px;
+    letter-spacing: 0.1em;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .btn-start:hover {
+    background: var(--btn-start-bg); color: var(--btn-start-text);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.25);
+    transform: translateY(-1px);
+  }
+  @media (max-width: 500px) {
+    .btn-start { padding: 16px; font-size: 14px; }
+  }
+
+  /* Reader improvements */
+  #play-btn {
+    border-radius: 50%;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  }
+  body.light #play-btn { box-shadow: 0 4px 16px rgba(33,118,174,0.35); }
+
+  /* Cleaner book cards */
+  .book-card {
+    border-radius: var(--radius-md);
+  }
+  .book-card-cover {
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+  }
+
+  /* Better auth card */
+  .auth-card { border-radius: var(--radius-lg); }
+
+  /* Checkpoint card tweaks */
+  .cp-card { border-radius: var(--radius-md); }
+
+  /* Done overlay tweaks */
+  #done-overlay { backdrop-filter: blur(16px); background: rgba(10,10,10,0.93); }
+  body.light #done-overlay { background: rgba(232,240,248,0.96); }
+
+  /* Notes sidebar */
+  #notes-sidebar { border-radius: 0; }
+  @media (min-width: 501px) {
+    #notes-sidebar { border-radius: var(--radius-lg) 0 0 var(--radius-lg); }
+  }
+
+  /* Improved mobile controls row */
+  @media (max-width: 480px) {
+    .settings-section { padding: 10px 12px; }
+    .font-row { gap: 5px; }
+    .font-btn { padding: 6px 10px; font-size: 12px; min-height: 34px; }
+    .color-swatch { width: 28px; height: 28px; }
+  }
+
+  /* Quick print textarea */
+  .qp-textarea { font-family: var(--font-body); }
+
+  /* Context strip uses body font for legibility */
+  #context-strip { font-family: var(--font-body); }
+
+  /* Lib search + sort use body font */
+  .lib-search, .lib-sort {
+    font-family: var(--font-body);
+  }
 </style>
 </head>
 <body>
@@ -1387,31 +1545,71 @@
       <div class="upload-zone" id="drop-zone">
         <input type="file" id="pdf-input" accept=".pdf,.txt,.epub" />
         <span class="upload-icon">📄</span>
-        Drop a <strong>.pdf</strong>, <strong>.epub</strong> or <strong>.txt</strong> file here, or <u>click to browse</u>
+        Drop a <strong>.pdf</strong>, <strong>.epub</strong> or <strong>.txt</strong> file here, or <u>tap to browse</u>
       </div>
 
-      <div class="options-row">
-        <div class="opt-group">
-          <label>WPM</label>
-          <input type="range" id="wpm-slider" min="100" max="1000" step="25" value="300" />
-          <b id="wpm-label" style="color:var(--accent);font-size:13px;">300</b>
+      <!-- Settings card -->
+      <div class="settings-card">
+
+        <!-- Speed & Checkpoints -->
+        <div class="settings-section">
+          <span class="settings-label">Speed &amp; Chunk</span>
+          <div class="settings-row">
+            <div class="opt-group">
+              <label>WPM</label>
+              <input type="range" id="wpm-slider" min="100" max="1000" step="25" value="300" />
+              <b id="wpm-label" style="color:var(--accent);font-size:13px;">300</b>
+            </div>
+            <div class="opt-group">
+              <label>Chunk</label>
+              <input type="range" id="chunk-slider" min="1" max="4" step="1" value="1" />
+              <b id="chunk-label" style="color:var(--accent);font-size:13px;">1 word</b>
+            </div>
+          </div>
         </div>
-        <div class="opt-group">
-          <label>Chunk</label>
-          <input type="range" id="chunk-slider" min="1" max="4" step="1" value="1" />
-          <b id="chunk-label" style="color:var(--accent);font-size:13px;">1 word</b>
+
+        <!-- Checkpoints -->
+        <div class="settings-section">
+          <span class="settings-label">Comprehension Checkpoints</span>
+          <div class="checkpoint-opt" style="border:none;padding:0;background:transparent;width:100%;">
+            📝 Pause every
+            <select id="checkpoint-select">
+              <option value="75">~1 paragraph</option>
+              <option value="150">~2–3 paragraphs</option>
+              <option value="300">~half page</option>
+              <option value="500" selected>~1 page</option>
+              <option value="1000">~2 pages</option>
+              <option value="0">No checkpoints</option>
+            </select>
+          </div>
         </div>
-        <div class="checkpoint-opt">
-          📝 Every
-          <select id="checkpoint-select">
-            <option value="75">~1 paragraph</option>
-            <option value="150">~2–3 paragraphs</option>
-            <option value="300">~half page</option>
-            <option value="500" selected>~1 page</option>
-            <option value="1000">~2 pages</option>
-            <option value="0">No checkpoints</option>
-          </select>
+
+        <!-- Reading Font -->
+        <div class="settings-section">
+          <span class="settings-label">Reading Font</span>
+          <div class="font-row">
+            <button class="font-btn active" data-font="atkinson" title="Atkinson Hyperlegible — accessibility-optimized">Atkinson</button>
+            <button class="font-btn" data-font="lexend" title="Lexend — reading-speed optimized">Lexend</button>
+            <button class="font-btn" data-font="serif" title="Lora — serif font">Serif</button>
+            <button class="font-btn" data-font="dyslexic" title="OpenDyslexic — designed for dyslexia">Dyslexia</button>
+          </div>
         </div>
+
+        <!-- Accent Color -->
+        <div class="settings-section">
+          <span class="settings-label">Accent Color</span>
+          <div class="color-row">
+            <button class="color-swatch active" data-color="default"  style="background:linear-gradient(135deg,#999,#fff)" title="Default"></button>
+            <button class="color-swatch"        data-color="blue"     style="background:#2176ae" title="Blue"></button>
+            <button class="color-swatch"        data-color="green"    style="background:#2dae6a" title="Green"></button>
+            <button class="color-swatch"        data-color="purple"   style="background:#9b59b6" title="Purple"></button>
+            <button class="color-swatch"        data-color="orange"   style="background:#e67e22" title="Orange"></button>
+            <button class="color-swatch"        data-color="teal"     style="background:#2daeae" title="Teal"></button>
+            <button class="color-swatch"        data-color="rose"     style="background:#e91e8c" title="Rose"></button>
+            <button class="color-swatch"        data-color="gold"     style="background:#f0c040" title="Gold"></button>
+          </div>
+        </div>
+
       </div>
 
       <button class="btn-start" id="start-btn">▶ Start Reading</button>
@@ -1464,7 +1662,7 @@
     </div>
 
     <div class="version-footer">
-      <span>Sorbr v1.7.1 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
+      <span>Sorbr v1.8 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
       <div class="kofi-wrap">
         <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
@@ -1869,7 +2067,7 @@ async function renderLibrary() {
     grid.innerHTML = `
       <div class="lib-empty">
         <span class="lib-empty-icon">📚</span>
-        ${searchVal ? 'No books match your search.' : 'Your library is empty.<br>Start reading to save books here.'}
+        ${searchVal ? 'No books match your search.' : 'Your library is empty.<br>Tap <b>+ Add Book</b> to upload a PDF, EPUB, or TXT.'}
       </div>`;
     return;
   }
@@ -2947,14 +3145,6 @@ function startReading() {
   chunkSize          = parseInt(chunkSlider.value) || 1;
   checkpointIndices  = computeCheckpoints(tokensMeta, checkpointInterval);
 
-  // Save to library if not already an active book
-  if (!activeBookId) {
-    const srcType = textInput.dataset.sourceType || 'text';
-    addToLibrary(loadedTitle, raw, srcType, null, null).then(book => {
-      activeBookId = book.id;
-    });
-  }
-
   updateNotesUI();
   buildMarkers();
   statTotal.textContent     = words.length;
@@ -3929,6 +4119,108 @@ themeToggleBtn.addEventListener('click', () => {
   } else {
     applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches);
   }
+})();
+
+// ═══════════════════════════════════════════
+//  FONT SELECTION
+// ═══════════════════════════════════════════
+const FONT_OPTIONS = {
+  atkinson: {
+    body:   "'Atkinson Hyperlegible', sans-serif",
+    reader: "'Atkinson Hyperlegible', sans-serif"
+  },
+  lexend: {
+    body:   "'Lexend', sans-serif",
+    reader: "'Lexend', sans-serif"
+  },
+  serif: {
+    body:   "'Lora', serif",
+    reader: "'Lora', serif"
+  },
+  dyslexic: {
+    body:   "'OpenDyslexic', sans-serif",
+    reader: "'OpenDyslexic', sans-serif"
+  }
+};
+
+function applyFont(fontKey) {
+  const opt = FONT_OPTIONS[fontKey] || FONT_OPTIONS.atkinson;
+  const root = document.documentElement;
+  root.style.setProperty('--font-body',   opt.body);
+  root.style.setProperty('--font-reader', opt.reader);
+  localStorage.setItem('sorbr-font', fontKey);
+  document.querySelectorAll('.font-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.font === fontKey);
+  });
+}
+
+// Wire font buttons
+document.querySelectorAll('.font-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyFont(btn.dataset.font));
+});
+
+// Load saved font on startup
+(function() {
+  const saved = localStorage.getItem('sorbr-font') || 'atkinson';
+  applyFont(saved);
+})();
+
+// ═══════════════════════════════════════════
+//  ACCENT COLOR SELECTION
+// ═══════════════════════════════════════════
+const ACCENT_PRESETS = {
+  default: { dark: null,      light: null },   // null = use CSS defaults
+  blue:    { dark: '#2176ae', light: '#1a5fa0' },
+  green:   { dark: '#2dae6a', light: '#1d8a50' },
+  purple:  { dark: '#9b59b6', light: '#7d3c98' },
+  orange:  { dark: '#e67e22', light: '#ca6f1e' },
+  teal:    { dark: '#2daeae', light: '#1a8080' },
+  rose:    { dark: '#e91e8c', light: '#c2185b' },
+  gold:    { dark: '#f0c040', light: '#c9960a' },
+};
+
+function applyAccentColor(colorKey) {
+  const isLight = document.body.classList.contains('light');
+  const preset  = ACCENT_PRESETS[colorKey] || ACCENT_PRESETS.default;
+  const hex     = isLight ? preset.light : preset.dark;
+  const root    = document.documentElement;
+
+  if (!hex) {
+    // Default: remove overrides so CSS theme vars take over
+    root.style.removeProperty('--accent');
+    root.style.removeProperty('--accent3');
+    root.style.removeProperty('--btn-start-bg');
+    root.style.removeProperty('--btn-start-text');
+  } else {
+    root.style.setProperty('--accent',        hex);
+    root.style.setProperty('--accent3',       hex);
+    root.style.setProperty('--btn-start-bg',  hex);
+    root.style.setProperty('--btn-start-text','#ffffff');
+  }
+
+  localStorage.setItem('sorbr-accent', colorKey);
+  document.querySelectorAll('.color-swatch').forEach(s => {
+    s.classList.toggle('active', s.dataset.color === colorKey);
+  });
+}
+
+// Wire color swatches
+document.querySelectorAll('.color-swatch').forEach(swatch => {
+  swatch.addEventListener('click', () => applyAccentColor(swatch.dataset.color));
+});
+
+// Re-apply accent after theme toggle (so dark/light variant is correct)
+const _origApplyTheme = applyTheme;
+applyTheme = function(isLight) {
+  _origApplyTheme(isLight);
+  const savedAccent = localStorage.getItem('sorbr-accent') || 'default';
+  applyAccentColor(savedAccent);
+};
+
+// Load saved accent on startup
+(function() {
+  const saved = localStorage.getItem('sorbr-accent') || 'default';
+  applyAccentColor(saved);
 })();
 
 // ═══════════════════════════════════════════

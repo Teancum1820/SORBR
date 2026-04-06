@@ -173,7 +173,7 @@
   .stats-bar { display: flex; gap: 12px; font-size: 10px; color: var(--muted); flex-wrap: wrap; }
   .stats-bar b { color: var(--accent); }
   @media (max-width: 480px) {
-    .stats-bar span:nth-child(2) { display: none; }
+    .stat-words-total { display: none; }
   }
 
   main { position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; min-height: 0; }
@@ -1503,10 +1503,10 @@
 
 <header>
   <div class="stats-bar" id="stats-bar">
-    <span>WORDS: <b id="stat-total">0</b></span>
-    <span>POS: <b id="stat-index">0</b></span>
+    <span><b id="stat-pct">0%</b></span>
     <span>ETA: <b id="stat-eta">—</b></span>
     <span>NOTES: <b id="stat-notes">0</b></span>
+    <span class="stat-words-total">WORDS: <b id="stat-total">0</b></span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
     <button class="cloud-btn" id="cloud-btn" title="Cloud sync / Sign in">
@@ -2701,7 +2701,7 @@ const doneNotes         = document.getElementById('done-notes');
 const donePrint         = document.getElementById('done-print');
 const doneNew           = document.getElementById('done-new');
 const statTotal         = document.getElementById('stat-total');
-const statIndex         = document.getElementById('stat-index');
+const statPct           = document.getElementById('stat-pct');
 const statEta           = document.getElementById('stat-eta');
 const statNotes         = document.getElementById('stat-notes');
 
@@ -2840,7 +2840,8 @@ function renderWord() {
     m.classList.toggle('passed', parseInt(m.dataset.pos) <= idx);
   });
 
-  statIndex.textContent = idx + 1;
+  const pct = Math.round(((idx + 1) / words.length) * 100);
+  statPct.textContent = pct + '%';
   const rem = Math.ceil((words.length - idx) / wpm * 60);
   statEta.textContent   = rem >= 60 ? `${Math.floor(rem/60)}m ${rem%60}s` : `${rem}s`;
 

@@ -2874,8 +2874,7 @@ function renderWord() {
     .sort((a, b) => parseInt(a.dataset.pos) - parseInt(b.dataset.pos))[0];
   if (upcoming) upcoming.classList.add('next');
 
-  const pct = Math.round(((idx + 1) / words.length) * 100);
-  statPct.textContent = pct + '%';
+  statPct.textContent = Math.round(((idx + 1) / words.length) * 100) + '%';
   const rem = Math.ceil((words.length - idx) / wpm * 60);
   statEta.textContent   = rem >= 60 ? `${Math.floor(rem/60)}m ${rem%60}s` : `${rem}s`;
 
@@ -4204,18 +4203,6 @@ doneNew.addEventListener('click',     () => { doneOverlay.style.display = 'none'
 
 // ═══════════════════════════════════════════
 //  KEYBOARD SHORTCUTS
-// ═══════════════════════════════════════════
-document.addEventListener('keydown', e => {
-  if (checkpointOverlay.classList.contains('show')) return;
-  if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
-  if (e.code === 'Space')      { e.preventDefault(); togglePlay(); }
-  if (e.code === 'ArrowRight') { e.preventDefault(); pause(); idx = Math.min(words.length-1, idx+10); renderWord(); play(); }
-  if (e.code === 'ArrowLeft')  { e.preventDefault(); pause(); idx = Math.max(0, idx-10); renderWord(); play(); }
-  if (e.code === 'ArrowUp')    { e.preventDefault(); setWPM(wpm + 25); }
-  if (e.code === 'ArrowDown')  { e.preventDefault(); setWPM(wpm - 25); }
-  if (e.code === 'KeyN')       { notesSidebar.classList.toggle('open'); }
-});
-
 // ═══════════════════════════════════════════
 document.addEventListener('keydown', e => {
   if (checkpointOverlay.classList.contains('show')) return;

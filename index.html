@@ -278,6 +278,14 @@
     transition: opacity 0.3s;
   }
   .cp-marker.passed { opacity: 0.2; }
+  .cp-marker.next {
+    background: var(--accent);
+    opacity: 1;
+    width: 3px;
+    height: 10px;
+    border-radius: 2px;
+    box-shadow: 0 0 4px var(--accent);
+  }
 
   #word-stage {
     flex: 1; display: flex; align-items: center; justify-content: center;
@@ -2839,6 +2847,11 @@ function renderWord() {
   document.querySelectorAll('.cp-marker').forEach(m => {
     m.classList.toggle('passed', parseInt(m.dataset.pos) <= idx);
   });
+  // Highlight the next upcoming checkpoint marker (Von Restorff)
+  document.querySelectorAll('.cp-marker.next').forEach(m => m.classList.remove('next'));
+  const upcoming = [...document.querySelectorAll('.cp-marker:not(.passed)')]
+    .sort((a, b) => parseInt(a.dataset.pos) - parseInt(b.dataset.pos))[0];
+  if (upcoming) upcoming.classList.add('next');
 
   const pct = Math.round(((idx + 1) / words.length) * 100);
   statPct.textContent = pct + '%';

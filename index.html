@@ -149,7 +149,7 @@
     .logo img { height: 34px; }
   }
 
-  /* ── Header icon buttons (Library / Print) ── */
+  /* ── Header icon buttons (Home / Library / Print) ── */
   .header-icon-btn {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -160,10 +160,15 @@
     transition: border-color 0.2s;
     flex-shrink: 0;
     line-height: 1;
+    display: flex; align-items: center; justify-content: center;
   }
   .header-icon-btn:hover { border-color: var(--accent); }
+  .header-btn-icon {
+    width: 22px; height: 22px; object-fit: contain; display: block;
+  }
   @media (max-width: 480px) {
     .header-icon-btn { padding: 5px 8px; font-size: 14px; }
+    .header-btn-icon { width: 20px; height: 20px; }
   }
 
   /* ── Theme toggle ── */
@@ -377,13 +382,13 @@
     font-size: 14px; transition: border-color 0.15s, background 0.15s; flex-shrink: 0;
     touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
-  .ctrl-btn:hover { border-color: var(--accent); background: rgba(255,255,255,0.05); }
+  .ctrl-btn:hover { border-color: var(--accent); background: var(--surface2); }
   .ctrl-btn.active { border-color: var(--accent); color: var(--accent); }
   #play-btn {
     width: 50px; height: 50px; background: var(--accent);
-    border-color: var(--accent); color: #0f0f0f; font-size: 18px; border-radius: 50%;
+    border-color: var(--accent); color: var(--btn-start-text); font-size: 18px; border-radius: 50%;
   }
-  #play-btn:hover { background: #dddddd; }
+  #play-btn:hover { background: var(--accent3); color: var(--btn-start-text); }
 
   .wpm-control {
     display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted);
@@ -542,7 +547,7 @@
 
   #notes-count {
     display: none; position: absolute; top: -5px; right: -5px;
-    background: var(--accent3); color: #0f0f0f; font-size: 9px; font-weight: 700;
+    background: var(--accent3); color: var(--btn-start-text); font-size: 9px; font-weight: 700;
     width: 14px; height: 14px; border-radius: 50%;
     align-items: center; justify-content: center;
   }
@@ -767,7 +772,7 @@
   /* ═══════════════ DONE OVERLAY ═══════════════ */
   #done-overlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(10,10,10,0.96); z-index: 100;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 100;
     flex-direction: column; align-items: center; justify-content: center;
     gap: 12px; text-align: center; padding: 24px;
   }
@@ -777,16 +782,16 @@
   #done-overlay .done-btns { display: flex; gap: 9px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
 
   .btn-done {
-    background: var(--accent); border: none; color: #0f0f0f;
+    background: var(--accent); border: none; color: var(--btn-start-text);
     font-family: 'Lexend', sans-serif; font-weight: 700; font-size: 12px;
     letter-spacing: 0.06em; text-transform: uppercase; padding: 10px 26px;
     cursor: pointer; border-radius: 4px; transition: background 0.15s;
   }
-  .btn-done:hover { background: #dddddd; }
+  .btn-done:hover { background: var(--accent3); color: var(--btn-start-text); }
   .btn-done.secondary { background: transparent; border: 1px solid var(--border); color: var(--muted); }
   .btn-done.secondary:hover { border-color: var(--muted); color: var(--text); background: transparent; }
-  .btn-done.purple { background: var(--accent3); color: #0f0f0f; }
-  .btn-done.purple:hover { background: #dddddd; }
+  .btn-done.purple { background: var(--accent3); color: var(--btn-start-text); }
+  .btn-done.purple:hover { background: var(--accent); color: var(--btn-start-text); }
 
   /* ═══════════════ TOAST ═══════════════ */
   #toast {
@@ -926,12 +931,12 @@
   }
   .btn-ns-cancel:hover { border-color: var(--muted); color: var(--text); }
   .btn-ns-print {
-    background: var(--accent); color: #0f0f0f;
+    background: var(--accent); color: var(--btn-start-text);
     border: none; font-family: 'Lexend', sans-serif;
     font-weight: 700; font-size: 12px; padding: 8px 18px;
     border-radius: 5px; cursor: pointer; transition: background 0.15s;
   }
-  .btn-ns-print:hover { background: #dddddd; }
+  .btn-ns-print:hover { background: var(--accent3); color: var(--btn-start-text); }
   .btn-ns-print:disabled { opacity: 0.45; cursor: not-allowed; }
 
   /* ═══════════════ CHAPTER PICKER MODAL ═══════════════ */
@@ -1047,7 +1052,7 @@
   }
   .tab-btn:last-child { border-right: none; }
   .tab-btn.active {
-    background: var(--accent); color: #0f0f0f;
+    background: var(--accent); color: var(--btn-start-text);
   }
   .tab-btn:not(.active):hover { background: var(--surface2); color: var(--text); }
 
@@ -1057,8 +1062,6 @@
   /* Bigger text input */
   #text-input { height: 180px; }
 
-  /* ── Light mode tab active fix ── */
-  body.light .tab-btn.active { color: #fff; }
 
   /* ═══════════════ LIBRARY ═══════════════ */
   #tab-library { align-items: center; }
@@ -1361,7 +1364,7 @@
   }
 
   .btn-qp-print {
-    background: var(--accent); color: #0f0f0f;
+    background: var(--accent); color: var(--btn-start-text);
     border: none; font-family: 'Lexend', sans-serif;
     font-weight: 700; font-size: 12px; letter-spacing: 0.06em;
     text-transform: uppercase; padding: 9px 20px;
@@ -1369,7 +1372,7 @@
     transition: background 0.15s; white-space: nowrap;
     touch-action: manipulation;
   }
-  .btn-qp-print:hover { background: #dddddd; }
+  .btn-qp-print:hover { background: var(--accent3); color: var(--btn-start-text); }
 
   @media (max-width: 480px) {
     .qp-controls { justify-content: stretch; }
@@ -1378,7 +1381,7 @@
 
   .spin {
     display: inline-block; width: 13px; height: 13px;
-    border: 2px solid rgba(255,255,255,0.2); border-top-color: #0f0f0f;
+    border: 2px solid rgba(128,128,128,0.3); border-top-color: var(--btn-start-text);
     border-radius: 50%; animation: spin 0.65s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -1427,7 +1430,7 @@
     border-color: var(--accent); color: var(--accent);
     background: rgba(255,255,255,0.05);
   }
-  body.light .font-btn.active { background: rgba(33,118,174,0.08); }
+  body.light .font-btn.active { background: var(--surface2); }
   .font-btn[data-font="serif"]    { font-family: 'Lora', serif; }
   .font-btn[data-font="dyslexic"] { font-family: 'OpenDyslexic', sans-serif; font-size: 12px; }
   .font-btn[data-font="atkinson"] { font-family: 'Atkinson Hyperlegible', sans-serif; }
@@ -1561,8 +1564,9 @@
     <span class="stat-hide-while-playing stat-words-total">WORDS: <b id="stat-total-display">0</b></span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
-    <button class="header-icon-btn" id="library-btn" title="Your library" onclick="showPanel('library')">📚</button>
-    <button class="header-icon-btn" id="print-btn" title="Quick print" onclick="showPanel('print')">📝</button>
+    <button class="header-icon-btn" id="home-btn" title="Home" onclick="showPanel('read')"><img src="icons/SORBR_transparent.png" alt="Home" class="header-btn-icon"></button>
+    <button class="header-icon-btn" id="library-btn" title="Your library" onclick="showPanel('library')"><img src="icons/Shelf.png" alt="Library" class="header-btn-icon"></button>
+    <button class="header-icon-btn" id="print-btn" title="Quick print" onclick="showPanel('print')"><img src="icons/Sticky.png" alt="Print" class="header-btn-icon"></button>
     <button class="cloud-btn" id="cloud-btn" title="Cloud sync / Sign in">
       <span class="cloud-btn-icon" id="cloud-icon">☁</span>
       <span class="cloud-btn-label" id="cloud-label">Sign In</span>
@@ -1740,7 +1744,7 @@
     </div>
 
     <div class="version-footer">
-      <span>Sorbr v1.8.2 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
+      <span>Sorbr v1.8.3 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
       <div class="kofi-wrap">
         <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>

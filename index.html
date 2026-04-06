@@ -652,6 +652,16 @@
   .btn-cp.primary:hover { background: #dddddd; }
   .btn-cp.skip { background: transparent; border: 1px solid var(--border); color: var(--muted); }
   .btn-cp.skip:hover { border-color: var(--muted); color: var(--text); }
+  /* Change 8: Final checkpoint visual distinction (Peak-End Rule) */
+  #checkpoint-overlay.final .cp-card {
+    border: 1.5px solid var(--accent3);
+  }
+  #checkpoint-overlay.final .btn-cp.primary {
+    background: var(--accent3);
+  }
+  #checkpoint-overlay.final .btn-cp.primary::before {
+    content: '★ ';
+  }
 
   /* Mobile: stack panels */
   @media (max-width: 640px) {
@@ -3080,6 +3090,8 @@ function showFinalCheckpoint() {
   summaryInput.value = '';
   summaryInput.placeholder = 'Overall, this piece was about…\nThe key takeaway is…\nI want to remember…';
   checkpointOverlay.classList.add('show');
+  checkpointOverlay.classList.add('final');
+  document.getElementById('cp-save-btn').textContent = 'Finish reading →';
   setTimeout(() => summaryInput.focus(), 80);
 }
 
@@ -3110,6 +3122,8 @@ function closeCheckpoint(skipped) {
   updateNotesUI();
   saveProgressToLibrary();
   checkpointOverlay.classList.remove('show');
+  checkpointOverlay.classList.remove('final');
+  document.getElementById('cp-save-btn').textContent = 'Save & Continue →';
 
   // Restore checkpoint overlay defaults for future reads
   const badge = document.querySelector('.cp-badge');

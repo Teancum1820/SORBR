@@ -175,6 +175,10 @@
   @media (max-width: 480px) {
     .stat-words-total { display: none; }
   }
+  /* Change 7: Show only ETA during active playback (Miller's Law) */
+  #stats-bar[data-reading] span:not(:has(#stat-eta)) {
+    display: none;
+  }
 
   main { position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 
@@ -2958,6 +2962,7 @@ function play() {
   playBtn.textContent = '⏸';
   playBtn.classList.add('active');
   if (!startTime) startTime = Date.now();
+  document.getElementById('stats-bar').dataset.reading = 'true';
   scheduleNext(1);
 }
 
@@ -2967,6 +2972,7 @@ function pause() {
   playBtn.classList.remove('active');
   clearTimeout(advanceTimer);
   advanceTimer = null;
+  delete document.getElementById('stats-bar').dataset.reading;
 }
 
 function togglePlay() { playing ? pause() : play(); }

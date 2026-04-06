@@ -711,7 +711,7 @@
   .btn-export:hover { border-color: var(--accent); color: var(--accent); }
   .btn-export.pdf-btn:hover { border-color: var(--accent3); color: var(--accent3); }
   .btn-export.copy-btn:hover { border-color: #4caf50; color: #4caf50; }
-  .btn-export.bookmark-btn:hover { border-color: #f0c040; color: #f0c040; }
+  .btn-export.sticky-btn:hover { border-color: #72d1a8; color: #72d1a8; }
 
   /* ═══════════════ DONE OVERLAY ═══════════════ */
   #done-overlay {
@@ -801,45 +801,87 @@
 
 
   
-  /* ═══════════════ PRINT PICKER MODAL ═══════════════ */
-  #print-picker-modal {
+  /* ═══════════════ NOTE SELECT MODAL ═══════════════ */
+  #note-select-modal {
     display: none; position: fixed; inset: 0; z-index: 115;
     background: rgba(10,10,10,0.88); backdrop-filter: blur(10px);
     align-items: center; justify-content: center; padding: 20px;
   }
-  #print-picker-modal.show { display: flex; }
+  #note-select-modal.show { display: flex; }
 
-  .pp-card {
+  .ns-card {
     background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px; width: 100%; max-width: 380px;
+    border-radius: 10px; width: 100%; max-width: 420px;
+    max-height: 80vh; display: flex; flex-direction: column;
     box-shadow: 0 12px 48px rgba(0,0,0,0.7);
     animation: slideUp 0.2s ease; overflow: hidden;
   }
-  .pp-header {
+  .ns-header {
     padding: 16px 20px; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
   }
-  .pp-header h3 {
+  .ns-header h3 {
     font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 600; color: var(--text);
   }
-  .pp-options { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .ns-toolbar {
+    padding: 8px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .ns-count { font-size: 11px; color: var(--muted); }
+  .ns-toggle-all-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-size: 11px; padding: 4px 10px; border-radius: 4px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .ns-toggle-all-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  .pp-option {
+  .ns-list {
+    flex: 1; overflow-y: auto; padding: 8px 12px;
+    display: flex; flex-direction: column; gap: 6px;
+    overscroll-behavior: contain;
+  }
+  .ns-list::-webkit-scrollbar { width: 4px; }
+  .ns-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .ns-note-item {
+    display: flex; align-items: flex-start; gap: 10px;
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 7px; padding: 16px 18px;
-    display: flex; align-items: center; gap: 16px;
-    cursor: pointer; text-align: left; transition: border-color 0.15s, background 0.15s;
-    width: 100%;
+    border-radius: 7px; padding: 10px 12px; cursor: pointer;
+    transition: border-color 0.15s;
   }
-  .pp-option:hover { border-color: var(--accent); background: rgba(255,255,255,0.04); }
-  .pp-option:active { transform: scale(0.99); }
+  .ns-note-item:hover { border-color: var(--accent); }
+  .ns-note-item:has(.ns-checkbox:checked) { border-color: var(--accent); }
+  .ns-checkbox { margin-top: 2px; flex-shrink: 0; accent-color: var(--accent); width: 15px; height: 15px; }
+  .ns-note-content { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .ns-note-label {
+    font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 600;
+    color: var(--accent); letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .ns-note-text { font-size: 12px; color: var(--text); line-height: 1.5; }
 
-  .pp-icon { font-size: 28px; flex-shrink: 0; }
-  .pp-label {
-    font-family: 'Lexend', sans-serif; font-size: 14px; font-weight: 600;
-    color: var(--text); display: block; margin-bottom: 3px;
+  .ns-footer {
+    padding: 12px 16px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    flex-shrink: 0;
   }
-  .pp-desc { font-size: 11px; color: var(--muted); display: block; }
+  .btn-ns-cancel {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--muted); font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-size: 12px; padding: 8px 16px; border-radius: 5px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-ns-cancel:hover { border-color: var(--muted); color: var(--text); }
+  .btn-ns-print {
+    background: var(--accent); color: #0f0f0f;
+    border: none; font-family: 'Lexend', sans-serif;
+    font-weight: 700; font-size: 12px; padding: 8px 18px;
+    border-radius: 5px; cursor: pointer; transition: background 0.15s;
+  }
+  .btn-ns-print:hover { background: #dddddd; }
+  .btn-ns-print:disabled { opacity: 0.45; cursor: not-allowed; }
 
   /* ═══════════════ CHAPTER PICKER MODAL ═══════════════ */
   #chapter-modal {
@@ -1263,29 +1305,8 @@
   .qp-controls {
     padding: 10px 12px;
     display: flex; align-items: center;
-    justify-content: space-between; gap: 8px;
-    flex-wrap: wrap; /* wrap on narrow screens */
+    justify-content: flex-end; gap: 8px;
     border-radius: 0 0 8px 8px;
-  }
-
-  .qp-format-group {
-    display: flex; gap: 6px; flex-wrap: wrap;
-  }
-  .qp-format-btn {
-    background: transparent; border: 1px solid var(--border);
-    color: var(--muted); font-family: 'Atkinson Hyperlegible', sans-serif;
-    font-size: 11px; padding: 7px 12px; border-radius: 4px;
-    cursor: pointer; transition: all 0.15s; display: flex;
-    align-items: center; gap: 5px; white-space: nowrap;
-    touch-action: manipulation; min-height: 36px;
-  }
-  .qp-format-btn:hover { border-color: var(--muted); color: var(--text); }
-  .qp-format-btn.active {
-    background: var(--accent); border-color: var(--accent);
-    color: #0f0f0f; font-weight: 700;
-  }
-  .qp-size {
-    font-size: 9px; opacity: 0.7; letter-spacing: 0.03em;
   }
 
   .btn-qp-print {
@@ -1299,11 +1320,8 @@
   }
   .btn-qp-print:hover { background: #dddddd; }
 
-  /* On mobile, stack format buttons and print button full width */
   @media (max-width: 480px) {
-    .qp-controls { flex-direction: column; align-items: stretch; gap: 8px; }
-    .qp-format-group { width: 100%; justify-content: stretch; }
-    .qp-format-btn { flex: 1; justify-content: center; }
+    .qp-controls { justify-content: stretch; }
     .btn-qp-print { width: 100%; text-align: center; padding: 12px; font-size: 13px; }
   }
 
@@ -1619,8 +1637,8 @@
     <div class="tab-panel" id="tab-print">
       <div class="qp-section" style="width:100%;max-width:660px;">
         <div class="qp-header">
-          <span class="qp-label">🔖 Quick Print</span>
-          <span class="qp-desc">Type notes and print them as bookmarks or sticky notes — no reading session needed</span>
+          <span class="qp-label">📝 Quick Print</span>
+          <span class="qp-desc">Type notes and print them as sticky notes — no reading session needed</span>
         </div>
 
         <textarea
@@ -1630,15 +1648,7 @@
         ></textarea>
 
         <div class="qp-controls">
-          <div class="qp-format-group">
-            <button class="qp-format-btn active" id="qp-bookmark-btn" data-mode="bookmark">
-              🔖 Bookmark <span class="qp-size">2 × 6 in</span>
-            </button>
-            <button class="qp-format-btn" id="qp-sticky-btn" data-mode="sticky">
-              📝 Sticky Note <span class="qp-size">3 × 3 in</span>
-            </button>
-          </div>
-          <button class="btn-qp-print" id="qp-print-btn">Print →</button>
+          <button class="btn-qp-print" id="qp-print-btn">📝 Print Sticky Notes →</button>
         </div>
       </div>
     </div>
@@ -1662,7 +1672,7 @@
     </div>
 
     <div class="version-footer">
-      <span>Sorbr v1.8 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
+      <span>Sorbr v1.8.2 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
       <div class="kofi-wrap">
         <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
@@ -1726,24 +1736,21 @@
 
 
 
-<!-- ══ PRINT PICKER MODAL ══ -->
-<div id="print-picker-modal">
-  <div class="pp-card">
-    <div class="pp-header">
-      <h3>Print Notes As…</h3>
-      <button class="btn-close-sidebar" id="pp-close-btn">✕</button>
+<!-- ══ NOTE SELECT MODAL ══ -->
+<div id="note-select-modal">
+  <div class="ns-card">
+    <div class="ns-header">
+      <h3>📝 Print Sticky Notes</h3>
+      <button class="btn-close-sidebar" id="ns-close-btn">✕</button>
     </div>
-    <div class="pp-options">
-      <button class="pp-option" id="pp-bookmark-btn">
-        <span class="pp-icon">🔖</span>
-        <span class="pp-label">Bookmark</span>
-        <span class="pp-desc">2 × 6 inch — slim, fits inside any book</span>
-      </button>
-      <button class="pp-option" id="pp-sticky-btn">
-        <span class="pp-icon">📝</span>
-        <span class="pp-label">Sticky Note</span>
-        <span class="pp-desc">3 × 3 inch — one note per square</span>
-      </button>
+    <div class="ns-toolbar">
+      <span class="ns-count" id="ns-count">0 selected</span>
+      <button class="ns-toggle-all-btn" id="ns-toggle-all-btn">Deselect All</button>
+    </div>
+    <div class="ns-list" id="ns-list"></div>
+    <div class="ns-footer">
+      <button class="btn-ns-cancel" id="ns-cancel-btn">Cancel</button>
+      <button class="btn-ns-print" id="ns-print-btn">Print Selected →</button>
     </div>
   </div>
 </div>
@@ -1810,7 +1817,7 @@
     <button class="btn-export copy-btn"     id="copy-notes-btn">⎘ Copy</button>
     <button class="btn-export"              id="export-txt-btn">⬇ TXT</button>
     <button class="btn-export pdf-btn"      id="export-pdf-btn">⬇ PDF</button>
-    <button class="btn-export bookmark-btn" id="bookmark-btn">🔖 Print</button>
+    <button class="btn-export sticky-btn" id="bookmark-btn">📝 Print</button>
     <button class="btn-export"              id="clear-notes-btn">✕ Clear</button>
   </div>
 </div>
@@ -2185,7 +2192,8 @@ function renderDetailNotes(book) {
   exportRow.innerHTML = `
     <button class="bdo-export-btn" onclick="exportDetailTxt()">⬇ TXT</button>
     <button class="bdo-export-btn" onclick="exportDetailPdf()">⬇ PDF</button>
-    <button class="bdo-export-btn" onclick="copyDetailNotes()">⎘ Copy</button>`;
+    <button class="bdo-export-btn" onclick="copyDetailNotes()">⎘ Copy</button>
+    <button class="bdo-export-btn" onclick="printDetailNotes()">📝 Sticky Notes</button>`;
 }
 
 function closeBookDetail() {
@@ -2299,6 +2307,12 @@ async function exportDetailPdf() {
   exportPDF();
   notes              = savedNotes;
   loadedTitle        = savedTitle;
+}
+
+async function printDetailNotes() {
+  const book = await dbGet(detailBookId);
+  if (!book) return;
+  openNoteSelectModal(book.notes || [], book.title);
 }
 
 // Auto-save progress every 30 seconds while reading
@@ -3777,51 +3791,74 @@ async function copyNotes() {
   }
 }
 // ═══════════════════════════════════════════
-//  PRINT PICKER  (from reader notes sidebar)
+//  NOTE SELECT MODAL  (multi-select sticky note printing)
 // ═══════════════════════════════════════════
-const printPickerModal = document.getElementById('print-picker-modal');
-const ppCloseBtn       = document.getElementById('pp-close-btn');
-const ppBookmarkBtn    = document.getElementById('pp-bookmark-btn');
-const ppStickyBtn      = document.getElementById('pp-sticky-btn');
+const noteSelectModal = document.getElementById('note-select-modal');
+let nsSourceNotes = [];
+let nsTitle = '';
 
-bookmarkBtn.addEventListener('click', () => {
-  const written = notes.filter(n => !n.skipped && n.summary.trim());
+function openNoteSelectModal(sourceNotes, title) {
+  const written = (sourceNotes || []).filter(n => !n.skipped && n.summary && n.summary.trim());
   if (!written.length) { showToast('No notes to print.', 'err'); return; }
-  printPickerModal.classList.add('show');
+  nsSourceNotes = written;
+  nsTitle = title || 'Notes';
+
+  const nsList = document.getElementById('ns-list');
+  nsList.innerHTML = written.map((n, i) => `
+    <label class="ns-note-item" for="ns-note-${i}">
+      <input type="checkbox" id="ns-note-${i}" class="ns-checkbox" data-idx="${i}" checked>
+      <div class="ns-note-content">
+        <div class="ns-note-label">${n.isFinal ? '★ Final Summary' : `Checkpoint ${n.checkpoint} · ${n.pct}%`}</div>
+        <div class="ns-note-text">${esc(n.summary.slice(0, 140))}${n.summary.length > 140 ? '…' : ''}</div>
+      </div>
+    </label>
+  `).join('');
+
+  updateNsCount();
+  noteSelectModal.classList.add('show');
+}
+
+function closeNoteSelectModal() {
+  noteSelectModal.classList.remove('show');
+}
+
+function updateNsCount() {
+  const total   = document.querySelectorAll('.ns-checkbox').length;
+  const checked = document.querySelectorAll('.ns-checkbox:checked').length;
+  document.getElementById('ns-count').textContent = `${checked} of ${total} selected`;
+  document.getElementById('ns-toggle-all-btn').textContent = checked === total ? 'Deselect All' : 'Select All';
+  document.getElementById('ns-print-btn').disabled = checked === 0;
+}
+
+document.getElementById('ns-close-btn').addEventListener('click', closeNoteSelectModal);
+document.getElementById('ns-cancel-btn').addEventListener('click', closeNoteSelectModal);
+noteSelectModal.addEventListener('click', e => { if (e.target === noteSelectModal) closeNoteSelectModal(); });
+
+document.getElementById('ns-toggle-all-btn').addEventListener('click', () => {
+  const boxes = document.querySelectorAll('.ns-checkbox');
+  const allChecked = [...boxes].every(b => b.checked);
+  boxes.forEach(b => { b.checked = !allChecked; });
+  updateNsCount();
 });
-ppCloseBtn.addEventListener('click', () => printPickerModal.classList.remove('show'));
-printPickerModal.addEventListener('click', e => {
-  if (e.target === printPickerModal) printPickerModal.classList.remove('show');
+
+document.getElementById('ns-list').addEventListener('change', updateNsCount);
+
+document.getElementById('ns-print-btn').addEventListener('click', () => {
+  const selected = [...document.querySelectorAll('.ns-checkbox:checked')]
+    .map(b => nsSourceNotes[parseInt(b.dataset.idx)]);
+  if (!selected.length) { showToast('Select at least one note.', 'err'); return; }
+  closeNoteSelectModal();
+  openPrintWindow('sticky', selected, nsTitle);
 });
-ppBookmarkBtn.addEventListener('click', () => {
-  printPickerModal.classList.remove('show');
-  openPrintWindow('bookmark', notes, loadedTitle);
-});
-ppStickyBtn.addEventListener('click', () => {
-  printPickerModal.classList.remove('show');
-  openPrintWindow('sticky', notes, loadedTitle);
-});
+
+// ─── Print button in notes sidebar ──────────────────────────────────────────
+bookmarkBtn.addEventListener('click', () => openNoteSelectModal(notes, loadedTitle));
 
 // ═══════════════════════════════════════════
 //  QUICK PRINT TAB  (standalone, no session needed)
 // ═══════════════════════════════════════════
-let qpMode = 'bookmark';
-
-const qpBookmarkBtn = document.getElementById('qp-bookmark-btn');
-const qpStickyBtn   = document.getElementById('qp-sticky-btn');
-const qpPrintBtn    = document.getElementById('qp-print-btn');
-const qpInput       = document.getElementById('qp-input');
-
-qpBookmarkBtn.addEventListener('click', () => {
-  qpMode = 'bookmark';
-  qpBookmarkBtn.classList.add('active');
-  qpStickyBtn.classList.remove('active');
-});
-qpStickyBtn.addEventListener('click', () => {
-  qpMode = 'sticky';
-  qpStickyBtn.classList.add('active');
-  qpBookmarkBtn.classList.remove('active');
-});
+const qpPrintBtn = document.getElementById('qp-print-btn');
+const qpInput    = document.getElementById('qp-input');
 
 qpPrintBtn.addEventListener('click', () => {
   const raw = qpInput.value.trim();
@@ -3837,19 +3874,19 @@ qpPrintBtn.addEventListener('click', () => {
     isFinal: i === blocks.length - 1,
   }));
 
-  openPrintWindow(qpMode, fakeNotes, 'My Notes');
+  openNoteSelectModal(fakeNotes, 'My Notes');
 });
 
 // ═══════════════════════════════════════════
 //  OPEN PRINT WINDOW  (shared by both paths)
 // ═══════════════════════════════════════════
 function openPrintWindow(mode, sourceNotes, title) {
+  // mode is always 'sticky' — bookmark format has been removed
   const written = (sourceNotes || []).filter(n => !n.skipped && n.summary && n.summary.trim());
   if (!written.length) { showToast('No notes to print.', 'err'); return; }
 
   const date      = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const safeTitle = String(title || 'Notes').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const isBookmark = mode === 'bookmark';
 
   const noteBlocksHTML = written.map(n => {
     const label = n.isFinal ? '★ Final' : `§${n.checkpoint} (${n.pct}%)`;
@@ -3857,14 +3894,13 @@ function openPrintWindow(mode, sourceNotes, title) {
     return `<div class="note-block"><span class="note-cp">${label}</span><span class="note-body">${body}</span></div>`;
   }).join('');
 
-  // ── Dimensions ──────────────────────────────────────────────
-  // Bookmark: 51 × 152 mm  |  Sticky note: 76 × 76 mm
-  const W = isBookmark ? 51  : 76;   // mm
-  const H = isBookmark ? 152 : 76;   // mm
+  // Sticky note: 76 × 76 mm
+  const W = 76;
+  const H = 76;
 
   // ── Adaptive layout script ──────────────────────────────────
   // Runs inside the print window: tries shrinking font until everything fits,
-  // then switches to 2-col layout if still overflowing (sticky only).
+  // then switches to 2-col layout if still overflowing.
   const adaptScript = `
   (function() {
     const notes   = document.getElementById('notes-inner');
@@ -3876,8 +3912,8 @@ function openPrintWindow(mode, sourceNotes, title) {
     const avail   = cardH - titleH - footH - 4; // 4px buffer
 
     // Step 1: try shrinking font size in 0.5pt steps down to a floor
-    const floor = ${isBookmark ? '5.5' : '5'};
-    let fs = ${isBookmark ? '8.5' : '7.5'};
+    const floor = 5;
+    let fs = 7.5;
     function setFont(v) {
       notes.style.fontSize = v + 'pt';
       notes.style.lineHeight = (v <= 6 ? 1.3 : 1.45).toString();
@@ -3888,14 +3924,12 @@ function openPrintWindow(mode, sourceNotes, title) {
       setFont(fs);
     }
 
-    ${isBookmark ? '' : `
-    // Step 2: if still overflowing on sticky, switch to 2-col layout
+    // Step 2: if still overflowing, switch to 2-col layout
     if (notes.scrollHeight > avail) {
-      wrapper.style.columns        = '2';
-      wrapper.style.columnGap      = '2mm';
-      wrapper.style.columnFill     = 'auto';
-      wrapper.style.height         = avail + 'px';
-      // Reset font and retry shrinking in 2-col
+      wrapper.style.columns    = '2';
+      wrapper.style.columnGap  = '2mm';
+      wrapper.style.columnFill = 'auto';
+      wrapper.style.height     = avail + 'px';
       fs = 7.5;
       setFont(fs);
       while (notes.scrollHeight > avail && fs > floor) {
@@ -3903,7 +3937,6 @@ function openPrintWindow(mode, sourceNotes, title) {
         setFont(fs);
       }
     }
-    `}
   })();
   `;
 
@@ -3911,7 +3944,7 @@ function openPrintWindow(mode, sourceNotes, title) {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sorbr ${isBookmark ? 'Bookmark' : 'Sticky Note'}</title>
+<title>Sorbr Sticky Note</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@600;700&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -3932,8 +3965,8 @@ function openPrintWindow(mode, sourceNotes, title) {
     page-break-inside: avoid; break-inside: avoid;
   }
   .card-title {
-    font-family: 'Lexend', sans-serif; font-size: ${isBookmark ? '9' : '7.5'}pt; font-weight: 700;
-    color: #111; padding: ${isBookmark ? '3.5mm 4mm 3mm' : '2.5mm 3mm 2mm'};
+    font-family: 'Lexend', sans-serif; font-size: 7.5pt; font-weight: 700;
+    color: #111; padding: 2.5mm 3mm 2mm;
     border-bottom: 1.5px solid #222;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     flex-shrink: 0;
@@ -3942,10 +3975,10 @@ function openPrintWindow(mode, sourceNotes, title) {
     flex: 1; overflow: hidden; min-height: 0;
   }
   #notes-inner {
-    padding: ${isBookmark ? '2.5mm 4mm' : '2mm 3mm'};
-    font-size: ${isBookmark ? '8.5' : '7.5'}pt;
+    padding: 2mm 3mm;
+    font-size: 7.5pt;
     line-height: 1.45;
-    display: flex; flex-direction: column; gap: ${isBookmark ? '2mm' : '1.5mm'};
+    display: flex; flex-direction: column; gap: 1.5mm;
   }
   .note-block { display: flex; flex-direction: column; gap: 0.4mm; break-inside: avoid; }
   .note-cp {
@@ -3961,7 +3994,7 @@ function openPrintWindow(mode, sourceNotes, title) {
 </style>
 </head>
 <body>
-  <div class="page-label">${isBookmark ? 'Bookmark (2 × 6 in)' : 'Sticky Note (3 × 3 in)'}</div>
+  <div class="page-label">Sticky Note (3 × 3 in)</div>
   <div class="card">
     <div class="card-title">${safeTitle}</div>
     <div id="notes-wrapper">
@@ -3982,11 +4015,8 @@ function openPrintWindow(mode, sourceNotes, title) {
   if (!win) { showToast('Allow popups to print', 'err'); return; }
   win.document.write(html);
   win.document.close();
-  showToast(`Printing ${isBookmark ? 'bookmark' : 'sticky note'}…`, 'ok');
+  showToast('Printing sticky note…', 'ok');
 }
-
-// Alias kept for compatibility
-function printBookmark() { openPrintWindow('bookmark', notes, loadedTitle); }
 
 // ═══════════════════════════════════════════
 //  CONTROLS
@@ -4013,7 +4043,6 @@ copyNotesBtn.addEventListener('click', copyNotes);
 exportTxtBtn.addEventListener('click', exportTxt);
 exportPdfBtn.addEventListener('click', exportPDF);
 clearNotesBtn.addEventListener('click', () => { notes = []; updateNotesUI(); showToast('Notes cleared.'); });
-bookmarkBtn.addEventListener('click', printBookmark);
 
 // ── Tap word-stage to play/pause on mobile ──
 document.getElementById('word-stage').addEventListener('click', (e) => {
@@ -4052,10 +4081,8 @@ summaryInput.addEventListener('keydown', e => {
 doneRestart.addEventListener('click', () => { doneOverlay.style.display = 'none'; resetReader(); });
 doneNotes.addEventListener('click',   () => { doneOverlay.style.display = 'none'; notesSidebar.classList.add('open'); });
 donePrint.addEventListener('click', () => {
-  const written = notes.filter(n => !n.skipped && n.summary.trim());
-  if (!written.length) { showToast('No notes to print yet.', 'err'); return; }
   doneOverlay.style.display = 'none';
-  printPickerModal.classList.add('show');
+  openNoteSelectModal(notes, loadedTitle);
 });
 doneNew.addEventListener('click',     () => { doneOverlay.style.display = 'none'; goBack(); });
 

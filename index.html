@@ -1586,6 +1586,10 @@
           </div>
         </div>
 
+        <button id="settings-toggle" class="btn-sm" style="align-self:flex-start;margin-top:-4px;">⚙ More settings</button>
+
+        <div id="advanced-settings" style="display:none;">
+
         <!-- Checkpoints -->
         <div class="settings-section">
           <span class="settings-label">Comprehension Checkpoints</span>
@@ -1627,6 +1631,8 @@
             <button class="color-swatch"        data-color="gold"     style="background:#f0c040" title="Gold"></button>
           </div>
         </div>
+
+        </div><!-- /#advanced-settings -->
 
       </div>
 
@@ -4026,6 +4032,23 @@ chunkSlider.addEventListener('input', () => {
   chunkSize = parseInt(chunkSlider.value);
   chunkLabel.textContent = chunkSize === 1 ? '1 word' : `${chunkSize} words`;
 });
+
+// Settings toggle (Hick's Law — hide advanced options)
+(function() {
+  const toggleBtn = document.getElementById('settings-toggle');
+  const advEl     = document.getElementById('advanced-settings');
+  const stored    = localStorage.getItem('sorbr-settings-open');
+  if (stored === 'true') {
+    advEl.style.display = 'block';
+    toggleBtn.textContent = '⚙ Fewer settings';
+  }
+  toggleBtn.addEventListener('click', () => {
+    const open = advEl.style.display !== 'none';
+    advEl.style.display = open ? 'none' : 'block';
+    toggleBtn.textContent = open ? '⚙ More settings' : '⚙ Fewer settings';
+    localStorage.setItem('sorbr-settings-open', String(!open));
+  });
+})();
 
 startBtn.addEventListener('click', startReading);
 playBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); });

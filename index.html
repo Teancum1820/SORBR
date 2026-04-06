@@ -149,6 +149,23 @@
     .logo img { height: 34px; }
   }
 
+  /* ── Header icon buttons (Library / Print) ── */
+  .header-icon-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: border-color 0.2s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .header-icon-btn:hover { border-color: var(--accent); }
+  @media (max-width: 480px) {
+    .header-icon-btn { padding: 5px 8px; font-size: 14px; }
+  }
+
   /* ── Theme toggle ── */
   .theme-toggle {
     background: var(--surface); border: 1px solid var(--border);
@@ -222,14 +239,14 @@
 
   .upload-zone {
     width: 100%; max-width: 660px;
-    border: 2px dashed var(--border); border-radius: 4px; padding: 16px;
+    border: 2px dashed var(--border); border-radius: 4px; padding: 18px;
     text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
     font-size: 13px; color: var(--muted);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
   }
-  /* Hide drag-and-drop hint on mobile — they'll tap instead */
+  /* Tighten upload zone on mobile */
   @media (hover: none) {
     .upload-zone { padding: 14px; }
-    .upload-zone strong { display: none; }
   }
   .upload-zone:hover { border-color: var(--accent); background: rgba(255,255,255,0.03); }
   .upload-zone.drag-over { border-color: var(--accent); background: rgba(255,255,255,0.05); }
@@ -286,9 +303,9 @@
     background: var(--accent);
     opacity: 1;
     width: 3px;
-    height: 10px;
+    height: 12px;
     border-radius: 2px;
-    box-shadow: 0 0 4px var(--accent);
+    box-shadow: 0 0 6px var(--accent);
   }
 
   #word-stage {
@@ -309,9 +326,15 @@
   }
   #current-word .orp { color: var(--muted); }
 
+  #word-stage {
+    transition: background 0.3s;
+  }
+  #word-stage.paused {
+    background: rgba(255,255,255,0.02);
+  }
   #pause-dot {
-    position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%);
-    width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+    position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%);
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
     opacity: 0; transition: opacity 0.15s;
   }
   #pause-dot.visible { opacity: 1; }
@@ -362,10 +385,15 @@
   }
   #play-btn:hover { background: #dddddd; }
 
-  .wpm-control { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); }
+  .wpm-control {
+    display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 10px;
+  }
   #wpm-display {
-    font-size: 17px; font-weight: 700; color: var(--accent);
-    font-family: 'Lexend', sans-serif; min-width: 44px; text-align: center;
+    font-size: 26px; font-weight: 700; color: var(--accent);
+    font-family: 'Lexend', sans-serif; min-width: 56px; text-align: center;
+    line-height: 1;
   }
 
   .btn-sm {
@@ -393,8 +421,8 @@
     .ctrl-btn { width: 36px; height: 36px; font-size: 13px; }
     #play-btn  { width: 44px; height: 44px; font-size: 16px; }
     .ctrl-group { gap: 3px; }
-    #wpm-display { font-size: 15px; min-width: 38px; }
-    .wpm-control { gap: 3px; }
+    #wpm-display { font-size: 20px; min-width: 44px; }
+    .wpm-control { gap: 3px; padding: 4px 7px; }
     .btn-sm { font-size: 9px; padding: 5px 7px; min-height: 30px; }
   }
   @media (max-width: 360px) {
@@ -557,21 +585,23 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* Two-panel card */
+  /* Two-panel card — stacks vertically, note panel dominant */
   .cp-card {
     background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px; width: 100%; max-width: 880px;
-    display: flex; flex-direction: row;
+    border-radius: 10px; width: 100%; max-width: 600px;
+    display: flex; flex-direction: column;
     box-shadow: 0 8px 40px rgba(0,0,0,0.6);
     animation: slideUp 0.22s ease;
     max-height: 90vh; overflow: hidden;
   }
 
-  /* Left panel — scrollable text review */
+  /* Top panel — compact scrollable text review */
   .cp-text-panel {
-    flex: 1; min-width: 0;
-    border-right: 1px solid var(--border);
+    flex: 0 0 auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
     display: flex; flex-direction: column;
+    max-height: 140px;
   }
   .cp-text-header {
     padding: 18px 20px 14px;
@@ -612,9 +642,9 @@
   .cp-text-scroll .cp-dim { opacity: 0.45; }
   .cp-text-scroll .cp-paragraph { margin-bottom: 1em; display: block; }
 
-  /* Right panel — note input */
+  /* Bottom panel — note input, full width, dominant */
   .cp-note-panel {
-    width: 320px; flex-shrink: 0;
+    width: 100%; flex: 1;
     display: flex; flex-direction: column;
     padding: 20px;
     gap: 14px;
@@ -663,11 +693,10 @@
     content: '★ ';
   }
 
-  /* Mobile: stack panels */
+  /* Mobile: tighten the text panel height */
   @media (max-width: 640px) {
-    .cp-card { flex-direction: column; max-height: 92vh; }
-    .cp-text-panel { max-height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
-    .cp-note-panel { width: 100%; }
+    .cp-card { max-height: 92vh; }
+    .cp-text-panel { max-height: 100px; }
   }
 
   /* ═══════════════ NOTES SIDEBAR ═══════════════ */
@@ -1507,17 +1536,17 @@
     font-family: var(--font-body);
   }
 
-  /* Change 3: Simplify mobile controls bar (Fitts's Law) */
+  /* Simplify mobile controls bar (Fitts's Law) — keep skip-back for recovery */
   @media (max-width: 480px) {
     #restart-btn,
-    #skip-back-btn,
     #skip-fwd-btn,
     #back-btn {
       display: none;
     }
+    /* #skip-back-btn stays visible — it's the most needed recovery control */
     #controls {
-      justify-content: center;
-      gap: 12px;
+      justify-content: space-between;
+      padding: 8px 20px;
     }
   }
 </style>
@@ -1532,6 +1561,8 @@
     <span class="stat-hide-while-playing stat-words-total">WORDS: <b id="stat-total-display">0</b></span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+    <button class="header-icon-btn" id="library-btn" title="Your library" onclick="showPanel('library')">📚</button>
+    <button class="header-icon-btn" id="print-btn" title="Quick print" onclick="showPanel('print')">📝</button>
     <button class="cloud-btn" id="cloud-btn" title="Cloud sync / Sign in">
       <span class="cloud-btn-icon" id="cloud-icon">☁</span>
       <span class="cloud-btn-label" id="cloud-label">Sign In</span>
@@ -1586,13 +1617,6 @@
       <div class="panel-tagline">Speed Reader with Comprehension Checkpoints</div>
     </div>
 
-    <!-- Tab bar -->
-    <div class="tab-bar">
-      <button class="tab-btn active" id="tab-read-btn" onclick="switchTab('read')">📖 Read</button>
-      <button class="tab-btn" id="tab-library-btn" onclick="switchTab('library')">📚 Library</button>
-      <button class="tab-btn" id="tab-print-btn" onclick="switchTab('print')">📝 Print</button>
-    </div>
-
     <!-- READ TAB -->
     <div class="tab-panel active" id="tab-read">
       <textarea id="text-input" placeholder="Paste any text here…"></textarea>
@@ -1600,7 +1624,8 @@
       <div class="upload-zone" id="drop-zone">
         <input type="file" id="pdf-input" accept=".pdf,.txt,.epub" />
         <span class="upload-icon">📄</span>
-        Drop a <strong>.pdf</strong>, <strong>.epub</strong> or <strong>.txt</strong> file here, or <u>tap to browse</u>
+        <span style="font-weight:600;">PDF, EPUB, or TXT</span>
+        <span style="color:var(--muted);font-size:11px;">tap to browse or drag &amp; drop</span>
       </div>
 
       <!-- Settings card -->
@@ -1727,7 +1752,7 @@
   <!-- ══ READER PANEL ══ -->
   <div id="reader-panel">
     <div class="reader-header">
-      <button class="reader-back-btn" id="reader-back-btn">← Back</button>
+      <button class="reader-back-btn" id="reader-back-btn">← Save &amp; Exit</button>
       <span class="reader-title" id="reader-title"></span>
       <button class="reader-back-btn" id="more-controls-btn" title="More controls" aria-label="More controls" style="font-size:16px;padding:5px 10px;min-width:44px;">···</button>
     </div>
@@ -1740,6 +1765,19 @@
       <div id="current-word">Ready</div>
       <div id="pause-dot"></div>
       <div id="punc-label"></div>
+      <div id="paused-label" style="
+        position: absolute;
+        bottom: -36px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 9px;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        opacity: 0;
+        transition: opacity 0.2s;
+        pointer-events: none;
+      ">paused</div>
     </div>
 
     <div id="context-strip">
@@ -1764,7 +1802,7 @@
         <button class="ctrl-btn" id="wpm-up">+</button>
       </div>
       <div class="ctrl-group">
-        <button class="btn-sm" id="back-btn">← New Text</button>
+        <button class="btn-sm" id="back-btn">← Save &amp; Exit</button>
         <button class="btn-sm purple" id="notes-toggle-btn">📝 <span class="notes-label">Notes</span><span id="notes-count"></span></button>
       </div>
     </div>
@@ -1773,7 +1811,7 @@
       <button class="ctrl-btn" id="restart-btn2" title="Restart">↩</button>
       <button class="ctrl-btn" id="skip-back-btn2" title="Back 10 words">«</button>
       <button class="ctrl-btn" id="skip-fwd-btn2" title="Forward 10 words">»</button>
-      <button class="btn-sm" id="back-btn2">← New text</button>
+      <button class="btn-sm" id="back-btn2">← Save &amp; Exit</button>
     </div>
 
     <div class="key-hint">
@@ -1827,26 +1865,19 @@
 <!-- ══ CHECKPOINT OVERLAY ══ -->
 <div id="checkpoint-overlay">
   <div class="cp-card">
-    <!-- Left: scrollable text review -->
+    <!-- Top: compact scrollable text review -->
     <div class="cp-text-panel">
       <div class="cp-text-header">
         <div class="cp-badge">✦ Checkpoint <span id="cp-number">1</span></div>
         <h3>Section <b id="cp-section-num">1</b> complete &mdash; <b id="cp-words-read">0</b> of <b id="cp-total-words">0</b> words</h3>
-        <p>Scroll to review what you just read, then write your summary →</p>
       </div>
       <div class="cp-text-scroll" id="cp-text-scroll"></div>
     </div>
 
-    <!-- Right: note input -->
+    <!-- Bottom: note input, dominant -->
     <div class="cp-note-panel">
-      <div class="cp-note-title">
-        What's the key idea?
-        <span>Write it in your own words — no looking back needed.</span>
-      </div>
-      <textarea id="summary-input" placeholder="The author argues…&#10;The main point is…&#10;This section covers…"></textarea>
-      <div class="cp-hint">
-        <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to save &amp; continue
-      </div>
+      <div class="cp-note-title">What's the key idea?</div>
+      <textarea id="summary-input" placeholder="The main idea here was…&#10;The key thing I want to remember…&#10;This connects to…"></textarea>
       <div class="cp-actions">
         <button class="btn-cp primary" id="cp-save-btn">Save &amp; Continue →</button>
         <div style="text-align:center;margin-top:6px;">
@@ -1884,10 +1915,12 @@
   <div id="done-best-note" style="display:none;max-width:480px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-size:13px;line-height:1.8;color:var(--text);margin-bottom:16px;text-align:left;"></div>
   <p id="done-stats" style="font-size:12px;color:var(--muted);"></p>
   <div class="done-btns">
-    <button class="btn-done"           id="done-restart">Read again</button>
-    <button class="btn-done purple"    id="done-notes">View all notes</button>
-    <button class="btn-done secondary" id="done-print">🖨 Print notes</button>
-    <button class="btn-done secondary" id="done-new">New text</button>
+    <button class="btn-done purple" id="done-notes">View My Notes →</button>
+    <button class="btn-done" id="done-restart">Read Again</button>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:4px;">
+      <button class="btn-done secondary" id="done-print">🖨 Print Notes</button>
+      <button class="btn-done secondary" id="done-new">New Text</button>
+    </div>
   </div>
 </div>
 
@@ -1970,13 +2003,16 @@ const chunkLabel        = document.getElementById('chunk-label');
 const checkpointSelect  = document.getElementById('checkpoint-select');
 const startBtn          = document.getElementById('start-btn');
 
-// ── Tab switching ──
-function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+// ── Panel switching (replaces tab switching) ──
+function showPanel(panel) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + tab + '-btn').classList.add('active');
-  document.getElementById('tab-' + tab).classList.add('active');
-  if (tab === 'library') renderLibrary();
+  document.getElementById('tab-' + panel).classList.add('active');
+  if (panel === 'library') renderLibrary();
+}
+
+// Legacy alias used by chapter picker and other internal callers
+function switchTab(tab) {
+  showPanel(tab);
 }
 
 // ═══════════════════════════════════════════
@@ -2766,25 +2802,34 @@ function computeCheckpoints(tokens, interval) {
   if (!interval || tokens.length === 0) return [];
   const results = [];
   let target = interval;
-  const LOOK = 50;
+  const LOOK_BACK = 40; // scan backwards this many words to find a sentence end
 
   while (target < tokens.length) {
-    const limit = Math.min(target + LOOK, tokens.length - 1);
+    // First: look backward from target to find the nearest sentence end
     let best = -1;
+    const lookBackStart = Math.max(0, target - LOOK_BACK);
 
-    // 1st preference: paragraph break (fire just before it)
-    for (let i = target; i <= limit; i++) {
-      if (tokens[i].paraBreak) { best = i - 1; break; }
-    }
-    // 2nd preference: sentence end
-    if (best < 0) {
-      for (let i = target; i <= limit; i++) {
-        if (tokens[i].sentenceEnd) { best = i; break; }
+    // Scan backwards for sentence end (period, !, ?)
+    for (let i = target; i >= lookBackStart; i--) {
+      if (tokens[i].sentenceEnd) {
+        best = i;
+        break;
       }
     }
-    // Fallback
+
+    // If no sentence end found looking back, look forward a small amount (max 8 words)
+    if (best < 0) {
+      const lookForwardLimit = Math.min(target + 8, tokens.length - 1);
+      for (let i = target; i <= lookForwardLimit; i++) {
+        if (tokens[i].sentenceEnd) {
+          best = i;
+          break;
+        }
+      }
+    }
+
+    // Hard fallback to exact target if no punctuation found either direction
     if (best < 0) best = target;
-    if (best < 0) best = 0;
 
     results.push(best);
     target = best + interval + 1;
@@ -2838,6 +2883,24 @@ function buildMarkers() {
     m.dataset.pos = pos;
     cpMarkersEl.appendChild(m);
   });
+  // Add floating ETA label for next checkpoint
+  let cpLabel = document.getElementById('next-cp-label');
+  if (!cpLabel) {
+    cpLabel = document.createElement('div');
+    cpLabel.id = 'next-cp-label';
+    cpLabel.style.cssText = `
+      position: absolute;
+      top: -18px;
+      font-size: 9px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      transform: translateX(-50%);
+      white-space: nowrap;
+      pointer-events: none;
+    `;
+    cpMarkersEl.appendChild(cpLabel);
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -2863,12 +2926,27 @@ function renderWord() {
 
   document.querySelectorAll('.cp-marker').forEach(m => {
     m.classList.toggle('passed', parseInt(m.dataset.pos) <= idx);
+    m.classList.remove('next');
   });
-  // Highlight the next upcoming checkpoint marker (Von Restorff)
-  document.querySelectorAll('.cp-marker.next').forEach(m => m.classList.remove('next'));
-  const upcoming = [...document.querySelectorAll('.cp-marker:not(.passed)')]
+  // Highlight the next upcoming checkpoint marker and show ETA
+  const upcomingMarker = [...document.querySelectorAll('.cp-marker:not(.passed)')]
     .sort((a, b) => parseInt(a.dataset.pos) - parseInt(b.dataset.pos))[0];
-  if (upcoming) upcoming.classList.add('next');
+  if (upcomingMarker) {
+    upcomingMarker.classList.add('next');
+    const nextPos = parseInt(upcomingMarker.dataset.pos);
+    const wordsUntilNext = nextPos - idx;
+    const secsUntilNext = Math.ceil(wordsUntilNext / wpm * 60);
+    const nextLabel = document.getElementById('next-cp-label');
+    if (nextLabel) {
+      nextLabel.textContent = secsUntilNext < 60
+        ? `checkpoint in ${secsUntilNext}s`
+        : `checkpoint in ${Math.ceil(secsUntilNext/60)}m`;
+      nextLabel.style.left = upcomingMarker.style.left;
+    }
+  } else {
+    const nextLabel = document.getElementById('next-cp-label');
+    if (nextLabel) nextLabel.textContent = '';
+  }
 
   statPct.textContent = Math.round(((idx + 1) / words.length) * 100) + '%';
   const rem = Math.ceil((words.length - idx) / wpm * 60);
@@ -2898,45 +2976,12 @@ function advance() {
     return;
   }
 
-  // Checkpoint reached — but wait for the current sentence to end
+  // After rendering current word, check if we've hit a checkpoint
   if (nextCpIdx < checkpointIndices.length && idx >= checkpointIndices[nextCpIdx]) {
-    // Keep advancing until we hit a sentence-ending word (or run 30 words past, whichever first)
-    const cpWordIdx = checkpointIndices[nextCpIdx];
-    const scanLimit = Math.min(idx + 30, words.length - 1);
-    let sentenceEndIdx = -1;
-    for (let s = idx; s <= scanLimit; s++) {
-      if (tokensMeta[s] && tokensMeta[s].sentenceEnd) { sentenceEndIdx = s; break; }
-    }
-
-    if (sentenceEndIdx === -1 || idx >= sentenceEndIdx) {
-      // Already at or past a sentence end — fire after a short delay
-      nextCpIdx++;
-      renderWord();
-      scheduleNext(1);
-      // Delay checkpoint popup: wait for the current word's display time + 600ms buffer
-      const delayMs = Math.round(60000 / wpm) + 650;
-      setTimeout(() => { pause(); showCheckpoint(); }, delayMs);
-      return;
-    }
-
-    // Not yet at sentence end — keep playing normally; re-check next advance
+    nextCpIdx++;
     renderWord();
-    const lastWord = words[Math.min(idx + chunkSize - 1, words.length - 1)];
-    const { mult, label } = getPuncInfo(lastWord);
-    if (mult > 1) {
-      clearTimeout(puncDotTimer);
-      pauseDot.classList.add('visible');
-      puncDotTimer = setTimeout(() => pauseDot.classList.remove('visible'),
-        Math.round(60000 / wpm * mult * 0.6));
-      if (label) {
-        clearTimeout(puncLabelTimer);
-        puncLabel.textContent = label;
-        puncLabel.classList.add('show');
-        puncLabelTimer = setTimeout(() => puncLabel.classList.remove('show'),
-          Math.round(60000 / wpm * mult * 0.6));
-      }
-    }
-    scheduleNext(mult);
+    // Small pause so user sees the final word before overlay
+    setTimeout(() => { pause(); showCheckpoint(); }, 320);
     return;
   }
 
@@ -2971,6 +3016,8 @@ function play() {
   playBtn.classList.add('active');
   if (!startTime) startTime = Date.now();
   document.getElementById('stats-bar').classList.add('playing');
+  document.getElementById('word-stage').classList.remove('paused');
+  document.getElementById('paused-label').style.opacity = '0';
   scheduleNext(1);
 }
 
@@ -2981,6 +3028,8 @@ function pause() {
   clearTimeout(advanceTimer);
   advanceTimer = null;
   document.getElementById('stats-bar').classList.remove('playing');
+  document.getElementById('word-stage').classList.add('paused');
+  document.getElementById('paused-label').style.opacity = '1';
 }
 
 function togglePlay() { playing ? pause() : play(); }
@@ -3047,6 +3096,19 @@ function showCheckpoint() {
     cpTextScroll.scrollTop = cpTextScroll.scrollHeight;
   });
 
+  // Add "Show full section" toggle above text scroll
+  const existingShowMore = cpTextScroll.parentElement.querySelector('.cp-show-more');
+  if (existingShowMore) existingShowMore.remove();
+  const showMoreBtn = document.createElement('button');
+  showMoreBtn.className = 'cp-show-more';
+  showMoreBtn.textContent = '↑ Show full section';
+  showMoreBtn.style.cssText = 'background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:6px 20px;width:100%;text-align:left;letter-spacing:.05em;';
+  showMoreBtn.onclick = () => {
+    cpTextScroll.style.maxHeight = '300px';
+    showMoreBtn.remove();
+  };
+  cpTextScroll.parentElement.insertBefore(showMoreBtn, cpTextScroll);
+
   summaryInput.value = '';
   checkpointOverlay.classList.add('show');
   setTimeout(() => summaryInput.focus(), 80);
@@ -3074,13 +3136,9 @@ function showFinalCheckpoint() {
   const h3 = document.querySelector('.cp-text-header h3');
   if (h3) h3.innerHTML = `Reading complete &mdash; <b>${words.length}</b> of <b>${words.length}</b> words`;
 
-  // Update subtext
-  const sub = document.querySelector('.cp-text-header p');
-  if (sub) sub.textContent = 'Review the final section, then write your overall summary →';
-
   // Update note title
   const noteTitle = document.querySelector('.cp-note-title');
-  if (noteTitle) noteTitle.innerHTML = `Overall summary <span>What did you take away from this reading?</span>`;
+  if (noteTitle) noteTitle.textContent = 'Overall summary';
 
   cpTextScroll.innerHTML = buildCheckpointTextView(prevCpWordIdx, sectionEnd);
   requestAnimationFrame(() => { cpTextScroll.scrollTop = cpTextScroll.scrollHeight; });
@@ -3128,11 +3186,9 @@ function closeCheckpoint(skipped) {
   if (badge) badge.innerHTML = '✦ Checkpoint <span id="cp-number">' + checkpointNum + '</span>';
   const h3 = document.querySelector('.cp-text-header h3');
   if (h3) h3.innerHTML = `Section <b id="cp-section-num">${checkpointNum}</b> complete &mdash; <b id="cp-words-read">0</b> of <b id="cp-total-words">0</b> words`;
-  const sub = document.querySelector('.cp-text-header p');
-  if (sub) sub.textContent = 'Scroll to review what you just read, then write your summary →';
   const noteTitle = document.querySelector('.cp-note-title');
-  if (noteTitle) noteTitle.innerHTML = `What's the key idea? <span>Write it in your own words — no looking back needed.</span>`;
-  summaryInput.placeholder = 'The author argues…\nThe main point is…\nThis section covers…';
+  if (noteTitle) noteTitle.textContent = `What's the key idea?`;
+  summaryInput.placeholder = 'The main idea here was…\nThe key thing I want to remember…\nThis connects to…';
 
   if (isFinalCheckpoint) {
     isFinalCheckpoint = false;

@@ -545,6 +545,48 @@
     min-height: 16px;
   }
 
+  /* Feedback modal */
+  #feedback-modal {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,0.7);
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(4px); padding: 20px;
+  }
+  #feedback-modal.open { display: flex; }
+  .fb-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px 24px; width: 100%; max-width: 420px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5); position: relative;
+  }
+  .fb-card-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .fb-card-sub { font-size: 13px; color: var(--muted); margin-bottom: 22px; line-height: 1.5; }
+  .fb-close-btn {
+    position: absolute; top: 14px; right: 16px;
+    background: none; border: none; color: var(--muted); font-size: 18px;
+    cursor: pointer; line-height: 1; padding: 4px;
+  }
+  .fb-field-label {
+    font-size: 11px; color: var(--muted); margin-bottom: 5px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .fb-input, .fb-textarea {
+    width: 100%; padding: 10px 12px; margin-bottom: 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text); font-size: 14px;
+    font-family: inherit; outline: none; transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+  .fb-input:focus, .fb-textarea:focus { border-color: var(--accent); }
+  .fb-textarea { resize: vertical; min-height: 110px; }
+  .fb-submit-btn {
+    width: 100%; padding: 11px;
+    background: var(--btn-start-bg); color: var(--btn-start-text);
+    border: none; border-radius: 6px; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit; transition: opacity 0.15s;
+  }
+  .fb-submit-btn:hover { opacity: 0.88; }
+  .fb-note { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; }
+
   #notes-count {
     display: none; position: absolute; top: -5px; right: -5px;
     background: var(--accent3); color: var(--btn-start-text); font-size: 9px; font-weight: 700;
@@ -1575,6 +1617,11 @@
       <span id="theme-icon">🌙</span>
       <div class="toggle-track"><div class="toggle-thumb"></div></div>
     </button>
+    <button class="header-icon-btn" id="feedback-btn" title="Feedback &amp; Ideas" onclick="openFeedbackModal()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </button>
   </div>
 </header>
 
@@ -1828,6 +1875,21 @@
 </main>
 
 
+
+<!-- ══ FEEDBACK MODAL ══ -->
+<div id="feedback-modal">
+  <div class="fb-card">
+    <button class="fb-close-btn" id="fb-close-btn">✕</button>
+    <div class="fb-card-title">Feedback &amp; Ideas</div>
+    <div class="fb-card-sub">Have a suggestion, idea, or bug to report? We'd love to hear it.</div>
+    <div class="fb-field-label">Your name (optional)</div>
+    <input type="text" class="fb-input" id="fb-name" placeholder="Anonymous" autocomplete="off" maxlength="80">
+    <div class="fb-field-label">Message</div>
+    <textarea class="fb-textarea" id="fb-message" placeholder="Share your idea, feedback, or report a bug…" maxlength="2000"></textarea>
+    <button class="fb-submit-btn" id="fb-submit-btn">Send Feedback</button>
+    <div class="fb-note">Opens your email client to send the message.</div>
+  </div>
+</div>
 
 <!-- ══ NOTE SELECT MODAL ══ -->
 <div id="note-select-modal">
@@ -4869,6 +4931,47 @@ deleteBook = async function(id) {
 
 // Initialise Supabase on load
 initSupabase();
+
+// ── Feedback modal ────────────────────────────────────────────────────────────
+(function() {
+  const modal   = document.getElementById('feedback-modal');
+  const closeBtn = document.getElementById('fb-close-btn');
+  const submitBtn = document.getElementById('fb-submit-btn');
+  const nameEl  = document.getElementById('fb-name');
+  const msgEl   = document.getElementById('fb-message');
+
+  function open() {
+    modal.classList.add('open');
+    setTimeout(() => msgEl.focus(), 60);
+  }
+  function close() {
+    modal.classList.remove('open');
+    nameEl.value = '';
+    msgEl.value = '';
+  }
+  function submit() {
+    const msg = msgEl.value.trim();
+    if (!msg) { msgEl.focus(); return; }
+    const name = nameEl.value.trim() || 'Anonymous';
+    // Address assembled at runtime — not stored as plain text
+    const _p = ['c','a','l','e','b','d','a','y','1','8','2','0',
+                 '+','s','o','r','b','r','@','g','m','a','i','l','.','c','o','m'];
+    const addr = _p.join('');
+    const sub  = encodeURIComponent('Sorbr Feedback');
+    const body = encodeURIComponent('From: ' + name + '\n\n' + msg);
+    window.open('mailto:' + addr + '?subject=' + sub + '&body=' + body, '_blank');
+    close();
+    if (typeof showToast === 'function') showToast('Opening your email client…');
+  }
+
+  window.openFeedbackModal = open;
+  closeBtn.addEventListener('click', close);
+  submitBtn.addEventListener('click', submit);
+  modal.addEventListener('click', function(e) { if (e.target === modal) close(); });
+  msgEl.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submit();
+  });
+})();
 </script>
 <script>
   if ('serviceWorker' in navigator) {

@@ -828,6 +828,18 @@
     color: var(--accent);
     font-weight: 700;
   }
+  .footer-blog-btn {
+    text-decoration: none;
+    color: var(--text);
+    font-size: 13px;
+    font-family: var(--font-body);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    line-height: 1;
+  }
+  .footer-blog-btn:hover { border-color: var(--accent); }
 
   /* ── Mobile sidebar: full-width on small screens ── */
   @media (max-width: 500px) {
@@ -1581,7 +1593,6 @@
     <button class="header-icon-btn" id="home-btn" title="Home" onclick="showPanel('read')"><img src="icons/Home.png" alt="Home" class="header-btn-icon"></button>
     <button class="header-icon-btn" id="library-btn" title="Your library" onclick="showPanel('library')"><img src="icons/Shelf.png" alt="Library" class="header-btn-icon"></button>
     <button class="header-icon-btn" id="print-btn" title="Quick print" onclick="showPanel('print')"><img src="icons/Sticky.png" alt="Print" class="header-btn-icon"></button>
-    <a class="header-icon-btn" href="/blog" title="Blog" style="text-decoration:none;color:var(--text);font-size:13px;font-family:var(--font-body);">Blog</a>
     <button class="cloud-btn" id="cloud-btn" title="Cloud sync / Sign in">
       <span class="cloud-btn-icon" id="cloud-icon">☁</span>
       <span class="cloud-btn-label" id="cloud-label">Sign In</span>
@@ -1759,13 +1770,14 @@
     </div>
 
     <div class="version-footer">
-      <span>Sorbr v1.8.3 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
-      <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
       <div class="kofi-wrap">
         <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
         <script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'T6T31WZMZV');kofiwidget2.draw();</script>
       </div>
       <p class="feedback-note">Send Feedback and Ideas to <span class="email">feedback@sorbr.com</span></p>
+      <a class="footer-blog-btn" href="/blog" title="Blog">Blog</a>
+      <span>Sorbr v1.8.3 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
+      <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
     </div>
   </div>
 

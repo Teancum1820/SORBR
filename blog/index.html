@@ -7,16 +7,19 @@
   <meta name="description" content="Expert articles on speed reading, RSVP technology, reading comprehension, and productivity. Powered by Sorbr.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://www.sorbr.com/blog">
+  <link rel="icon" type="image/png" href="/icons/app_Icon.png">
+  <link rel="shortcut icon" href="/icons/app_Icon.png">
+  <link rel="apple-touch-icon" href="/icons/app_Icon.png">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Sorbr Speed Reading Blog">
   <meta property="og:description" content="Expert articles on speed reading, RSVP technology, and reading productivity.">
   <meta property="og:url" content="https://www.sorbr.com/blog">
   <meta property="og:site_name" content="Sorbr">
-  <meta property="og:image" content="https://www.sorbr.com/icons/logo-3d-dark.png">
+  <meta property="og:image" content="https://www.sorbr.com/icons/logo-3d-light.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Sorbr Speed Reading Blog">
   <meta name="twitter:description" content="Expert articles on speed reading, RSVP technology, and reading productivity.">
-  <meta name="twitter:image" content="https://www.sorbr.com/icons/logo-3d-dark.png">
+  <meta name="twitter:image" content="https://www.sorbr.com/icons/logo-3d-light.png">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -35,91 +38,110 @@
     @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Lexend:wght@300;400;600;700&display=swap');
 
     :root {
-      --color-accent: #1A56A0;
-      --color-bg-dark: #0F1117;
-      --color-bg-surface: #1A1F2B;
-      --color-text: #E8EDF5;
-      --color-text-muted: #778899;
-      --color-border: #2A3040;
+      --bg: #e8f0f8;
+      --surface: #ffffff;
+      --surface2: #f0f5fb;
+      --border: #c5d5e8;
+      --accent: #2176ae;
+      --text: #1a2a3a;
+      --muted: #6a84a0;
       --font-body: 'Atkinson Hyperlegible', sans-serif;
-    }
-
-    html.light {
-      --color-bg-dark: #e8f0f8;
-      --color-bg-surface: #ffffff;
-      --color-text: #1a2a3a;
-      --color-text-muted: #6a84a0;
-      --color-border: #c5d5e8;
-      --color-accent: #2176ae;
+      --radius-md: 12px;
+      --radius-lg: 16px;
     }
 
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: var(--color-bg-dark);
-      color: var(--color-text);
+      background: linear-gradient(180deg, #edf4fb 0%, var(--bg) 34%, var(--bg) 100%);
+      color: var(--text);
       font-family: var(--font-body);
       line-height: 1.65;
     }
 
-    .container { width: min(1100px, 92%); margin: 0 auto; }
+    .container { width: min(1120px, 92%); margin: 0 auto; }
 
-    header, footer {
-      border-bottom: 1px solid var(--color-border);
-      background: color-mix(in srgb, var(--color-bg-dark), transparent 4%);
+    header {
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg), white 26%);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
-    footer { border-top: 1px solid var(--color-border); border-bottom: 0; margin-top: 2.5rem; }
 
     .nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 0;
+      padding: 0.8rem 0;
       gap: 1rem;
     }
-    .brand img { display:block; }
-    .nav-links { display:flex; gap:1rem; align-items:center; }
-    .nav-link {
-      color: var(--color-text);
-      text-decoration: none;
-      font-size: 0.95rem;
-      padding: 0.4rem 0.75rem;
-      border: 1px solid var(--color-border);
-      border-radius: 999px;
-    }
-    .theme-toggle { cursor:pointer; }
 
-    main { padding: 2rem 0 1rem; }
-    h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); margin-bottom: 0.75rem; }
-    .subhead { color: var(--color-text-muted); max-width: 780px; font-size: 1.05rem; }
+    .nav-links { display:flex; gap:0.75rem; align-items:center; flex-wrap: wrap; }
+    .nav-link {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.92rem;
+      padding: 0.42rem 0.88rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--surface), transparent 15%);
+      transition: border-color .2s ease, transform .2s ease;
+    }
+    .nav-link:hover { border-color: var(--accent); transform: translateY(-1px); }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid color-mix(in srgb, var(--border), white 25%);
+      padding: 0.35rem 0.55rem;
+      background: var(--surface);
+      box-shadow: 0 8px 24px rgba(26, 42, 58, 0.08);
+    }
+    .brand img { display:block; width: 108px; height: auto; }
+
+    main { padding: 2.6rem 0 1rem; }
+    h1 { font-size: clamp(1.9rem, 4vw, 2.9rem); margin: 0 0 0.8rem; line-height: 1.15; }
+    .subhead { color: var(--muted); max-width: 780px; font-size: 1.06rem; }
 
     .grid {
-      margin-top: 2rem;
+      margin-top: 2.1rem;
       display: grid;
       grid-template-columns: 1fr;
       gap: 1rem;
     }
     .card {
-      background: var(--color-bg-surface);
-      border: 1px solid var(--color-border);
-      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       padding: 1.25rem;
+      box-shadow: 0 10px 26px rgba(33, 118, 174, 0.08);
     }
-    .tag { color: var(--color-accent); font-size: 0.82rem; font-weight: 700; }
-    .meta { color: var(--color-text-muted); font-size: 0.88rem; }
-    .card a { color: var(--color-text); }
+    .tag { color: var(--accent); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.02em; }
+    .meta { color: var(--muted); font-size: 0.9rem; }
+    .card h2 { margin: 0.55rem 0 0.35rem; font-size: 1.2rem; line-height: 1.35; }
+    .card a { color: var(--text); text-decoration-thickness: 1px; text-underline-offset: 2px; }
 
     .cta {
-      margin-top: 2rem;
-      padding: 1rem 1.25rem;
-      border: 1px solid var(--color-border);
-      border-radius: 12px;
-      background: var(--color-bg-surface);
+      margin-top: 2.2rem;
+      padding: 1.1rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface2);
       text-align: center;
+      color: var(--text);
     }
-    .cta a { color: var(--color-accent); font-weight: 700; }
+    .cta a { color: var(--accent); font-weight: 700; }
 
-    .footer-inner { padding: 1.4rem 0; color: var(--color-text-muted); font-size: 0.92rem; text-align:center; }
+    footer {
+      border-top: 1px solid var(--border);
+      margin-top: 2.6rem;
+      background: color-mix(in srgb, var(--bg), white 24%);
+    }
+    .footer-inner { padding: 1.4rem 0; color: var(--muted); font-size: 0.92rem; text-align:center; }
 
     @media (min-width: 640px) {
       .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -127,21 +149,22 @@
     @media (min-width: 1024px) {
       .grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
     }
+    @media (max-width: 640px) {
+      .brand img { width: 96px; }
+      .nav { flex-wrap: wrap-reverse; }
+    }
   </style>
 </head>
 <body>
 <header>
   <div class="container nav">
-    <a class="brand" href="/" aria-label="Sorbr home">
-      <img src="/icons/logo-3d-dark.png" alt="Sorbr RSVP speed reader logo" width="120" height="120">
-    </a>
     <nav class="nav-links" aria-label="Main navigation">
       <a href="/" class="nav-link">Home</a>
       <a href="/blog" class="nav-link" aria-current="page">Blog</a>
-      <a href="/" class="nav-link">Sign In</a>
-      <a href="/" class="nav-link">Sign Up</a>
-      <button class="nav-link theme-toggle" id="theme-toggle" type="button">Toggle Theme</button>
     </nav>
+    <a class="brand" href="/" aria-label="Sorbr home">
+      <img src="/icons/logo-3d-light.png" alt="Sorbr RSVP speed reader logo" width="108" height="36">
+    </a>
   </div>
 </header>
 
@@ -186,14 +209,6 @@ posts.forEach((post) => {
     <a href="/blog/${post.slug}">Read More →</a>
   `;
   grid.appendChild(card);
-});
-
-const html = document.documentElement;
-const themeToggle = document.getElementById('theme-toggle');
-if (localStorage.getItem('theme') === 'light') html.classList.add('light');
-themeToggle.addEventListener('click', () => {
-  html.classList.toggle('light');
-  localStorage.setItem('theme', html.classList.contains('light') ? 'light' : 'dark');
 });
 </script>
 </body>

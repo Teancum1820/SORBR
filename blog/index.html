@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sorbr Speed Reading Blog | Tips, Guides &amp; Research</title>
+  <meta name="description" content="Expert articles on speed reading, RSVP technology, reading comprehension, and productivity. Powered by Sorbr.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://www.sorbr.com/blog">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Sorbr Speed Reading Blog">
+  <meta property="og:description" content="Expert articles on speed reading, RSVP technology, and reading productivity.">
+  <meta property="og:url" content="https://www.sorbr.com/blog">
+  <meta property="og:site_name" content="Sorbr">
+  <meta property="og:image" content="https://www.sorbr.com/icons/logo-3d-dark.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Sorbr Speed Reading Blog">
+  <meta name="twitter:description" content="Expert articles on speed reading, RSVP technology, and reading productivity.">
+  <meta name="twitter:image" content="https://www.sorbr.com/icons/logo-3d-dark.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "Sorbr Speed Reading Blog",
+    "description": "Expert guides on speed reading, RSVP technology, reading comprehension, and productivity.",
+    "url": "https://www.sorbr.com/blog",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Sorbr",
+      "url": "https://www.sorbr.com"
+    }
+  }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Lexend:wght@300;400;600;700&display=swap');
+
+    :root {
+      --color-accent: #1A56A0;
+      --color-bg-dark: #0F1117;
+      --color-bg-surface: #1A1F2B;
+      --color-text: #E8EDF5;
+      --color-text-muted: #778899;
+      --color-border: #2A3040;
+      --font-body: 'Atkinson Hyperlegible', sans-serif;
+    }
+
+    html.light {
+      --color-bg-dark: #e8f0f8;
+      --color-bg-surface: #ffffff;
+      --color-text: #1a2a3a;
+      --color-text-muted: #6a84a0;
+      --color-border: #c5d5e8;
+      --color-accent: #2176ae;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--color-bg-dark);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      line-height: 1.65;
+    }
+
+    .container { width: min(1100px, 92%); margin: 0 auto; }
+
+    header, footer {
+      border-bottom: 1px solid var(--color-border);
+      background: color-mix(in srgb, var(--color-bg-dark), transparent 4%);
+    }
+    footer { border-top: 1px solid var(--color-border); border-bottom: 0; margin-top: 2.5rem; }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      gap: 1rem;
+    }
+    .brand img { display:block; }
+    .nav-links { display:flex; gap:1rem; align-items:center; }
+    .nav-link {
+      color: var(--color-text);
+      text-decoration: none;
+      font-size: 0.95rem;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--color-border);
+      border-radius: 999px;
+    }
+    .theme-toggle { cursor:pointer; }
+
+    main { padding: 2rem 0 1rem; }
+    h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); margin-bottom: 0.75rem; }
+    .subhead { color: var(--color-text-muted); max-width: 780px; font-size: 1.05rem; }
+
+    .grid {
+      margin-top: 2rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    .card {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+    .tag { color: var(--color-accent); font-size: 0.82rem; font-weight: 700; }
+    .meta { color: var(--color-text-muted); font-size: 0.88rem; }
+    .card a { color: var(--color-text); }
+
+    .cta {
+      margin-top: 2rem;
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      background: var(--color-bg-surface);
+      text-align: center;
+    }
+    .cta a { color: var(--color-accent); font-weight: 700; }
+
+    .footer-inner { padding: 1.4rem 0; color: var(--color-text-muted); font-size: 0.92rem; text-align:center; }
+
+    @media (min-width: 640px) {
+      .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+    @media (min-width: 1024px) {
+      .grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="container nav">
+    <a class="brand" href="/" aria-label="Sorbr home">
+      <img src="/icons/logo-3d-dark.png" alt="Sorbr RSVP speed reader logo" width="120" height="120">
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/blog" class="nav-link" aria-current="page">Blog</a>
+      <a href="/" class="nav-link">Sign In</a>
+      <a href="/" class="nav-link">Sign Up</a>
+      <button class="nav-link theme-toggle" id="theme-toggle" type="button">Toggle Theme</button>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <h1>The Sorbr Speed Reading Blog</h1>
+  <p class="subhead">Expert guides on RSVP reading technology, speed reading strategies, reading comprehension techniques, and digital productivity — written for curious readers who want to read more, and remember it better.</p>
+
+  <section class="grid" id="blog-grid" aria-label="Blog articles"></section>
+
+  <aside class="cta">
+    Try Sorbr's RSVP reader free — no download required. <a href="https://www.sorbr.com">Start now</a>.
+  </aside>
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    Ready to read faster? Try Sorbr free at sorbr.com — no download required.
+  </div>
+</footer>
+
+<script>
+const posts = [
+  {
+    title: "What Is an RSVP Reader? The Ultimate Guide to Speed Reading Technology",
+    slug: "what-is-an-rsvp-reader",
+    date: "2026-04-09",
+    category: "Speed Reading Technology",
+    excerpt: "RSVP stands for Rapid Serial Visual Presentation — a technique that flashes words one at a time at a fixed focal point, eliminating the eye movements that slow most readers down. Here's everything you need to know.",
+    readTime: "8 min read"
+  }
+];
+
+const grid = document.getElementById('blog-grid');
+posts.forEach((post) => {
+  const card = document.createElement('article');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="tag">${post.category}</div>
+    <h2><a href="/blog/${post.slug}">${post.title}</a></h2>
+    <p class="meta">${post.date} · ${post.readTime}</p>
+    <p>${post.excerpt}</p>
+    <a href="/blog/${post.slug}">Read More →</a>
+  `;
+  grid.appendChild(card);
+});
+
+const html = document.documentElement;
+const themeToggle = document.getElementById('theme-toggle');
+if (localStorage.getItem('theme') === 'light') html.classList.add('light');
+themeToggle.addEventListener('click', () => {
+  html.classList.toggle('light');
+  localStorage.setItem('theme', html.classList.contains('light') ? 'light' : 'dark');
+});
+</script>
+</body>
+</html>

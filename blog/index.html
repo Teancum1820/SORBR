@@ -15,11 +15,11 @@
   <meta property="og:description" content="Expert articles on speed reading, RSVP technology, and reading productivity.">
   <meta property="og:url" content="https://www.sorbr.com/blog">
   <meta property="og:site_name" content="Sorbr">
-  <meta property="og:image" content="https://www.sorbr.com/icons/logo-3d-light.png">
+  <meta property="og:image" content="https://www.sorbr.com/icons/logo-3d-dark.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Sorbr Speed Reading Blog">
   <meta name="twitter:description" content="Expert articles on speed reading, RSVP technology, and reading productivity.">
-  <meta name="twitter:image" content="https://www.sorbr.com/icons/logo-3d-light.png">
+  <meta name="twitter:image" content="https://www.sorbr.com/icons/logo-3d-dark.png">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -38,13 +38,14 @@
     @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Lexend:wght@300;400;600;700&display=swap');
 
     :root {
-      --bg: #e8f0f8;
-      --surface: #ffffff;
-      --surface2: #f0f5fb;
-      --border: #c5d5e8;
-      --accent: #2176ae;
-      --text: #1a2a3a;
-      --muted: #6a84a0;
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #222222;
+      --border: #2e2e2e;
+      --accent: #ffffff;
+      --text: #f0f0f0;
+      --muted: #9c9c9c;
+      --grid-line: rgba(255,255,255,0.025);
       --font-body: 'Atkinson Hyperlegible', sans-serif;
       --radius-md: 12px;
       --radius-lg: 16px;
@@ -53,32 +54,63 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background: linear-gradient(180deg, #edf4fb 0%, var(--bg) 34%, var(--bg) 100%);
+      background: var(--bg);
       color: var(--text);
       font-family: var(--font-body);
       line-height: 1.65;
+      letter-spacing: 0.02em;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
     }
 
     .container { width: min(1120px, 92%); margin: 0 auto; }
 
     header {
       border-bottom: 1px solid var(--border);
-      background: color-mix(in srgb, var(--bg), white 26%);
-      backdrop-filter: blur(8px);
+      background: color-mix(in srgb, var(--bg), black 6%);
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 20;
+      backdrop-filter: blur(8px);
     }
 
     .nav {
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
       padding: 0.8rem 0;
       gap: 1rem;
     }
 
-    .nav-links { display:flex; gap:0.75rem; align-items:center; flex-wrap: wrap; }
+    .brand {
+      justify-self: center;
+      line-height: 0;
+      display: block;
+    }
+    .brand img {
+      display: block;
+      width: clamp(180px, 24vw, 260px);
+      height: auto;
+      object-fit: contain;
+    }
+
+    .nav-links {
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
     .nav-link {
       color: var(--text);
       text-decoration: none;
@@ -91,19 +123,7 @@
     }
     .nav-link:hover { border-color: var(--accent); transform: translateY(-1px); }
 
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 999px;
-      border: 1px solid color-mix(in srgb, var(--border), white 25%);
-      padding: 0.35rem 0.55rem;
-      background: var(--surface);
-      box-shadow: 0 8px 24px rgba(26, 42, 58, 0.08);
-    }
-    .brand img { display:block; width: 108px; height: auto; }
-
-    main { padding: 2.6rem 0 1rem; }
+    main { padding: 2.6rem 0 1rem; position: relative; z-index: 10; }
     h1 { font-size: clamp(1.9rem, 4vw, 2.9rem); margin: 0 0 0.8rem; line-height: 1.15; }
     .subhead { color: var(--muted); max-width: 780px; font-size: 1.06rem; }
 
@@ -118,7 +138,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
       padding: 1.25rem;
-      box-shadow: 0 10px 26px rgba(33, 118, 174, 0.08);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
     }
     .tag { color: var(--accent); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.02em; }
     .meta { color: var(--muted); font-size: 0.9rem; }
@@ -139,7 +159,9 @@
     footer {
       border-top: 1px solid var(--border);
       margin-top: 2.6rem;
-      background: color-mix(in srgb, var(--bg), white 24%);
+      background: color-mix(in srgb, var(--bg), black 6%);
+      position: relative;
+      z-index: 10;
     }
     .footer-inner { padding: 1.4rem 0; color: var(--muted); font-size: 0.92rem; text-align:center; }
 
@@ -150,21 +172,27 @@
       .grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
     }
     @media (max-width: 640px) {
-      .brand img { width: 96px; }
-      .nav { flex-wrap: wrap-reverse; }
+      .nav { grid-template-columns: auto 1fr; }
+      .brand {
+        grid-column: 1 / -1;
+        justify-self: center;
+        margin-bottom: 0.4rem;
+      }
+      .nav-links { grid-column: 1 / -1; justify-self: center; }
+      .brand img { width: clamp(160px, 52vw, 220px); }
     }
   </style>
 </head>
 <body>
 <header>
   <div class="container nav">
-    <nav class="nav-links" aria-label="Main navigation">
-      <a href="/" class="nav-link">Home</a>
-      <a href="/blog" class="nav-link" aria-current="page">Blog</a>
-    </nav>
-    <a class="brand" href="/" aria-label="Sorbr home">
-      <img src="/icons/logo-3d-light.png" alt="Sorbr RSVP speed reader logo" width="108" height="36">
+    <span aria-hidden="true"></span>
+    <a class="brand" href="/" aria-label="Open Sorbr app">
+      <img src="/icons/logo-3d-dark.png" alt="Sorbr RSVP speed reader logo" width="220" height="73">
     </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="/blog" class="nav-link" aria-current="page">Articles</a>
+    </nav>
   </div>
 </header>
 

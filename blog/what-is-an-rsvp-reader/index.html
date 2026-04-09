@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f0f0f">
   <title>What Is an RSVP Reader? The Ultimate Guide to Speed Reading Technology | Sorbr</title>
   <meta name="description" content="Discover what an RSVP reader is, how Rapid Serial Visual Presentation works, and how Sorbr uses it to help you read faster with better comprehension.">
   <meta name="keywords" content="RSVP reader, rapid serial visual presentation, speed reading app, speed reading technology, reading comprehension, online speed reader, Sorbr">
@@ -38,6 +39,16 @@
       --muted:#9c9c9c;
       --grid-line:rgba(255,255,255,0.025);
       --font-body:'Atkinson Hyperlegible',sans-serif;
+    }
+    body.light {
+      --bg:#e8f0f8;
+      --surface:#ffffff;
+      --surface2:#f0f5fb;
+      --border:#c5d5e8;
+      --accent:#2176ae;
+      --text:#1a2a3a;
+      --muted:#6a84a0;
+      --grid-line:rgba(33,118,174,0.07);
     }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);line-height:1.65;font-size:17px;letter-spacing:.02em;position:relative}
@@ -76,7 +87,7 @@
 <header>
   <div class="container nav">
     <span aria-hidden="true"></span>
-    <a class="brand" href="/" aria-label="Open Sorbr app"><img src="/icons/logo-3d-dark.png" alt="Sorbr RSVP reader logo" width="220" height="73"></a>
+    <a class="brand" href="/" aria-label="Open Sorbr app"><img id="brand-logo" src="/icons/logo-3d-dark.png" alt="Sorbr RSVP reader logo" width="220" height="73"></a>
     <nav class="nav-links" aria-label="Main navigation">
       <a href="/blog" class="nav-link">Articles</a>
     </nav>
@@ -216,5 +227,39 @@
 </main>
 <footer><div class="container"><p class="footer-cta">Ready to read faster? Try Sorbr free at sorbr.com — no download required.</p></div></footer>
 
+<script>
+const brandLogo = document.getElementById('brand-logo');
+const THEME_STORAGE_KEY = 'sorbr-theme';
+const THEME_META = '#0f0f0f';
+const THEME_META_LIGHT = '#e8f0f8';
+const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
+function applyTheme(isLight) {
+  document.body.classList.toggle('light', isLight);
+  if (brandLogo) {
+    brandLogo.src = isLight ? '/icons/logo-3d-light.png' : '/icons/logo-3d-dark.png';
+  }
+  if (themeColorMeta) {
+    themeColorMeta.setAttribute('content', isLight ? THEME_META_LIGHT : THEME_META);
+  }
+}
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_STORAGE_KEY);
+  if (saved === 'light' || saved === 'dark') {
+    applyTheme(saved === 'light');
+    return;
+  }
+  applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches);
+}
+
+window.addEventListener('storage', (event) => {
+  if (event.key === THEME_STORAGE_KEY && (event.newValue === 'light' || event.newValue === 'dark')) {
+    applyTheme(event.newValue === 'light');
+  }
+});
+
+initTheme();
+</script>
 </body>
 </html>

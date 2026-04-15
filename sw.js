@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sorbr-v1.8.3';
+const CACHE_NAME = 'sorbr-v1.8.5';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

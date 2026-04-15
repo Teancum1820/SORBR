@@ -1680,6 +1680,18 @@
 
         <div id="advanced-settings" style="display:none;">
 
+        <div class="settings-section">
+          <span class="settings-label">Pause at punctuation</span>
+          <div class="checkpoint-opt" style="border:none;padding:0;background:transparent;width:100%;">
+            ⏱️ Timing
+            <select id="punc-pause-select">
+              <option value="slow">Slow</option>
+              <option value="default" selected>Default</option>
+              <option value="fast">Fast</option>
+            </select>
+          </div>
+        </div>
+
         <!-- Checkpoints -->
         <div class="settings-section">
           <span class="settings-label">Comprehension Checkpoints</span>
@@ -1776,7 +1788,7 @@
       </div>
       <p class="feedback-note">Send Feedback and Ideas to <span class="email">feedback@sorbr.com</span></p>
       <a class="footer-blog-btn" href="/blog" title="Blog">Blog</a>
-      <span>Sorbr v1.8.3 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
+      <span>Sorbr v1.8.4 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
     </div>
   </div>
@@ -2017,8 +2029,14 @@ let notes              = [];
 let puncDotTimer       = null;
 let puncLabelTimer     = null;
 let loadedTitle        = '';  // chapter name or first line of loaded text
-
-const PUNC = { sentence: 3.2, clause: 1.7, dash: 1.35 };
+let puncPauseMode      = 'default';
+let PUNC               = { sentence: 3.2, clause: 1.7, dash: 1.35 };
+const PUNC_PROFILES    = {
+  slow:    { sentence: 3.8, clause: 2.1, dash: 1.6 },
+  default: { sentence: 3.2, clause: 1.7, dash: 1.35 },
+  fast:    { sentence: 2.6, clause: 1.45, dash: 1.2 }
+};
+const USER_SETTINGS_KEY = 'sorbr-user-settings';
 
 // ═══════════════════════════════════════════
 //  ELEMENT REFS
@@ -2033,7 +2051,62 @@ const wpmLabel          = document.getElementById('wpm-label');
 const chunkSlider       = document.getElementById('chunk-slider');
 const chunkLabel        = document.getElementById('chunk-label');
 const checkpointSelect  = document.getElementById('checkpoint-select');
+const puncPauseSelect   = document.getElementById('punc-pause-select');
 const startBtn          = document.getElementById('start-btn');
+
+function clampNum(value, min, max, fallback) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
+
+function getDefaultUserSettings() {
+  return {
+    wpm: 300,
+    chunkSize: 1,
+    checkpointInterval: 500,
+    puncPauseMode: 'default',
+    theme: localStorage.getItem('sorbr-theme') || null,
+    font: localStorage.getItem('sorbr-font') || 'atkinson',
+    accent: localStorage.getItem('sorbr-accent') || 'default',
+  };
+}
+
+function loadUserSettings() {
+  const defaults = getDefaultUserSettings();
+  try {
+    const raw = localStorage.getItem(USER_SETTINGS_KEY);
+    if (!raw) return defaults;
+    const parsed = JSON.parse(raw);
+    return {
+      ...defaults,
+      ...parsed,
+      wpm: clampNum(parsed.wpm, 50, 2000, defaults.wpm),
+      chunkSize: clampNum(parsed.chunkSize, 1, 4, defaults.chunkSize),
+      checkpointInterval: clampNum(parsed.checkpointInterval, 0, 5000, defaults.checkpointInterval),
+      puncPauseMode: ['slow', 'default', 'fast'].includes(parsed.puncPauseMode) ? parsed.puncPauseMode : defaults.puncPauseMode,
+    };
+  } catch (_) {
+    return defaults;
+  }
+}
+
+let currentUserSettings = loadUserSettings();
+let suppressSettingsPersist = false;
+
+function persistUserSettings(partial = {}, { syncCloud = true } = {}) {
+  if (suppressSettingsPersist) return;
+  currentUserSettings = { ...currentUserSettings, ...partial };
+  localStorage.setItem(USER_SETTINGS_KEY, JSON.stringify(currentUserSettings));
+  if (syncCloud) syncUserSettingsToCloud().catch(() => {});
+}
+
+function applyPunctuationProfile(mode, { persist = true } = {}) {
+  puncPauseMode = ['slow', 'default', 'fast'].includes(mode) ? mode : 'default';
+  PUNC = { ...PUNC_PROFILES[puncPauseMode] };
+  if (puncPauseSelect) puncPauseSelect.value = puncPauseMode;
+  if (persist) persistUserSettings({ puncPauseMode });
+}
 
 // ── Panel switching (replaces tab switching) ──
 function showPanel(panel) {
@@ -2923,7 +2996,8 @@ function orp(word) {
 
 function getPuncInfo(word) {
   const core = word.replace(/["'»)\]"']+$/, '');
-  if (/[.!?]["'»)\]"']*$/.test(word))   return { mult: PUNC.sentence, label: '●●●' };
+  if (/\.\.\.$/.test(core))             return { mult: PUNC.clause,   label: '●●' };
+  if (/[.!?]$/.test(core))              return { mult: PUNC.sentence, label: '●●●' };
   if (/[,;:]$/.test(core))              return { mult: PUNC.clause,   label: '●●' };
   if (/[—–]/.test(word))               return { mult: PUNC.dash,     label: '●' };
   return { mult: 1, label: '' };
@@ -3092,11 +3166,12 @@ function pause() {
 
 function togglePlay() { playing ? pause() : play(); }
 
-function setWPM(val) {
+function setWPM(val, { persist = true } = {}) {
   wpm = Math.max(50, Math.min(2000, val));
   wpmDisplay.textContent = wpm;
   wpmSlider.value = wpm;
   wpmLabel.textContent = wpm;
+  if (persist) persistUserSettings({ wpm });
 }
 
 // ═══════════════════════════════════════════
@@ -4269,6 +4344,14 @@ wpmSlider.addEventListener('input', () => setWPM(parseInt(wpmSlider.value)));
 chunkSlider.addEventListener('input', () => {
   chunkSize = parseInt(chunkSlider.value);
   chunkLabel.textContent = chunkSize === 1 ? '1 word' : `${chunkSize} words`;
+  persistUserSettings({ chunkSize });
+});
+checkpointSelect.addEventListener('change', () => {
+  checkpointInterval = parseInt(checkpointSelect.value) || 500;
+  persistUserSettings({ checkpointInterval });
+});
+puncPauseSelect.addEventListener('change', () => {
+  applyPunctuationProfile(puncPauseSelect.value);
 });
 
 // Settings toggle (Hick's Law — hide advanced options)
@@ -4396,22 +4479,13 @@ function applyTheme(isLight) {
     if (panelLogoImg) panelLogoImg.src = '/icons/logo-3d-dark.png';
   }
   localStorage.setItem('sorbr-theme', isLight ? 'light' : 'dark');
+  persistUserSettings({ theme: isLight ? 'light' : 'dark' });
 }
 
 themeToggleBtn.addEventListener('click', () => {
   applyTheme(!document.body.classList.contains('light'));
 });
 
-
-// On load: respect saved preference, then system preference
-(function() {
-  const saved = localStorage.getItem('sorbr-theme');
-  if (saved) {
-    applyTheme(saved === 'light');
-  } else {
-    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches);
-  }
-})();
 
 // ═══════════════════════════════════════════
 //  FONT SELECTION
@@ -4441,6 +4515,7 @@ function applyFont(fontKey) {
   root.style.setProperty('--font-body',   opt.body);
   root.style.setProperty('--font-reader', opt.reader);
   localStorage.setItem('sorbr-font', fontKey);
+  persistUserSettings({ font: fontKey });
   document.querySelectorAll('.font-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.font === fontKey);
   });
@@ -4450,12 +4525,6 @@ function applyFont(fontKey) {
 document.querySelectorAll('.font-btn').forEach(btn => {
   btn.addEventListener('click', () => applyFont(btn.dataset.font));
 });
-
-// Load saved font on startup
-(function() {
-  const saved = localStorage.getItem('sorbr-font') || 'atkinson';
-  applyFont(saved);
-})();
 
 // ═══════════════════════════════════════════
 //  ACCENT COLOR SELECTION
@@ -4491,6 +4560,7 @@ function applyAccentColor(colorKey) {
   }
 
   localStorage.setItem('sorbr-accent', colorKey);
+  persistUserSettings({ accent: colorKey });
   document.querySelectorAll('.color-swatch').forEach(s => {
     s.classList.toggle('active', s.dataset.color === colorKey);
   });
@@ -4509,11 +4579,8 @@ applyTheme = function(isLight) {
   applyAccentColor(savedAccent);
 };
 
-// Load saved accent on startup
-(function() {
-  const saved = localStorage.getItem('sorbr-accent') || 'default';
-  applyAccentColor(saved);
-})();
+// Apply saved local settings on startup
+applySettingsToUI(currentUserSettings, { syncCloud: false });
 
 // ═══════════════════════════════════════════
 //  SAMPLE BOOK — Pride and Prejudice
@@ -4548,6 +4615,72 @@ const BUCKET      = 'sorbr-library';
 
 let sbClient  = null;   // Supabase client
 let sbUser    = null;   // current auth user
+let isApplyingCloudSettings = false;
+
+function applySettingsToUI(settings = {}, { syncCloud = false } = {}) {
+  suppressSettingsPersist = true;
+  try {
+  const next = {
+    ...currentUserSettings,
+    ...settings,
+    wpm: clampNum(settings.wpm ?? currentUserSettings.wpm, 50, 2000, 300),
+    chunkSize: clampNum(settings.chunkSize ?? currentUserSettings.chunkSize, 1, 4, 1),
+    checkpointInterval: clampNum(settings.checkpointInterval ?? currentUserSettings.checkpointInterval, 0, 5000, 500),
+    puncPauseMode: ['slow', 'default', 'fast'].includes(settings.puncPauseMode) ? settings.puncPauseMode : (currentUserSettings.puncPauseMode || 'default'),
+    font: settings.font || currentUserSettings.font || 'atkinson',
+    accent: settings.accent || currentUserSettings.accent || 'default',
+    theme: Object.prototype.hasOwnProperty.call(settings, 'theme') ? settings.theme : currentUserSettings.theme,
+  };
+
+  setWPM(next.wpm);
+  chunkSize = next.chunkSize;
+  chunkSlider.value = String(chunkSize);
+  chunkLabel.textContent = chunkSize === 1 ? '1 word' : `${chunkSize} words`;
+  checkpointInterval = next.checkpointInterval;
+  checkpointSelect.value = String(checkpointInterval);
+  applyPunctuationProfile(next.puncPauseMode, { persist: false });
+  applyFont(next.font);
+  applyAccentColor(next.accent);
+
+  if (next.theme === 'light' || next.theme === 'dark') {
+    applyTheme(next.theme === 'light');
+  } else {
+    applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches);
+  }
+  suppressSettingsPersist = false;
+  persistUserSettings(next, { syncCloud });
+  } finally {
+    suppressSettingsPersist = false;
+  }
+}
+
+async function syncUserSettingsToCloud() {
+  if (!sbClient || !sbUser || isApplyingCloudSettings) return;
+  try {
+    await sbClient.auth.updateUser({
+      data: {
+        sorbrSettings: currentUserSettings,
+      }
+    });
+  } catch (e) {
+    console.warn('Could not sync settings to cloud:', e);
+  }
+}
+
+async function pullUserSettingsFromCloud() {
+  if (!sbUser) return;
+  const cloudSettings = sbUser.user_metadata?.sorbrSettings;
+  if (!cloudSettings || typeof cloudSettings !== 'object') {
+    syncUserSettingsToCloud();
+    return;
+  }
+  isApplyingCloudSettings = true;
+  try {
+    applySettingsToUI(cloudSettings, { syncCloud: false });
+  } finally {
+    isApplyingCloudSettings = false;
+  }
+}
 
 // Initialise the Supabase client (the UMD bundle exposes window.supabase)
 function initSupabase() {
@@ -4575,6 +4708,7 @@ function initSupabase() {
   sbClient.auth.onAuthStateChange((event, session) => {
     sbUser = session?.user ?? null;
     updateCloudUI();
+    if (sbUser) pullUserSettingsFromCloud();
     if (sbUser && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
       syncAllFromCloud();
     }
@@ -4584,7 +4718,10 @@ function initSupabase() {
   sbClient.auth.getSession().then(({ data }) => {
     sbUser = data.session?.user ?? null;
     updateCloudUI();
-    if (sbUser) syncAllFromCloud();
+    if (sbUser) {
+      pullUserSettingsFromCloud();
+      syncAllFromCloud();
+    }
   });
 }
 

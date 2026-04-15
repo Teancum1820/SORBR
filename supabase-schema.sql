@@ -16,9 +16,14 @@ CREATE TABLE IF NOT EXISTS public.library_books (
   date_added    BIGINT      NOT NULL DEFAULT 0,
   last_read     BIGINT,
   read_chapters JSONB       DEFAULT '[]',
+  book_settings JSONB       DEFAULT '{}'::jsonb,
   has_cover     BOOLEAN     DEFAULT FALSE,
   has_chapters  BOOLEAN     DEFAULT FALSE
 );
+
+-- If your table already exists from an older Sorbr release:
+ALTER TABLE public.library_books
+  ADD COLUMN IF NOT EXISTS book_settings JSONB DEFAULT '{}'::jsonb;
 
 -- ── 2. Row-Level Security ────────────────────────────────────────────────────
 

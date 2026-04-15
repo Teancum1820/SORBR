@@ -1300,6 +1300,48 @@
     transition: background 0.12s;
   }
   .bdo-wpm-btn:hover { background: var(--border); }
+  .bdo-book-settings {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface2);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .bdo-book-settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .bdo-book-settings-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .bdo-book-settings select {
+    min-width: 150px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+  .bdo-book-reset-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    border-radius: 6px;
+    font-size: 11px;
+    padding: 6px 8px;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+  .bdo-book-reset-btn:hover { border-color: var(--accent); color: var(--accent); }
 
   .bdo-section-title {
     font-family: 'Lexend', sans-serif; font-size: 11px; font-weight: 700;
@@ -1788,7 +1830,7 @@
       </div>
       <p class="feedback-note">Send Feedback and Ideas to <span class="email">feedback@sorbr.com</span></p>
       <a class="footer-blog-btn" href="/blog" title="Blog">Blog</a>
-      <span>Sorbr v1.8.4 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
+      <span>Sorbr v1.8.5 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
     </div>
   </div>
@@ -2000,6 +2042,66 @@
       <button class="bdo-wpm-btn" id="bdo-wpm-up">+</button>
     </div>
 
+    <div class="bdo-book-settings">
+      <div class="bdo-book-settings-row">
+        <span class="bdo-book-settings-label">Chunk size</span>
+        <select id="bdo-setting-chunk">
+          <option value="1">1 word</option>
+          <option value="2">2 words</option>
+          <option value="3">3 words</option>
+          <option value="4">4 words</option>
+        </select>
+      </div>
+      <div class="bdo-book-settings-row">
+        <span class="bdo-book-settings-label">Checkpoints</span>
+        <select id="bdo-setting-checkpoint">
+          <option value="120">Every paragraph</option>
+          <option value="300">Half page</option>
+          <option value="500">Full page</option>
+          <option value="0">No checkpoints</option>
+        </select>
+      </div>
+      <div class="bdo-book-settings-row">
+        <span class="bdo-book-settings-label">Punctuation pause</span>
+        <select id="bdo-setting-punc">
+          <option value="slow">Slow</option>
+          <option value="default">Default</option>
+          <option value="fast">Fast</option>
+        </select>
+      </div>
+      <div class="bdo-book-settings-row">
+        <span class="bdo-book-settings-label">Font</span>
+        <select id="bdo-setting-font">
+          <option value="atkinson">Atkinson</option>
+          <option value="lexend">Lexend</option>
+          <option value="serif">Serif</option>
+          <option value="dyslexic">OpenDyslexic</option>
+        </select>
+      </div>
+      <div class="bdo-book-settings-row">
+        <span class="bdo-book-settings-label">Accent</span>
+        <select id="bdo-setting-accent">
+          <option value="default">Default</option>
+          <option value="blue">Blue</option>
+          <option value="green">Green</option>
+          <option value="purple">Purple</option>
+          <option value="orange">Orange</option>
+          <option value="teal">Teal</option>
+          <option value="rose">Rose</option>
+          <option value="gold">Gold</option>
+        </select>
+      </div>
+      <div class="bdo-book-settings-row">
+        <span class="bdo-book-settings-label">Theme</span>
+        <select id="bdo-setting-theme">
+          <option value="">Use global</option>
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </select>
+      </div>
+      <button class="bdo-book-reset-btn" id="bdo-book-reset-btn">Reset to global defaults</button>
+    </div>
+
     <div class="bdo-section-title">Reading Notes</div>
     <div class="bdo-export-row" id="bdo-export-row"></div>
     <div class="bdo-notes-list" id="bdo-notes-list"></div>
@@ -2037,6 +2139,29 @@ const PUNC_PROFILES    = {
   fast:    { sentence: 2.6, clause: 1.45, dash: 1.2 }
 };
 const USER_SETTINGS_KEY = 'sorbr-user-settings';
+const BOOK_SETTING_KEYS = ['wpm', 'chunkSize', 'checkpointInterval', 'puncPauseMode', 'font', 'accent', 'theme'];
+
+function sanitizeBookSettings(raw = {}) {
+  if (!raw || typeof raw !== 'object') return {};
+  const clean = {};
+  if (Object.prototype.hasOwnProperty.call(raw, 'wpm')) clean.wpm = clampNum(raw.wpm, 50, 2000, 300);
+  if (Object.prototype.hasOwnProperty.call(raw, 'chunkSize')) clean.chunkSize = clampNum(raw.chunkSize, 1, 4, 1);
+  if (Object.prototype.hasOwnProperty.call(raw, 'checkpointInterval')) clean.checkpointInterval = clampNum(raw.checkpointInterval, 0, 5000, 500);
+  if (Object.prototype.hasOwnProperty.call(raw, 'puncPauseMode') && ['slow', 'default', 'fast'].includes(raw.puncPauseMode)) clean.puncPauseMode = raw.puncPauseMode;
+  if (Object.prototype.hasOwnProperty.call(raw, 'font') && FONT_OPTIONS[raw.font]) clean.font = raw.font;
+  if (Object.prototype.hasOwnProperty.call(raw, 'accent') && ACCENT_PRESETS[raw.accent]) clean.accent = raw.accent;
+  if (Object.prototype.hasOwnProperty.call(raw, 'theme') && ['light', 'dark', '', null].includes(raw.theme)) clean.theme = raw.theme || '';
+  return clean;
+}
+
+function getEffectiveBookSettings(book) {
+  const perBook = sanitizeBookSettings(book?.settings || {});
+  const effective = { ...currentUserSettings, ...perBook };
+  if (!Object.prototype.hasOwnProperty.call(perBook, 'theme') || perBook.theme === '') {
+    effective.theme = currentUserSettings.theme;
+  }
+  return effective;
+}
 
 // ═══════════════════════════════════════════
 //  ELEMENT REFS
@@ -2098,7 +2223,20 @@ function persistUserSettings(partial = {}, { syncCloud = true } = {}) {
   if (suppressSettingsPersist) return;
   currentUserSettings = { ...currentUserSettings, ...partial };
   localStorage.setItem(USER_SETTINGS_KEY, JSON.stringify(currentUserSettings));
+  syncActiveBookSettingsFromCurrent().catch(() => {});
   if (syncCloud) syncUserSettingsToCloud().catch(() => {});
+}
+
+async function syncActiveBookSettingsFromCurrent() {
+  if (!activeBookId) return;
+  const book = await dbGet(activeBookId);
+  if (!book) return;
+  book.settings = sanitizeBookSettings({
+    ...(book.settings || {}),
+    ...Object.fromEntries(BOOK_SETTING_KEYS.map(k => [k, currentUserSettings[k]])),
+  });
+  book.wpm = book.settings.wpm || book.wpm || 300;
+  await dbPut(book);
 }
 
 function applyPunctuationProfile(mode, { persist = true } = {}) {
@@ -2214,6 +2352,11 @@ async function saveProgressToLibrary() {
   book.lastRead    = Date.now();
   book.notes       = notes.slice();
   book.wpm         = wpm;
+  book.settings    = sanitizeBookSettings({
+    ...(book.settings || {}),
+    ...Object.fromEntries(BOOK_SETTING_KEYS.map(k => [k, currentUserSettings[k]])),
+    wpm,
+  });
   book.totalWords  = words.length;
   await dbPut(book);
 }
@@ -2233,6 +2376,15 @@ async function addToLibrary(title, content, type, coverImage, chapters) {
     progress:    0,
     notes:       [],
     wpm:         wpm,
+    settings:    sanitizeBookSettings({
+      wpm,
+      chunkSize,
+      checkpointInterval,
+      puncPauseMode,
+      font: currentUserSettings.font,
+      accent: currentUserSettings.accent,
+      theme: currentUserSettings.theme || '',
+    }),
     dateAdded:   Date.now(),
     lastRead:    null,
   };
@@ -2333,12 +2485,55 @@ async function renderLibrary() {
 // ── Book Detail ──
 let detailBookId  = null;
 let detailBookWpm = 300;
+const detailSettingChunk      = document.getElementById('bdo-setting-chunk');
+const detailSettingCheckpoint = document.getElementById('bdo-setting-checkpoint');
+const detailSettingPunc       = document.getElementById('bdo-setting-punc');
+const detailSettingFont       = document.getElementById('bdo-setting-font');
+const detailSettingAccent     = document.getElementById('bdo-setting-accent');
+const detailSettingTheme      = document.getElementById('bdo-setting-theme');
+
+function populateBookSettingControls(book) {
+  const settings = sanitizeBookSettings(book.settings || {});
+  detailSettingChunk.value = String(settings.chunkSize ?? currentUserSettings.chunkSize ?? 1);
+  detailSettingCheckpoint.value = String(settings.checkpointInterval ?? currentUserSettings.checkpointInterval ?? 500);
+  detailSettingPunc.value = settings.puncPauseMode || currentUserSettings.puncPauseMode || 'default';
+  detailSettingFont.value = settings.font || currentUserSettings.font || 'atkinson';
+  detailSettingAccent.value = settings.accent || currentUserSettings.accent || 'default';
+  detailSettingTheme.value = settings.theme || '';
+}
+
+async function saveBookSettingsFromDetail() {
+  if (!detailBookId) return;
+  const book = await dbGet(detailBookId);
+  if (!book) return;
+
+  const nextSettings = sanitizeBookSettings({
+    ...(book.settings || {}),
+    wpm: detailBookWpm,
+    chunkSize: parseInt(detailSettingChunk.value, 10),
+    checkpointInterval: parseInt(detailSettingCheckpoint.value, 10),
+    puncPauseMode: detailSettingPunc.value,
+    font: detailSettingFont.value,
+    accent: detailSettingAccent.value,
+    theme: detailSettingTheme.value,
+  });
+  book.settings = nextSettings;
+  book.wpm = nextSettings.wpm || detailBookWpm || book.wpm || 300;
+  await dbPut(book);
+  renderLibrary();
+  if (sbClient && sbUser) cloudPushBook(book).catch(console.warn);
+}
+
+async function applyBookSettingsForReading(book) {
+  const next = getEffectiveBookSettings(book);
+  applySettingsToUI(next, { syncCloud: false });
+}
 
 async function openBookDetail(id) {
   const book = await dbGet(id);
   if (!book) return;
   detailBookId  = id;
-  detailBookWpm = book.wpm || 300;
+  detailBookWpm = book.settings?.wpm || book.wpm || 300;
 
   const overlay = document.getElementById('book-detail-overlay');
   document.getElementById('bdo-title').textContent     = book.title;
@@ -2366,6 +2561,7 @@ async function openBookDetail(id) {
     remMins > 0 ? `~${remMins} min left` : 'Complete';
 
   document.getElementById('bdo-wpm-val').textContent = detailBookWpm;
+  populateBookSettingControls(book);
 
   // Show/hide chapters button
   const chapBtn = document.getElementById('bdo-chapters-btn');
@@ -2417,29 +2613,49 @@ function closeBookDetail() {
 document.getElementById('bdo-wpm-down').addEventListener('click', async () => {
   detailBookWpm = Math.max(50, detailBookWpm - 25);
   document.getElementById('bdo-wpm-val').textContent = detailBookWpm;
-  if (detailBookId) {
-    const book = await dbGet(detailBookId);
-    if (book) { book.wpm = detailBookWpm; await dbPut(book); }
-  }
+  saveBookSettingsFromDetail();
 });
 document.getElementById('bdo-wpm-up').addEventListener('click', async () => {
   detailBookWpm = Math.min(2000, detailBookWpm + 25);
   document.getElementById('bdo-wpm-val').textContent = detailBookWpm;
-  if (detailBookId) {
-    const book = await dbGet(detailBookId);
-    if (book) { book.wpm = detailBookWpm; await dbPut(book); }
-  }
+  saveBookSettingsFromDetail();
 });
 
 document.getElementById('bdo-back-btn').addEventListener('click', closeBookDetail);
 document.getElementById('bdo-resume-btn').addEventListener('click', () => {
   if (detailBookId) resumeBook(detailBookId);
 });
+[
+  detailSettingChunk,
+  detailSettingCheckpoint,
+  detailSettingPunc,
+  detailSettingFont,
+  detailSettingAccent,
+  detailSettingTheme,
+].forEach(el => el.addEventListener('change', () => {
+  saveBookSettingsFromDetail();
+}));
+document.getElementById('bdo-book-reset-btn').addEventListener('click', async () => {
+  if (!detailBookId) return;
+  const book = await dbGet(detailBookId);
+  if (!book) return;
+  book.settings = {};
+  book.wpm = currentUserSettings.wpm || 300;
+  detailBookWpm = book.wpm;
+  document.getElementById('bdo-wpm-val').textContent = detailBookWpm;
+  await dbPut(book);
+  populateBookSettingControls(book);
+  renderLibrary();
+  if (sbClient && sbUser) cloudPushBook(book).catch(console.warn);
+  showToast('Book settings reset to global defaults.', 'ok');
+});
 
 async function resumeBook(id) {
   closeBookDetail();
   const book = await dbGet(id);
   if (!book) return;
+  await applyBookSettingsForReading(book);
+  const effectiveSettings = getEffectiveBookSettings(book);
 
   // Load into reader
   textInput.value = book.content;
@@ -2447,7 +2663,7 @@ async function resumeBook(id) {
   activeBookId    = id;
 
   // Set WPM
-  setWPM(book.wpm || 300);
+  setWPM(effectiveSettings.wpm || book.wpm || 300);
   wpmSlider.value = wpm;
 
   // Start reading
@@ -2458,8 +2674,12 @@ async function resumeBook(id) {
   checkpointNum      = 0;
   nextCpIdx          = 0;
   notes              = (book.notes || []).slice();
-  checkpointInterval = parseInt(checkpointSelect.value) || 500;
-  chunkSize          = parseInt(chunkSlider.value) || 1;
+  checkpointInterval = effectiveSettings.checkpointInterval ?? (parseInt(checkpointSelect.value) || 500);
+  chunkSize          = effectiveSettings.chunkSize ?? (parseInt(chunkSlider.value) || 1);
+  applyPunctuationProfile(effectiveSettings.puncPauseMode || 'default', { persist: false });
+  checkpointSelect.value = String(checkpointInterval);
+  chunkSlider.value = String(chunkSize);
+  chunkLabel.textContent = chunkSize === 1 ? '1 word' : `${chunkSize} words`;
   checkpointIndices  = computeCheckpoints(tokensMeta, checkpointInterval);
 
   // Fast-forward checkpoint counter to match saved position
@@ -2807,15 +3027,16 @@ async function openLibraryChapterPicker(bookId) {
 
     // Chapter item click → read
     chList.querySelectorAll('.ch-item').forEach(el => {
-      el.addEventListener('click', e => {
+      el.addEventListener('click', async e => {
         if (e.target.classList.contains('ch-read-toggle')) return;
         const ch = book.chapters[parseInt(el.dataset.idx)];
+        await applyBookSettingsForReading(book);
         chapterModal.classList.remove('show');
         textInput.value              = ch.text;
         textInput.dataset.sourceType = book.type;
         loadedTitle                  = ch.title;
         activeBookId                 = bookId;
-        setWPM(book.wpm || wpm);
+        setWPM(getEffectiveBookSettings(book).wpm || book.wpm || wpm);
         switchTab('read');
         setTimeout(() => startReading(), 50);
       });
@@ -2824,12 +3045,13 @@ async function openLibraryChapterPicker(bookId) {
 
   renderChapterList();
 
-  chLoadAllBtn.onclick = () => {
+  chLoadAllBtn.onclick = async () => {
+    await applyBookSettingsForReading(book);
     textInput.value              = book.content;
     textInput.dataset.sourceType = book.type;
     loadedTitle                  = book.title;
     activeBookId                 = bookId;
-    setWPM(book.wpm || wpm);
+    setWPM(getEffectiveBookSettings(book).wpm || book.wpm || wpm);
     chapterModal.classList.remove('show');
     switchTab('read');
     setTimeout(() => startReading(), 50);
@@ -3400,6 +3622,11 @@ function showDone() {
         book.lastRead   = Date.now();
         book.notes      = notes.slice();
         book.wpm        = wpm;
+        book.settings   = sanitizeBookSettings({
+          ...(book.settings || {}),
+          ...Object.fromEntries(BOOK_SETTING_KEYS.map(k => [k, currentUserSettings[k]])),
+          wpm,
+        });
         book.totalWords = words.length;
         // Auto-mark the current chapter as read if we can match by title
         if (book.chapters && loadedTitle) {
@@ -4870,6 +5097,7 @@ async function cloudPushBook(book) {
     date_added:    book.dateAdded,
     last_read:     book.lastRead   || null,
     read_chapters: book.readChapters || [],
+    book_settings: sanitizeBookSettings(book.settings || {}),
     has_cover:     !!book.coverImage,
     has_chapters:  !!(book.chapters && book.chapters.length),
   };
@@ -4924,6 +5152,7 @@ async function cloudPullBook(meta) {
     dateAdded:    meta.date_added,
     lastRead:     meta.last_read,
     readChapters: meta.read_chapters || [],
+    settings:     sanitizeBookSettings(meta.book_settings || {}),
   };
 }
 

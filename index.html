@@ -3036,9 +3036,10 @@ async function openLibraryChapterPicker(bookId) {
         textInput.dataset.sourceType = book.type;
         loadedTitle                  = ch.title;
         activeBookId                 = bookId;
-        setWPM(getEffectiveBookSettings(book).wpm || book.wpm || wpm);
+        const effectiveSettings = getEffectiveBookSettings(book);
+        setWPM(effectiveSettings.wpm || book.wpm || wpm);
         switchTab('read');
-        setTimeout(() => startReading(), 50);
+        setTimeout(() => startReading(effectiveSettings), 50);
       });
     });
   };
@@ -3051,10 +3052,11 @@ async function openLibraryChapterPicker(bookId) {
     textInput.dataset.sourceType = book.type;
     loadedTitle                  = book.title;
     activeBookId                 = bookId;
-    setWPM(getEffectiveBookSettings(book).wpm || book.wpm || wpm);
+    const effectiveSettings = getEffectiveBookSettings(book);
+    setWPM(effectiveSettings.wpm || book.wpm || wpm);
     chapterModal.classList.remove('show');
     switchTab('read');
-    setTimeout(() => startReading(), 50);
+    setTimeout(() => startReading(effectiveSettings), 50);
   };
 
   chapterModal.classList.add('show');
@@ -3651,7 +3653,7 @@ function showDone() {
 // ═══════════════════════════════════════════
 //  START / BACK
 // ═══════════════════════════════════════════
-function startReading() {
+function startReading(settingsOverride = null) {
   const raw = textInput.value.trim();
   if (!raw || raw.length < 5) { showToast('Please add some text first!', 'err'); return; }
   // Derive title from first line if not set by chapter picker
@@ -3668,8 +3670,26 @@ function startReading() {
   checkpointNum      = 0;
   nextCpIdx          = 0;
   notes              = [];
-  checkpointInterval = parseInt(checkpointSelect.value) || 500;
-  chunkSize          = parseInt(chunkSlider.value) || 1;
+  const effectiveStartSettings = settingsOverride && typeof settingsOverride === 'object'
+    ? {
+      checkpointInterval: settingsOverride.checkpointInterval,
+      chunkSize: settingsOverride.chunkSize,
+      puncPauseMode: settingsOverride.puncPauseMode,
+      wpm: settingsOverride.wpm,
+    }
+    : null;
+  const startCheckpoint = effectiveStartSettings?.checkpointInterval ?? (parseInt(checkpointSelect.value, 10) || 500);
+  const startChunk      = effectiveStartSettings?.chunkSize ?? (parseInt(chunkSlider.value, 10) || 1);
+  const startWpm        = effectiveStartSettings?.wpm ?? wpm;
+  const startPuncMode   = effectiveStartSettings?.puncPauseMode || puncPauseMode || 'default';
+
+  checkpointInterval = startCheckpoint;
+  chunkSize          = startChunk;
+  setWPM(startWpm);
+  applyPunctuationProfile(startPuncMode, { persist: false });
+  checkpointSelect.value = String(checkpointInterval);
+  chunkSlider.value = String(chunkSize);
+  chunkLabel.textContent = chunkSize === 1 ? '1 word' : `${chunkSize} words`;
   checkpointIndices  = computeCheckpoints(tokensMeta, checkpointInterval);
 
   updateNotesUI();

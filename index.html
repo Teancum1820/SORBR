@@ -346,6 +346,7 @@
     font-size: var(--word-size); letter-spacing: 0.04em;
     color: var(--text);
     text-align: center; position: relative; line-height: 1.15;
+    max-width: 100%; overflow-wrap: break-word;
   }
   #current-word .orp { color: var(--muted); }
 
@@ -940,7 +941,7 @@
     display: none !important;
   }
   body.fullscreen-reader #word-stage {
-    flex: 1; padding: 0;
+    flex: 1; padding: 0 24px;
   }
   /* In fullscreen, hide the "tap to play/pause" hint so nothing overlaps the word */
   body.fullscreen-reader #word-stage::after { display: none; }
@@ -1198,6 +1199,14 @@
   }
   @media (max-width: 420px) {
     .lib-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  }
+  /* On small screens, stack toolbar so search takes full width on its own row */
+  @media (max-width: 480px) {
+    .lib-toolbar { flex-wrap: wrap; gap: 8px; }
+    .lib-toolbar-left { width: 100%; flex: none; }
+    .lib-sort { flex: 1; min-width: 0; }
+    .lib-grid { gap: 8px; }
+    .book-card-cover { height: 120px; }
   }
 
   .lib-empty {
@@ -5396,11 +5405,18 @@ async function syncAllFromCloud() {
       }
     }
 
-    // Push local books that are absent from cloud (skip deleted ones)
+    // Push local books that are absent from cloud OR newer than cloud version
+    // (handles cases where the throttled in-session push failed, e.g. network/background)
     for (const local of localBooks) {
       if (deletedIds.has(local.id)) continue;
       if (!cloudIds.has(local.id)) {
+        // Book not in cloud at all — push it
         await cloudPushBook(local);
+      } else {
+        // Book exists in both places — push if local copy is more recent
+        const cloudMeta = (cloudMetas || []).find(m => m.id === local.id);
+        const localNewer = (local.lastRead || 0) > (cloudMeta?.last_read || 0);
+        if (localNewer) await cloudPushBook(local);
       }
     }
 

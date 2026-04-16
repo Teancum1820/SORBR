@@ -1876,6 +1876,34 @@
           </div>
         </div>
 
+        <!-- Help & Error Codes -->
+        <div class="settings-section" id="error-codes-section">
+          <span class="settings-label">Help &amp; Error Codes</span>
+          <div style="font-size:12px;line-height:1.6;opacity:0.85;">
+            <p style="margin:0 0 8px;">If sync fails, an error code will appear to help you diagnose the problem.</p>
+            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+              <thead>
+                <tr style="text-align:left;opacity:0.6;border-bottom:1px solid currentColor;">
+                  <th style="padding:3px 6px 3px 0;">Code</th>
+                  <th style="padding:3px 6px;">Meaning</th>
+                  <th style="padding:3px 0 3px 6px;">Fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding:3px 6px 3px 0;white-space:nowrap;font-family:monospace;">SYNC-000</td><td style="padding:3px 6px;">Unknown sync error</td><td style="padding:3px 0 3px 6px;">Try again; check browser console for details.</td></tr>
+                <tr><td style="padding:3px 6px 3px 0;white-space:nowrap;font-family:monospace;">SYNC-001</td><td style="padding:3px 6px;">Network failure</td><td style="padding:3px 0 3px 6px;">Check your internet connection and retry.</td></tr>
+                <tr><td style="padding:3px 6px 3px 0;white-space:nowrap;font-family:monospace;">SYNC-002</td><td style="padding:3px 6px;">Session expired</td><td style="padding:3px 0 3px 6px;">Sign out and sign back in.</td></tr>
+                <tr><td style="padding:3px 6px 3px 0;white-space:nowrap;font-family:monospace;">SYNC-003</td><td style="padding:3px 6px;">Book upload failed</td><td style="padding:3px 0 3px 6px;">File may be too large or storage is full.</td></tr>
+                <tr><td style="padding:3px 6px 3px 0;white-space:nowrap;font-family:monospace;">SYNC-004</td><td style="padding:3px 6px;">Metadata write failed</td><td style="padding:3px 0 3px 6px;">Check connection or re-add the book.</td></tr>
+                <tr><td style="padding:3px 6px 3px 0;white-space:nowrap;font-family:monospace;">SYNC-005</td><td style="padding:3px 6px;">Book download failed</td><td style="padding:3px 0 3px 6px;">Sign out and back in; data may be corrupt.</td></tr>
+                <tr><td style="padding:3px 6px 3px 0;white-space:nowrap;font-family:monospace;">SYNC-006</td><td style="padding:3px 6px;">Storage quota exceeded</td><td style="padding:3px 0 3px 6px;">Delete books from your library to free space.</td></tr>
+                <tr><td style="padding:3px 6px 3px 0;white-space:nowrap;font-family:monospace;">SYNC-007</td><td style="padding:3px 6px;">Permission denied</td><td style="padding:3px 0 3px 6px;">Sign out and back in; contact support if it persists.</td></tr>
+              </tbody>
+            </table>
+            <p style="margin:8px 0 0;">Questions? Email <span class="email">feedback@sorbr.com</span></p>
+          </div>
+        </div>
+
         </div><!-- /#advanced-settings -->
 
       </div><!-- /.settings-card -->
@@ -1930,7 +1958,7 @@
       </div>
       <p class="feedback-note">Send Feedback and Ideas to <span class="email">feedback@sorbr.com</span></p>
       <a class="footer-blog-btn" href="/blog" title="Blog">Blog</a>
-      <span>Sorbr v1.8.6 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
+      <span>Sorbr v1.8.7 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
     </div>
   </div>
@@ -5267,14 +5295,14 @@ async function cloudPushBook(book) {
   const contentBytes = new TextEncoder().encode(book.content || '');
   const { error: contentErr } = await sbClient.storage.from(BUCKET)
     .upload(`${uid}/${book.id}/content`, contentBytes, { contentType: 'text/plain; charset=utf-8', upsert: true });
-  if (contentErr) throw contentErr;
+  if (contentErr) { contentErr.syncCode = 'SYNC-003'; throw contentErr; }
 
   // Upload chapters JSON (includes full chapter text)
   if (book.chapters && book.chapters.length) {
     const chapBytes = new TextEncoder().encode(JSON.stringify(book.chapters));
     const { error: chapErr } = await sbClient.storage.from(BUCKET)
       .upload(`${uid}/${book.id}/chapters`, chapBytes, { contentType: 'application/json', upsert: true });
-    if (chapErr) throw chapErr;
+    if (chapErr) { chapErr.syncCode = 'SYNC-003'; throw chapErr; }
   }
 
   // Upload cover image (base64 data URL → binary)
@@ -5309,7 +5337,7 @@ async function cloudPushBook(book) {
     has_chapters:  !!(book.chapters && book.chapters.length),
   };
   const { error } = await sbClient.from('library_books').upsert(meta);
-  if (error) throw error;
+  if (error) { error.syncCode = 'SYNC-004'; throw error; }
 }
 
 // Download a book from cloud and save to local IndexedDB (no re-upload)
@@ -5375,6 +5403,17 @@ async function cloudDeleteBook(bookId) {
   ]);
 }
 
+function getSyncErrorCode(e) {
+  if (e?.syncCode) return e.syncCode;
+  const msg = (e?.message || '').toLowerCase();
+  const status = e?.status || e?.statusCode || 0;
+  if (status === 401 || msg.includes('jwt') || msg.includes('expired') || msg.includes('not authenticated')) return 'SYNC-002';
+  if (status === 403 || msg.includes('permission') || msg.includes('denied')) return 'SYNC-007';
+  if (status === 413 || msg.includes('quota') || msg.includes('too large')) return 'SYNC-006';
+  if (!navigator.onLine || msg.includes('fetch') || msg.includes('network') || e instanceof TypeError) return 'SYNC-001';
+  return 'SYNC-000';
+}
+
 // Full two-way sync: pull cloud → local, push local → cloud
 let _isSyncing = false;
 async function syncAllFromCloud() {
@@ -5434,7 +5473,7 @@ async function syncAllFromCloud() {
   } catch (e) {
     console.error('Cloud sync error:', e);
     setCloudState('error');
-    authSyncStat.textContent = 'Sync failed — check connection.';
+    authSyncStat.textContent = `Sync failed [${getSyncErrorCode(e)}] — check connection.`;
   } finally {
     _isSyncing = false;
   }

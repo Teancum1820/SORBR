@@ -5141,7 +5141,7 @@ function initSupabase() {
     sbUser = session?.user ?? null;
     updateCloudUI();
     if (sbUser) pullUserSettingsFromCloud();
-    if (sbUser && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+    if (sbUser && event === 'SIGNED_IN') {
       syncAllFromCloud();
     }
   });
@@ -5265,14 +5265,16 @@ async function cloudPushBook(book) {
 
   // Upload content
   const contentBytes = new TextEncoder().encode(book.content || '');
-  await sbClient.storage.from(BUCKET)
+  const { error: contentErr } = await sbClient.storage.from(BUCKET)
     .upload(`${uid}/${book.id}/content`, contentBytes, { contentType: 'text/plain; charset=utf-8', upsert: true });
+  if (contentErr) throw contentErr;
 
   // Upload chapters JSON (includes full chapter text)
   if (book.chapters && book.chapters.length) {
     const chapBytes = new TextEncoder().encode(JSON.stringify(book.chapters));
-    await sbClient.storage.from(BUCKET)
+    const { error: chapErr } = await sbClient.storage.from(BUCKET)
       .upload(`${uid}/${book.id}/chapters`, chapBytes, { contentType: 'application/json', upsert: true });
+    if (chapErr) throw chapErr;
   }
 
   // Upload cover image (base64 data URL → binary)
@@ -5374,8 +5376,11 @@ async function cloudDeleteBook(bookId) {
 }
 
 // Full two-way sync: pull cloud → local, push local → cloud
+let _isSyncing = false;
 async function syncAllFromCloud() {
   if (!sbClient || !sbUser) return;
+  if (_isSyncing) return;
+  _isSyncing = true;
   setCloudState('syncing');
   authSyncStat.textContent = 'Syncing…';
   try {
@@ -5430,6 +5435,8 @@ async function syncAllFromCloud() {
     console.error('Cloud sync error:', e);
     setCloudState('error');
     authSyncStat.textContent = 'Sync failed — check connection.';
+  } finally {
+    _isSyncing = false;
   }
 }
 

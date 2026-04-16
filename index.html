@@ -98,6 +98,24 @@
     --logo-src: url('/icons/logo-3d-light.png');
   }
 
+  /* ── E-Reader mode ── */
+  body.ereader {
+    --bg: #f4efe4;
+    --surface: #ece5d4;
+    --surface2: #e5dcc8;
+    --border: #c9bba0;
+    --accent: #6b4226;
+    --accent2: #b83c2e;
+    --accent3: #5a3620;
+    --text: #2a1a0d;
+    --muted: #8a7260;
+    --word-color: #1a0e06;
+    --grid-line: rgba(107,66,38,0.05);
+    --btn-start-bg: #6b4226;
+    --btn-start-text: #f4efe4;
+    --logo-src: url('/icons/logo-3d-light.png');
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
@@ -875,6 +893,66 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  /* ══ FULLSCREEN READING MODE ══ */
+  /* Only show fullscreen button on touch/mobile devices */
+  #fullscreen-btn { display: none; }
+  @media (hover: none), (max-width: 768px) {
+    #fullscreen-btn { display: flex; align-items: center; justify-content: center; }
+  }
+
+  /* Fullscreen exit button — hidden until fullscreen mode active */
+  #fullscreen-exit-btn {
+    display: none;
+    position: fixed;
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+    z-index: 210;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.8);
+    border-radius: 50%;
+    width: 40px; height: 40px;
+    font-size: 18px;
+    cursor: pointer;
+    touch-action: manipulation;
+    align-items: center; justify-content: center;
+    transition: opacity 0.3s, background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body.ereader #fullscreen-exit-btn {
+    background: rgba(107,66,38,0.2);
+    border-color: rgba(107,66,38,0.35);
+    color: rgba(42,26,13,0.8);
+  }
+
+  /* Fullscreen active state */
+  body.fullscreen-reader #reader-panel {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; flex-direction: column;
+    background: var(--bg);
+  }
+  body.fullscreen-reader .reader-header,
+  body.fullscreen-reader #progress-wrap,
+  body.fullscreen-reader #context-strip,
+  body.fullscreen-reader #controls,
+  body.fullscreen-reader #secondary-controls,
+  body.fullscreen-reader .key-hint {
+    display: none !important;
+  }
+  body.fullscreen-reader #word-stage {
+    flex: 1; padding: 0;
+  }
+  /* In fullscreen, hide the "tap to play/pause" hint so nothing overlaps the word */
+  body.fullscreen-reader #word-stage::after { display: none; }
+  /* Show the exit button when fullscreen is active */
+  body.fullscreen-reader #fullscreen-exit-btn { display: flex; }
+  /* Larger word size in landscape fullscreen */
+  @media (orientation: landscape) {
+    body.fullscreen-reader #current-word {
+      font-size: clamp(56px, 12vw, 110px);
+    }
+  }
+
   /* ── Prevent text selection during reading (avoids accidental selection on tap) ── */
   #word-stage, #current-word, #context-strip {
     user-select: none;
@@ -1481,11 +1559,11 @@
     border: none; padding: 0; background: transparent;
   }
 
-  /* ── Font buttons ── */
+  /* ── Font buttons & Theme buttons (shared style) ── */
   .font-row {
     display: flex; gap: 6px; flex-wrap: wrap;
   }
-  .font-btn {
+  .font-btn, .theme-btn {
     padding: 7px 14px; border-radius: var(--radius-sm);
     border: 1px solid var(--border);
     background: var(--surface2); color: var(--muted);
@@ -1493,12 +1571,13 @@
     touch-action: manipulation; min-height: 36px; line-height: 1;
     white-space: nowrap;
   }
-  .font-btn:hover { border-color: var(--accent); color: var(--text); }
-  .font-btn.active {
+  .font-btn:hover, .theme-btn:hover { border-color: var(--accent); color: var(--text); }
+  .font-btn.active, .theme-btn.active {
     border-color: var(--accent); color: var(--accent);
     background: rgba(255,255,255,0.05);
   }
-  body.light .font-btn.active { background: var(--surface2); }
+  body.light .font-btn.active, body.light .theme-btn.active { background: var(--surface2); }
+  body.ereader .theme-btn.active { background: rgba(107,66,38,0.08); }
   .font-btn[data-font="serif"]    { font-family: 'Lora', serif; }
   .font-btn[data-font="dyslexic"] { font-family: 'OpenDyslexic', sans-serif; font-size: 12px; }
   .font-btn[data-font="atkinson"] { font-family: 'Atkinson Hyperlegible', sans-serif; }
@@ -1776,6 +1855,16 @@
           </div>
         </div>
 
+        <!-- Display Theme (hidden easter-egg section) -->
+        <div class="settings-section" id="display-theme-section">
+          <span class="settings-label" style="font-size:10px;opacity:0.6;letter-spacing:0.1em;">Display Theme</span>
+          <div class="font-row">
+            <button class="theme-btn active" data-theme="dark">Dark</button>
+            <button class="theme-btn" data-theme="light">Light</button>
+            <button class="theme-btn" data-theme="ereader" title="E-Reader — warm sepia tones, easy on the eyes">E-Reader</button>
+          </div>
+        </div>
+
         </div><!-- /#advanced-settings -->
 
       </div><!-- /.settings-card -->
@@ -1830,7 +1919,7 @@
       </div>
       <p class="feedback-note">Send Feedback and Ideas to <span class="email">feedback@sorbr.com</span></p>
       <a class="footer-blog-btn" href="/blog" title="Blog">Blog</a>
-      <span>Sorbr v1.8.5 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
+      <span>Sorbr v1.8.6 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
     </div>
   </div>
@@ -1840,6 +1929,7 @@
     <div class="reader-header">
       <button class="reader-back-btn" id="reader-back-btn">← Save &amp; Exit</button>
       <span class="reader-title" id="reader-title"></span>
+      <button class="reader-back-btn" id="fullscreen-btn" title="Fullscreen reading mode" aria-label="Fullscreen reading mode" style="font-size:16px;padding:5px 10px;min-width:44px;">⛶</button>
       <button class="reader-back-btn" id="more-controls-btn" title="More controls" aria-label="More controls" style="font-size:16px;padding:5px 10px;min-width:44px;">···</button>
     </div>
     <div id="progress-wrap">
@@ -1909,7 +1999,8 @@
   </div>
 </main>
 
-
+<!-- Fullscreen reading mode exit button -->
+<button id="fullscreen-exit-btn" title="Exit fullscreen" aria-label="Exit fullscreen reading mode">✕</button>
 
 <!-- ══ NOTE SELECT MODAL ══ -->
 <div id="note-select-modal">
@@ -2150,7 +2241,7 @@ function sanitizeBookSettings(raw = {}) {
   if (Object.prototype.hasOwnProperty.call(raw, 'puncPauseMode') && ['slow', 'default', 'fast'].includes(raw.puncPauseMode)) clean.puncPauseMode = raw.puncPauseMode;
   if (Object.prototype.hasOwnProperty.call(raw, 'font') && FONT_OPTIONS[raw.font]) clean.font = raw.font;
   if (Object.prototype.hasOwnProperty.call(raw, 'accent') && ACCENT_PRESETS[raw.accent]) clean.accent = raw.accent;
-  if (Object.prototype.hasOwnProperty.call(raw, 'theme') && ['light', 'dark', '', null].includes(raw.theme)) clean.theme = raw.theme || '';
+  if (Object.prototype.hasOwnProperty.call(raw, 'theme') && ['light', 'dark', 'ereader', '', null].includes(raw.theme)) clean.theme = raw.theme || '';
   return clean;
 }
 
@@ -4716,6 +4807,7 @@ const themeIcon      = document.getElementById('theme-icon');
 const panelLogoImg   = document.getElementById('panel-logo-img');
 
 function applyTheme(isLight) {
+  document.body.classList.remove('ereader');
   if (isLight) {
     document.body.classList.add('light');
     themeIcon.textContent = '☀️';
@@ -4725,8 +4817,26 @@ function applyTheme(isLight) {
     themeIcon.textContent = '🌙';
     if (panelLogoImg) panelLogoImg.src = '/icons/logo-3d-dark.png';
   }
-  localStorage.setItem('sorbr-theme', isLight ? 'light' : 'dark');
-  persistUserSettings({ theme: isLight ? 'light' : 'dark' });
+  const themeName = isLight ? 'light' : 'dark';
+  localStorage.setItem('sorbr-theme', themeName);
+  persistUserSettings({ theme: themeName });
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.theme === themeName);
+  });
+}
+
+function applyEreaderTheme() {
+  document.body.classList.remove('light');
+  document.body.classList.add('ereader');
+  themeIcon.textContent = '📖';
+  if (panelLogoImg) panelLogoImg.src = '/icons/logo-3d-light.png';
+  localStorage.setItem('sorbr-theme', 'ereader');
+  persistUserSettings({ theme: 'ereader' });
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.theme === 'ereader');
+  });
+  const savedAccent = localStorage.getItem('sorbr-accent') || 'default';
+  applyAccentColor(savedAccent);
 }
 
 themeToggleBtn.addEventListener('click', () => {
@@ -4788,7 +4898,7 @@ const ACCENT_PRESETS = {
 };
 
 function applyAccentColor(colorKey) {
-  const isLight = document.body.classList.contains('light');
+  const isLight = document.body.classList.contains('light') || document.body.classList.contains('ereader');
   const preset  = ACCENT_PRESETS[colorKey] || ACCENT_PRESETS.default;
   const hex     = isLight ? preset.light : preset.dark;
   const root    = document.documentElement;
@@ -4825,6 +4935,68 @@ applyTheme = function(isLight) {
   const savedAccent = localStorage.getItem('sorbr-accent') || 'default';
   applyAccentColor(savedAccent);
 };
+
+// Wire display theme buttons (dark / light / ereader)
+document.querySelectorAll('.theme-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const t = btn.dataset.theme;
+    if (t === 'ereader') {
+      applyEreaderTheme();
+    } else {
+      applyTheme(t === 'light');
+    }
+  });
+});
+
+// ═══════════════════════════════════════════
+//  FULLSCREEN READING MODE
+// ═══════════════════════════════════════════
+let isFullscreenReader = false;
+
+function enterFullscreenReader() {
+  isFullscreenReader = true;
+  document.body.classList.add('fullscreen-reader');
+  // Try native fullscreen (works on Android; may be restricted on iOS PWA)
+  const el = document.documentElement;
+  if (el.requestFullscreen) {
+    el.requestFullscreen().catch(() => {});
+  } else if (el.webkitRequestFullscreen) {
+    el.webkitRequestFullscreen();
+  }
+}
+
+function exitFullscreenReader() {
+  isFullscreenReader = false;
+  document.body.classList.remove('fullscreen-reader');
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+}
+
+document.getElementById('fullscreen-btn').addEventListener('click', () => {
+  if (isFullscreenReader) {
+    exitFullscreenReader();
+  } else {
+    enterFullscreenReader();
+  }
+});
+
+document.getElementById('fullscreen-exit-btn').addEventListener('click', exitFullscreenReader);
+
+// Exit fullscreen reader when browser fullscreen exits (e.g. user presses Escape)
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && isFullscreenReader) {
+    isFullscreenReader = false;
+    document.body.classList.remove('fullscreen-reader');
+  }
+});
+document.addEventListener('webkitfullscreenchange', () => {
+  if (!document.webkitFullscreenElement && isFullscreenReader) {
+    isFullscreenReader = false;
+    document.body.classList.remove('fullscreen-reader');
+  }
+});
 
 // Apply saved local settings on startup
 applySettingsToUI(currentUserSettings, { syncCloud: false });
@@ -4889,7 +5061,9 @@ function applySettingsToUI(settings = {}, { syncCloud = false } = {}) {
   applyFont(next.font);
   applyAccentColor(next.accent);
 
-  if (next.theme === 'light' || next.theme === 'dark') {
+  if (next.theme === 'ereader') {
+    applyEreaderTheme();
+  } else if (next.theme === 'light' || next.theme === 'dark') {
     applyTheme(next.theme === 'light');
   } else {
     applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches);

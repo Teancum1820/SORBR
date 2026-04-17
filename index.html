@@ -98,24 +98,6 @@
     --logo-src: url('/icons/logo-3d-light.png');
   }
 
-  /* ── E-Reader mode ── */
-  body.ereader {
-    --bg: #f4efe4;
-    --surface: #ece5d4;
-    --surface2: #e5dcc8;
-    --border: #c9bba0;
-    --accent: #6b4226;
-    --accent2: #b83c2e;
-    --accent3: #5a3620;
-    --text: #2a1a0d;
-    --muted: #8a7260;
-    --word-color: #1a0e06;
-    --grid-line: rgba(107,66,38,0.05);
-    --btn-start-bg: #6b4226;
-    --btn-start-text: #f4efe4;
-    --logo-src: url('/icons/logo-3d-light.png');
-  }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
@@ -921,12 +903,6 @@
     transition: opacity 0.3s, background 0.2s;
     -webkit-tap-highlight-color: transparent;
   }
-  body.ereader #fullscreen-exit-btn {
-    background: rgba(107,66,38,0.2);
-    border-color: rgba(107,66,38,0.35);
-    color: rgba(42,26,13,0.8);
-  }
-
   /* Fullscreen active state */
   body.fullscreen-reader #reader-panel {
     position: fixed; inset: 0; z-index: 200;
@@ -1588,7 +1564,6 @@
     background: rgba(255,255,255,0.05);
   }
   body.light .font-btn.active, body.light .theme-btn.active { background: var(--surface2); }
-  body.ereader .theme-btn.active { background: rgba(107,66,38,0.08); }
   .font-btn[data-font="serif"]    { font-family: 'Lora', serif; }
   .font-btn[data-font="dyslexic"] { font-family: 'OpenDyslexic', sans-serif; font-size: 12px; }
   .font-btn[data-font="atkinson"] { font-family: 'Atkinson Hyperlegible', sans-serif; }
@@ -1872,7 +1847,6 @@
           <div class="font-row">
             <button class="theme-btn active" data-theme="dark">Dark</button>
             <button class="theme-btn" data-theme="light">Light</button>
-            <button class="theme-btn" data-theme="ereader" title="E-Reader — warm sepia tones, easy on the eyes">E-Reader</button>
           </div>
         </div>
 
@@ -1958,7 +1932,7 @@
       </div>
       <p class="feedback-note">Send Feedback and Ideas to <span class="email">feedback@sorbr.com</span></p>
       <a class="footer-blog-btn" href="/blog" title="Blog">Blog</a>
-      <span>Sorbr v1.8.7 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
+      <span>Sorbr v1.8.8 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
     </div>
   </div>
@@ -2269,6 +2243,7 @@ const PUNC_PROFILES    = {
   fast:    { sentence: 2.6, clause: 1.45, dash: 1.2 }
 };
 const USER_SETTINGS_KEY = 'sorbr-user-settings';
+const USER_STATS_KEY = 'sorbr-user-stats';
 const BOOK_SETTING_KEYS = ['wpm', 'chunkSize', 'checkpointInterval', 'puncPauseMode', 'font', 'accent', 'theme'];
 
 function sanitizeBookSettings(raw = {}) {
@@ -2280,7 +2255,9 @@ function sanitizeBookSettings(raw = {}) {
   if (Object.prototype.hasOwnProperty.call(raw, 'puncPauseMode') && ['slow', 'default', 'fast'].includes(raw.puncPauseMode)) clean.puncPauseMode = raw.puncPauseMode;
   if (Object.prototype.hasOwnProperty.call(raw, 'font') && FONT_OPTIONS[raw.font]) clean.font = raw.font;
   if (Object.prototype.hasOwnProperty.call(raw, 'accent') && ACCENT_PRESETS[raw.accent]) clean.accent = raw.accent;
-  if (Object.prototype.hasOwnProperty.call(raw, 'theme') && ['light', 'dark', 'ereader', '', null].includes(raw.theme)) clean.theme = raw.theme || '';
+  if (Object.prototype.hasOwnProperty.call(raw, 'theme') && ['light', 'dark', '', null].includes(raw.theme)) clean.theme = raw.theme || '';
+  if (raw.theme === 'ereader') clean.theme = 'light';
+  if (Object.prototype.hasOwnProperty.call(raw, '__syncStamp')) clean.__syncStamp = clampNum(raw.__syncStamp, 0, Number.MAX_SAFE_INTEGER, Date.now());
   return clean;
 }
 
@@ -2346,6 +2323,49 @@ function loadUserSettings() {
   }
 }
 
+
+function getDefaultUserStats() {
+  return {
+    sessionsCompleted: 0,
+    notesSaved: 0,
+    wordsRead: 0,
+    lastSessionAt: 0,
+    updatedAt: 0,
+  };
+}
+
+function loadUserStats() {
+  const defaults = getDefaultUserStats();
+  try {
+    const raw = localStorage.getItem(USER_STATS_KEY);
+    if (!raw) return defaults;
+    const parsed = JSON.parse(raw);
+    return {
+      ...defaults,
+      ...parsed,
+      sessionsCompleted: clampNum(parsed.sessionsCompleted, 0, 100000000, defaults.sessionsCompleted),
+      notesSaved: clampNum(parsed.notesSaved, 0, 100000000, defaults.notesSaved),
+      wordsRead: clampNum(parsed.wordsRead, 0, 1000000000, defaults.wordsRead),
+      lastSessionAt: clampNum(parsed.lastSessionAt, 0, Number.MAX_SAFE_INTEGER, defaults.lastSessionAt),
+      updatedAt: clampNum(parsed.updatedAt, 0, Number.MAX_SAFE_INTEGER, defaults.updatedAt),
+    };
+  } catch (_) {
+    return defaults;
+  }
+}
+
+let userStats = loadUserStats();
+
+function persistUserStats(partial = {}, { syncCloud = true } = {}) {
+  userStats = {
+    ...userStats,
+    ...partial,
+    updatedAt: Date.now(),
+  };
+  localStorage.setItem(USER_STATS_KEY, JSON.stringify(userStats));
+  if (syncCloud) syncUserProfileToCloud().catch(() => {});
+}
+
 let currentUserSettings = loadUserSettings();
 let suppressSettingsPersist = false;
 
@@ -2354,7 +2374,7 @@ function persistUserSettings(partial = {}, { syncCloud = true } = {}) {
   currentUserSettings = { ...currentUserSettings, ...partial };
   localStorage.setItem(USER_SETTINGS_KEY, JSON.stringify(currentUserSettings));
   syncActiveBookSettingsFromCurrent().catch(() => {});
-  if (syncCloud) syncUserSettingsToCloud().catch(() => {});
+  if (syncCloud) syncUserProfileToCloud().catch(() => {});
 }
 
 async function syncActiveBookSettingsFromCurrent() {
@@ -2488,6 +2508,7 @@ async function saveProgressToLibrary() {
     wpm,
   });
   book.totalWords  = words.length;
+  book.settings = sanitizeBookSettings({ ...(book.settings || {}), __syncStamp: Date.now() });
   await dbPut(book);
 }
 
@@ -2514,6 +2535,7 @@ async function addToLibrary(title, content, type, coverImage, chapters) {
       font: currentUserSettings.font,
       accent: currentUserSettings.accent,
       theme: currentUserSettings.theme || '',
+      __syncStamp: Date.now(),
     }),
     dateAdded:   Date.now(),
     lastRead:    null,
@@ -2647,7 +2669,7 @@ async function saveBookSettingsFromDetail() {
     accent: detailSettingAccent.value,
     theme: detailSettingTheme.value,
   });
-  book.settings = nextSettings;
+  book.settings = sanitizeBookSettings({ ...nextSettings, __syncStamp: Date.now() });
   book.wpm = nextSettings.wpm || detailBookWpm || book.wpm || 300;
   await dbPut(book);
   renderLibrary();
@@ -3745,6 +3767,12 @@ function showDone() {
 
   const savedNotes = notes.filter(n => !n.skipped);
   doneStats.textContent = `${savedNotes.length} note${savedNotes.length !== 1 ? 's' : ''} saved`;
+  persistUserStats({
+    sessionsCompleted: (userStats.sessionsCompleted || 0) + 1,
+    notesSaved: (userStats.notesSaved || 0) + savedNotes.length,
+    wordsRead: (userStats.wordsRead || 0) + words.length,
+    lastSessionAt: Date.now(),
+  });
   doneOverlay.style.display = 'flex';
   // Mark book as 100% complete and auto-mark chapter as read
   if (activeBookId) {
@@ -3774,6 +3802,7 @@ function showDone() {
         } else {
           book.progress = 100;
         }
+        book.settings = sanitizeBookSettings({ ...(book.settings || {}), __syncStamp: Date.now() });
         dbPut(book);
       }
     });
@@ -4846,7 +4875,6 @@ const themeIcon      = document.getElementById('theme-icon');
 const panelLogoImg   = document.getElementById('panel-logo-img');
 
 function applyTheme(isLight) {
-  document.body.classList.remove('ereader');
   if (isLight) {
     document.body.classList.add('light');
     themeIcon.textContent = '☀️';
@@ -4862,20 +4890,6 @@ function applyTheme(isLight) {
   document.querySelectorAll('.theme-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.theme === themeName);
   });
-}
-
-function applyEreaderTheme() {
-  document.body.classList.remove('light');
-  document.body.classList.add('ereader');
-  themeIcon.textContent = '📖';
-  if (panelLogoImg) panelLogoImg.src = '/icons/logo-3d-light.png';
-  localStorage.setItem('sorbr-theme', 'ereader');
-  persistUserSettings({ theme: 'ereader' });
-  document.querySelectorAll('.theme-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.theme === 'ereader');
-  });
-  const savedAccent = localStorage.getItem('sorbr-accent') || 'default';
-  applyAccentColor(savedAccent);
 }
 
 themeToggleBtn.addEventListener('click', () => {
@@ -4937,7 +4951,7 @@ const ACCENT_PRESETS = {
 };
 
 function applyAccentColor(colorKey) {
-  const isLight = document.body.classList.contains('light') || document.body.classList.contains('ereader');
+  const isLight = document.body.classList.contains('light');
   const preset  = ACCENT_PRESETS[colorKey] || ACCENT_PRESETS.default;
   const hex     = isLight ? preset.light : preset.dark;
   const root    = document.documentElement;
@@ -4975,15 +4989,11 @@ applyTheme = function(isLight) {
   applyAccentColor(savedAccent);
 };
 
-// Wire display theme buttons (dark / light / ereader)
+// Wire display theme buttons (dark / light)
 document.querySelectorAll('.theme-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const t = btn.dataset.theme;
-    if (t === 'ereader') {
-      applyEreaderTheme();
-    } else {
-      applyTheme(t === 'light');
-    }
+    applyTheme(t === 'light');
   });
 });
 
@@ -5100,9 +5110,7 @@ function applySettingsToUI(settings = {}, { syncCloud = false } = {}) {
   applyFont(next.font);
   applyAccentColor(next.accent);
 
-  if (next.theme === 'ereader') {
-    applyEreaderTheme();
-  } else if (next.theme === 'light' || next.theme === 'dark') {
+  if (next.theme === 'light' || next.theme === 'dark') {
     applyTheme(next.theme === 'light');
   } else {
     applyTheme(window.matchMedia('(prefers-color-scheme: light)').matches);
@@ -5114,16 +5122,17 @@ function applySettingsToUI(settings = {}, { syncCloud = false } = {}) {
   }
 }
 
-async function syncUserSettingsToCloud() {
+async function syncUserProfileToCloud() {
   if (!sbClient || !sbUser || isApplyingCloudSettings) return;
   try {
     await sbClient.auth.updateUser({
       data: {
         sorbrSettings: currentUserSettings,
+        sorbrStats: userStats,
       }
     });
   } catch (e) {
-    console.warn('Could not sync settings to cloud:', e);
+    console.warn('Could not sync profile to cloud:', e);
   }
 }
 
@@ -5131,12 +5140,21 @@ async function pullUserSettingsFromCloud() {
   if (!sbUser) return;
   const cloudSettings = sbUser.user_metadata?.sorbrSettings;
   if (!cloudSettings || typeof cloudSettings !== 'object') {
-    syncUserSettingsToCloud();
+    syncUserProfileToCloud();
     return;
   }
   isApplyingCloudSettings = true;
   try {
     applySettingsToUI(cloudSettings, { syncCloud: false });
+    const cloudStats = sbUser.user_metadata?.sorbrStats;
+    if (cloudStats && typeof cloudStats === "object") {
+      if ((cloudStats.updatedAt || 0) >= (userStats.updatedAt || 0)) {
+        userStats = { ...getDefaultUserStats(), ...cloudStats };
+        localStorage.setItem(USER_STATS_KEY, JSON.stringify(userStats));
+      }
+    } else {
+      syncUserProfileToCloud();
+    }
   } finally {
     isApplyingCloudSettings = false;
   }
@@ -5330,9 +5348,9 @@ async function cloudPushBook(book) {
     notes:         book.notes      || [],
     wpm:           book.wpm        || 300,
     date_added:    book.dateAdded,
-    last_read:     book.lastRead   || null,
+    last_read:     getBookSyncStamp(book) || null,
     read_chapters: book.readChapters || [],
-    book_settings: sanitizeBookSettings(book.settings || {}),
+    book_settings: sanitizeBookSettings({ ...(book.settings || {}), __syncStamp: getBookSyncStamp(book) }),
     has_cover:     !!book.coverImage,
     has_chapters:  !!(book.chapters && book.chapters.length),
   };
@@ -5414,6 +5432,31 @@ function getSyncErrorCode(e) {
   return 'SYNC-000';
 }
 
+
+function getBookSyncStamp(book) {
+  return Number(book?.settings?.__syncStamp || book?.lastRead || book?.dateAdded || 0) || 0;
+}
+
+function mergeBookState(local, cloud) {
+  if (!local) return cloud;
+  if (!cloud) return local;
+  const localStamp = getBookSyncStamp(local);
+  const cloudStamp = getBookSyncStamp(cloud);
+  if (cloudStamp > localStamp) return cloud;
+  if (localStamp > cloudStamp) return local;
+
+  return {
+    ...local,
+    ...cloud,
+    notes: (local.notes?.length || 0) >= (cloud.notes?.length || 0) ? (local.notes || []) : (cloud.notes || []),
+    readChapters: Array.from(new Set([...(local.readChapters || []), ...(cloud.readChapters || [])])).sort((a,b) => a - b),
+    settings: sanitizeBookSettings({ ...(cloud.settings || {}), ...(local.settings || {}) }),
+    progress: Math.max(local.progress || 0, cloud.progress || 0),
+    position: Math.max(local.position || 0, cloud.position || 0),
+    lastRead: Math.max(local.lastRead || 0, cloud.lastRead || 0) || null,
+  };
+}
+
 // Full two-way sync: pull cloud → local, push local → cloud
 let _isSyncing = false;
 async function syncAllFromCloud() {
@@ -5441,19 +5484,17 @@ async function syncAllFromCloud() {
         continue;
       }
       const local = localMap.get(meta.id);
-      const cloudNewer = (meta.last_read || 0) > (local?.lastRead || 0);
-      if (!local || cloudNewer) {
-        const book = await cloudPullBook(meta);
-        if (book) {
-          // Write to IndexedDB directly without triggering a re-upload
-          await dbPutLocal(book);
-        }
+      const cloudBook = await cloudPullBook(meta);
+      if (cloudBook) {
+        const merged = mergeBookState(local, cloudBook);
+        await dbPutLocal(merged);
       }
     }
 
     // Push local books that are absent from cloud OR newer than cloud version
     // (handles cases where the throttled in-session push failed, e.g. network/background)
-    for (const local of localBooks) {
+    const latestLocalBooks = await dbGetAll();
+    for (const local of latestLocalBooks) {
       if (deletedIds.has(local.id)) continue;
       if (!cloudIds.has(local.id)) {
         // Book not in cloud at all — push it
@@ -5461,8 +5502,9 @@ async function syncAllFromCloud() {
       } else {
         // Book exists in both places — push if local copy is more recent
         const cloudMeta = (cloudMetas || []).find(m => m.id === local.id);
-        const localNewer = (local.lastRead || 0) > (cloudMeta?.last_read || 0);
-        if (localNewer) await cloudPushBook(local);
+        const cloudStamp = Number(cloudMeta?.book_settings?.__syncStamp || cloudMeta?.last_read || cloudMeta?.date_added || 0) || 0;
+        const localStamp = getBookSyncStamp(local);
+        if (localStamp >= cloudStamp) await cloudPushBook(local);
       }
     }
 

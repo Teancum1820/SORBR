@@ -1,9 +1,9 @@
 {
-  "name": "Sorbr — Speed Reading & Comprehension",
+  "name": "Sorbr \u2014 Speed Reading & Comprehension",
   "short_name": "Sorbr",
   "description": "Speed reading and comprehension tool with checkpoints and notes",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#0f0f0f",
   "theme_color": "#0f0f0f",
   "orientation": "any",
@@ -16,6 +16,13 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["education", "productivity"],
-  "screenshots": []
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "screenshots": [],
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ]
 }

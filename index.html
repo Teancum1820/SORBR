@@ -386,6 +386,65 @@
   }
   .ctrl-btn:hover { border-color: var(--accent); background: var(--surface2); }
   .ctrl-btn.active { border-color: var(--accent); color: var(--accent); }
+
+  /* ── TTS Controls ─────────────────────────────────────────────────────── */
+  #tts-toggle-btn.active {
+    border-color: #2dae6a;
+    color: #2dae6a;
+    background: rgba(45, 174, 106, 0.09);
+    box-shadow: 0 0 0 1px rgba(45, 174, 106, 0.2);
+  }
+
+  .tts-engine-tabs {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .tts-engine-btn {
+    flex: 1;
+    min-width: 60px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 11px;
+    padding: 5px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .tts-engine-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(255,255,255,0.04);
+  }
+  .tts-key-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .tts-key-input:focus { border-color: var(--accent); }
+  #tts-voice-select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 12px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+  }
+  #tts-voice-select option { background: var(--surface2); }
   #play-btn {
     width: 50px; height: 50px; background: var(--accent);
     border-color: var(--accent); color: var(--btn-start-text); font-size: 18px; border-radius: 50%;
@@ -1875,6 +1934,76 @@
               </tbody>
             </table>
             <p style="margin:8px 0 0;">Questions? Email <span class="email">feedback@sorbr.com</span></p>
+            <button class="btn-sm" id="sync-overwrite-btn" style="margin-top:10px;">Force Overwrite Sync Versions</button>
+            <div style="font-size:11px;opacity:0.75;margin-top:6px;">Use if persistent sync conflicts occur. This refreshes local sync version stamps.</div>
+          </div>
+        </div>
+
+        <!-- TTS / Voice Reading -->
+        <div class="settings-section" id="tts-settings-section">
+          <span class="settings-label">🔊 Voice Reading</span>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+
+            <!-- Engine selector -->
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">TTS Engine</div>
+              <div class="tts-engine-tabs">
+                <button class="tts-engine-btn active" data-engine="browser"     onclick="selectTTSEngine('browser')">Browser</button>
+                <button class="tts-engine-btn"        data-engine="openai"      onclick="selectTTSEngine('openai')">OpenAI</button>
+                <button class="tts-engine-btn"        data-engine="elevenlabs"  onclick="selectTTSEngine('elevenlabs')">ElevenLabs</button>
+                <button class="tts-engine-btn"        data-engine="google"      onclick="selectTTSEngine('google')">Google</button>
+              </div>
+            </div>
+
+            <!-- Per-engine panel (shown/hidden by selectTTSEngine) -->
+            <div id="tts-panel-browser">
+              <select id="tts-voice-select"><option>Loading voices…</option></select>
+            </div>
+
+            <div id="tts-panel-openai" style="display:none;flex-direction:column;gap:8px;">
+              <input class="tts-key-input" id="tts-openai-key" type="password" placeholder="OpenAI API key (sk-…)" />
+              <select id="tts-openai-voice" class="tts-key-input" style="cursor:pointer;">
+                <option value="nova">Nova (warm, natural)</option>
+                <option value="alloy">Alloy (neutral)</option>
+                <option value="echo">Echo (male, mellow)</option>
+                <option value="fable">Fable (expressive)</option>
+                <option value="onyx">Onyx (deep, authoritative)</option>
+                <option value="shimmer">Shimmer (soft, clear)</option>
+              </select>
+            </div>
+
+            <div id="tts-panel-elevenlabs" style="display:none;flex-direction:column;gap:8px;">
+              <input class="tts-key-input" id="tts-elevenlabs-key" type="password" placeholder="ElevenLabs API key" />
+              <select id="tts-eleven-voice" class="tts-key-input" style="cursor:pointer;">
+                <option value="">Loading voices… (enter key first)</option>
+              </select>
+            </div>
+
+            <div id="tts-panel-google" style="display:none;flex-direction:column;gap:8px;">
+              <input class="tts-key-input" id="tts-google-key" type="password" placeholder="Google Cloud TTS API key" />
+              <select id="tts-google-voice" class="tts-key-input" style="cursor:pointer;">
+                <option value="">Default (en-US, Female)</option>
+                <option value="en-US-Neural2-F">en-US Neural2-F (natural female)</option>
+                <option value="en-US-Neural2-D">en-US Neural2-D (natural male)</option>
+                <option value="en-US-Wavenet-F">en-US WaveNet-F</option>
+                <option value="en-US-Wavenet-D">en-US WaveNet-D</option>
+                <option value="en-GB-Neural2-A">en-GB Neural2-A (British female)</option>
+                <option value="en-GB-Neural2-B">en-GB Neural2-B (British male)</option>
+              </select>
+            </div>
+
+            <!-- Speed (all engines) -->
+            <div class="opt-group">
+              <label>Speed</label>
+              <input type="range" id="tts-rate-slider" min="0.5" max="2.0" step="0.1" value="1.0" style="width:100px;" />
+              <b id="tts-rate-label" style="color:var(--accent);font-size:13px;">1.0×</b>
+            </div>
+
+            <div style="font-size:11px;color:var(--muted);line-height:1.6;" title="At 600+ WPM, cloud TTS may lag slightly behind visual words due to network latency.">
+              API keys are saved locally in your browser. Toggle voice on/off with 🔇 in the reader.<br>
+              <strong>Browser</strong> = free &amp; offline. <strong>OpenAI/ElevenLabs/Google</strong> = natural AI voices (usage fees apply).<br>
+              <strong>Security note:</strong> Avoid using production keys on shared browsers.
+            </div>
           </div>
         </div>
 
@@ -1932,7 +2061,7 @@
       </div>
       <p class="feedback-note">Send Feedback and Ideas to <span class="email">feedback@sorbr.com</span></p>
       <a class="footer-blog-btn" href="/blog" title="Blog">Blog</a>
-      <span>Sorbr v1.8.8 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
+      <span>Sorbr v1.9.0 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
     </div>
   </div>
@@ -1992,6 +2121,7 @@
       </div>
       <div class="ctrl-group">
         <button class="btn-sm" id="back-btn">← Save &amp; Exit</button>
+        <button class="ctrl-btn" id="tts-toggle-btn" title="Voice: OFF — click to enable" onclick="toggleTTS()">🔇</button>
         <button class="btn-sm purple" id="notes-toggle-btn">📝 <span class="notes-label">Notes</span><span id="notes-count"></span></button>
       </div>
     </div>
@@ -2245,6 +2375,19 @@ const PUNC_PROFILES    = {
 const USER_SETTINGS_KEY = 'sorbr-user-settings';
 const USER_STATS_KEY = 'sorbr-user-stats';
 const BOOK_SETTING_KEYS = ['wpm', 'chunkSize', 'checkpointInterval', 'puncPauseMode', 'font', 'accent', 'theme'];
+
+// ── TTS State ──────────────────────────────────────────────────────────────
+let ttsEnabled        = false;
+let ttsEngine         = 'browser'; // 'browser' | 'openai' | 'elevenlabs' | 'google'
+let ttsRate           = 1.0;
+let ttsBrowserVoice   = null;
+let ttsBrowserVoices  = [];
+let ttsOpenAIVoice    = 'nova';
+let ttsElevenVoiceId  = '';
+let ttsGoogleVoice    = '';
+let ttsApiKeys        = { openai: '', elevenlabs: '', google: '' };
+let ttsCurrentAudio   = null;
+const TTS_STORAGE_KEY = 'sorbr-tts-v2';
 
 function sanitizeBookSettings(raw = {}) {
   if (!raw || typeof raw !== 'object') return {};
@@ -3421,6 +3564,7 @@ function renderWord() {
   currentWordEl.classList.remove('word-animate');
   void currentWordEl.offsetWidth;
   currentWordEl.classList.add('word-animate');
+  if (ttsEnabled) ttsSpeak(chunk);
 
   const win  = 6;
   const prev = words.slice(Math.max(0, idx - win), idx).join(' ');
@@ -3535,6 +3679,7 @@ function pause() {
   playBtn.classList.remove('active');
   clearTimeout(advanceTimer);
   advanceTimer = null;
+  ttsStopCurrent();
   document.getElementById('stats-bar').classList.remove('playing');
   document.getElementById('word-stage').classList.add('paused');
   document.getElementById('paused-label').style.opacity = '1';
@@ -3603,6 +3748,7 @@ function syncCheckpointHeader({ isFinal = false, section = 1, wordsRead = 0, tot
 }
 
 function showCheckpoint() {
+  ttsStopCurrent();
   checkpointNum++;
 
   // Figure out where this section started
@@ -3652,6 +3798,7 @@ function showCheckpoint() {
 }
 
 function showFinalCheckpoint() {
+  ttsStopCurrent();
   isFinalCheckpoint = true;
   checkpointNum++;
 
@@ -3809,6 +3956,304 @@ function showDone() {
   }
 }
 
+// ── TTS Persistence ───────────────────────────────────────────────────────
+function saveTTSPrefs() {
+  localStorage.setItem(TTS_STORAGE_KEY, JSON.stringify({
+    enabled: ttsEnabled,
+    engine: ttsEngine,
+    rate: ttsRate,
+    browserVoiceName: ttsBrowserVoice?.name ?? '',
+    openaiVoice: ttsOpenAIVoice,
+    elevenVoiceId: ttsElevenVoiceId,
+    googleVoice: ttsGoogleVoice,
+    apiKeys: ttsApiKeys,
+  }));
+}
+
+function loadTTSPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem(TTS_STORAGE_KEY) || '{}');
+    ttsEnabled = p.enabled ?? false;
+    ttsEngine = p.engine ?? 'browser';
+    ttsRate = p.rate ?? 1.0;
+    ttsOpenAIVoice = p.openaiVoice ?? 'nova';
+    ttsElevenVoiceId = p.elevenVoiceId ?? '';
+    ttsGoogleVoice = p.googleVoice ?? '';
+    ttsApiKeys = { openai: '', elevenlabs: '', google: '', ...(p.apiKeys ?? {}) };
+    if (p.browserVoiceName) window._ttsSavedBrowserVoice = p.browserVoiceName;
+  } catch (_) {}
+}
+
+function ttsStopCurrent() {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  if (ttsCurrentAudio) {
+    ttsCurrentAudio.pause();
+    ttsCurrentAudio = null;
+  }
+}
+
+function bindAudioCleanup(audio) {
+  if (!audio) return;
+  audio.addEventListener('ended', () => {
+    if (audio.src && audio.src.startsWith('blob:')) URL.revokeObjectURL(audio.src);
+  }, { once: true });
+}
+
+async function ttsSpeak(text) {
+  if (!ttsEnabled || !text?.trim()) return;
+  ttsStopCurrent();
+
+  if (ttsEngine === 'browser') {
+    ttsSpeakBrowser(text);
+  } else if (ttsEngine === 'openai') {
+    await ttsSpeakOpenAI(text);
+  } else if (ttsEngine === 'elevenlabs') {
+    await ttsSpeakElevenLabs(text);
+  } else if (ttsEngine === 'google') {
+    await ttsSpeakGoogle(text);
+  }
+}
+
+function ttsSpeakBrowser(text) {
+  if (!('speechSynthesis' in window)) return;
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = ttsRate;
+  if (ttsBrowserVoice) utt.voice = ttsBrowserVoice;
+  window.speechSynthesis.speak(utt);
+}
+
+async function ttsSpeakOpenAI(text) {
+  const key = ttsApiKeys.openai;
+  if (!key) { showToast('Add your OpenAI API key in TTS settings', 'err'); return; }
+  try {
+    const res = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'tts-1',
+        voice: ttsOpenAIVoice,
+        input: text,
+        speed: Math.min(4.0, Math.max(0.25, ttsRate)),
+      }),
+    });
+    if (!res.ok) throw new Error(`OpenAI TTS ${res.status}`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    ttsCurrentAudio = new Audio(url);
+    bindAudioCleanup(ttsCurrentAudio);
+    await ttsCurrentAudio.play();
+  } catch (e) {
+    showToast(`OpenAI TTS error: ${e.message}`, 'err');
+  }
+}
+
+async function ttsSpeakElevenLabs(text) {
+  const key = ttsApiKeys.elevenlabs;
+  const voiceId = ttsElevenVoiceId || 'EXAVITQu4vr4xnSDxMaL';
+  if (!key) { showToast('Add your ElevenLabs API key in TTS settings', 'err'); return; }
+  const endpoint = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`;
+  try {
+    let res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'xi-api-key': key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        model_id: 'eleven_turbo_v2',
+        voice_settings: { stability: 0.5, similarity_boost: 0.75, speed: ttsRate },
+      }),
+    });
+
+    if (res.status === 422) {
+      res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'xi-api-key': key, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_turbo_v2',
+          voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+        }),
+      });
+    }
+
+    if (!res.ok) throw new Error(`ElevenLabs TTS ${res.status}`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    ttsCurrentAudio = new Audio(url);
+    bindAudioCleanup(ttsCurrentAudio);
+    await ttsCurrentAudio.play();
+  } catch (e) {
+    showToast(`ElevenLabs TTS error: ${e.message}`, 'err');
+  }
+}
+
+async function ttsSpeakGoogle(text) {
+  const key = ttsApiKeys.google;
+  if (!key) { showToast('Add your Google TTS API key in TTS settings', 'err'); return; }
+  try {
+    const voice = ttsGoogleVoice
+      ? { name: ttsGoogleVoice, languageCode: ttsGoogleVoice.slice(0, 5) }
+      : { languageCode: 'en-US', ssmlGender: 'FEMALE' };
+    const res = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${key}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        input: { text },
+        voice,
+        audioConfig: { audioEncoding: 'MP3', speakingRate: ttsRate },
+      }),
+    });
+    if (!res.ok) throw new Error(`Google TTS ${res.status}`);
+    const { audioContent } = await res.json();
+    ttsCurrentAudio = new Audio(`data:audio/mp3;base64,${audioContent}`);
+    await ttsCurrentAudio.play();
+  } catch (e) {
+    showToast(`Google TTS error: ${e.message}`, 'err');
+  }
+}
+
+function selectTTSEngine(engine) {
+  ttsEngine = engine;
+  ['browser', 'openai', 'elevenlabs', 'google'].forEach(e => {
+    const panel = document.getElementById(`tts-panel-${e}`);
+    if (panel) panel.style.display = e === engine ? 'flex' : 'none';
+    document.querySelectorAll(`.tts-engine-btn[data-engine="${e}"]`).forEach(b =>
+      b.classList.toggle('active', e === engine)
+    );
+  });
+  saveTTSPrefs();
+}
+
+function populateBrowserVoices() {
+  const sel = document.getElementById('tts-voice-select');
+  if (!sel || !('speechSynthesis' in window)) return;
+  ttsBrowserVoices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
+  if (!ttsBrowserVoices.length) ttsBrowserVoices = window.speechSynthesis.getVoices();
+
+  if (!ttsBrowserVoice && ttsBrowserVoices.length) {
+    ttsBrowserVoice =
+      ttsBrowserVoices.find(v => window._ttsSavedBrowserVoice && v.name === window._ttsSavedBrowserVoice) ||
+      ttsBrowserVoices.find(v => /natural|premium|enhanced/i.test(v.name)) ||
+      ttsBrowserVoices[0];
+    delete window._ttsSavedBrowserVoice;
+  }
+
+  sel.innerHTML = ttsBrowserVoices.map((v, i) =>
+    `<option value="${i}" ${ttsBrowserVoice?.name === v.name ? 'selected' : ''}>${v.name} (${v.lang})</option>`
+  ).join('');
+}
+
+async function fetchElevenLabsVoices() {
+  const key = ttsApiKeys.elevenlabs;
+  if (!key) return;
+  try {
+    const res = await fetch('https://api.elevenlabs.io/v1/voices', { headers: { 'xi-api-key': key } });
+    const data = await res.json();
+    const sel = document.getElementById('tts-eleven-voice');
+    if (!sel || !data.voices) return;
+    sel.innerHTML = data.voices
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(v => `<option value="${v.voice_id}" ${v.voice_id === ttsElevenVoiceId ? 'selected' : ''}>${v.name} — ${v.labels?.accent ?? ''} ${v.labels?.gender ?? ''}</option>`)
+      .join('');
+    if (!ttsElevenVoiceId && data.voices.length) ttsElevenVoiceId = data.voices[0].voice_id;
+    saveTTSPrefs();
+  } catch (_) {}
+}
+
+function toggleTTS() {
+  ttsEnabled = !ttsEnabled;
+  const btn = document.getElementById('tts-toggle-btn');
+  if (btn) {
+    btn.textContent = ttsEnabled ? '🔊' : '🔇';
+    btn.title = ttsEnabled ? 'Voice: ON — click to disable' : 'Voice: OFF — click to enable';
+    btn.classList.toggle('active', ttsEnabled);
+  }
+  if (!ttsEnabled) ttsStopCurrent();
+  saveTTSPrefs();
+  showToast(ttsEnabled ? '🔊 Voice reading on' : '🔇 Voice reading off');
+}
+
+function initTTS() {
+  loadTTSPrefs();
+
+  const btn = document.getElementById('tts-toggle-btn');
+  if (!('speechSynthesis' in window) && btn && ttsEngine === 'browser') {
+    btn.title = 'Voice not supported in this browser';
+  }
+
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.onvoiceschanged = populateBrowserVoices;
+    populateBrowserVoices();
+  }
+
+  selectTTSEngine(ttsEngine);
+
+  if (btn) {
+    btn.textContent = ttsEnabled ? '🔊' : '🔇';
+    btn.title = ttsEnabled ? 'Voice: ON — click to disable' : 'Voice: OFF — click to enable';
+    btn.classList.toggle('active', ttsEnabled);
+  }
+
+  const rateSlider = document.getElementById('tts-rate-slider');
+  const rateLabel = document.getElementById('tts-rate-label');
+  if (rateSlider) {
+    rateSlider.value = String(ttsRate);
+    if (rateLabel) rateLabel.textContent = Number(ttsRate).toFixed(1) + '×';
+    rateSlider.addEventListener('input', () => {
+      ttsRate = parseFloat(rateSlider.value);
+      if (rateLabel) rateLabel.textContent = ttsRate.toFixed(1) + '×';
+      saveTTSPrefs();
+    });
+  }
+
+  const bvSel = document.getElementById('tts-voice-select');
+  if (bvSel) bvSel.addEventListener('change', () => {
+    ttsBrowserVoice = ttsBrowserVoices[parseInt(bvSel.value, 10)] || null;
+    saveTTSPrefs();
+  });
+
+  const oKey = document.getElementById('tts-openai-key');
+  const oVoice = document.getElementById('tts-openai-voice');
+  if (oKey) {
+    oKey.value = ttsApiKeys.openai;
+    oKey.addEventListener('change', () => { ttsApiKeys.openai = oKey.value.trim(); saveTTSPrefs(); });
+  }
+  if (oVoice) {
+    oVoice.value = ttsOpenAIVoice;
+    oVoice.addEventListener('change', () => { ttsOpenAIVoice = oVoice.value; saveTTSPrefs(); });
+  }
+
+  const elKey = document.getElementById('tts-elevenlabs-key');
+  const elVoice = document.getElementById('tts-eleven-voice');
+  if (elKey) {
+    elKey.value = ttsApiKeys.elevenlabs;
+    elKey.addEventListener('change', () => {
+      ttsApiKeys.elevenlabs = elKey.value.trim();
+      saveTTSPrefs();
+      fetchElevenLabsVoices();
+    });
+    if (ttsApiKeys.elevenlabs) fetchElevenLabsVoices();
+  }
+  if (elVoice) elVoice.addEventListener('change', () => { ttsElevenVoiceId = elVoice.value; saveTTSPrefs(); });
+
+  const gKey = document.getElementById('tts-google-key');
+  const gVoice = document.getElementById('tts-google-voice');
+  if (gKey) {
+    gKey.value = ttsApiKeys.google;
+    gKey.addEventListener('change', () => { ttsApiKeys.google = gKey.value.trim(); saveTTSPrefs(); });
+  }
+  if (gVoice) {
+    gVoice.value = ttsGoogleVoice;
+    gVoice.addEventListener('change', () => { ttsGoogleVoice = gVoice.value; saveTTSPrefs(); });
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) ttsStopCurrent();
+});
+
 // ═══════════════════════════════════════════
 //  START / BACK
 // ═══════════════════════════════════════════
@@ -3878,6 +4323,7 @@ function goBack() {
   pause();
   doneOverlay.style.display = 'none';
   checkpointOverlay.classList.remove('show');
+  ttsStopCurrent();
   notesSidebar.classList.remove('open');
   readerPanel.style.display = 'none';
   inputPanel.style.display  = 'flex';
@@ -4548,6 +4994,12 @@ document.getElementById('ns-print-btn').addEventListener('click', () => {
 
 // ─── Print button in notes sidebar ──────────────────────────────────────────
 bookmarkBtn.addEventListener('click', () => openNoteSelectModal(notes, loadedTitle));
+
+document.getElementById('sync-overwrite-btn')?.addEventListener('click', async () => {
+  const proceed = confirm('Overwrite sync version stamps for all local books? Use this only to resolve persistent sync conflicts.');
+  if (!proceed) return;
+  await overwriteSyncVersions();
+});
 
 // ═══════════════════════════════════════════
 //  QUICK PRINT TAB  (standalone, no session needed)
@@ -5421,6 +5873,27 @@ async function cloudDeleteBook(bookId) {
   ]);
 }
 
+async function overwriteSyncVersions() {
+  try {
+    const allBooks = await dbGetAll();
+    if (!allBooks.length) {
+      showToast('No books found to re-version.', 'info');
+      return;
+    }
+    const base = Date.now();
+    for (let i = 0; i < allBooks.length; i++) {
+      const book = allBooks[i];
+      book.settings = sanitizeBookSettings({ ...(book.settings || {}), __syncStamp: base + i + 1 });
+      await dbPut(book);
+      if (sbClient && sbUser) cloudPushBook(book).catch(console.warn);
+    }
+    showToast(`Sync versions refreshed for ${allBooks.length} book${allBooks.length === 1 ? '' : 's'}.`, 'ok');
+  } catch (e) {
+    console.error(e);
+    showToast(`Could not overwrite sync versions: ${e.message}`, 'err');
+  }
+}
+
 function getSyncErrorCode(e) {
   if (e?.syncCode) return e.syncCode;
   const msg = (e?.message || '').toLowerCase();
@@ -5584,6 +6057,7 @@ deleteBook = async function(id) {
 
 // Initialise Supabase on load
 initSupabase();
+initTTS();
 </script>
 <script>
   if ('serviceWorker' in navigator) {

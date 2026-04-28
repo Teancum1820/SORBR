@@ -2517,7 +2517,9 @@ async function saveProgressToLibrary() {
 
 // Add a new book to the library
 async function addToLibrary(title, content, type, coverImage, chapters) {
-  const id = 'book_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+  const id = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+    ? `book_${crypto.randomUUID()}`
+    : ('book_' + Date.now() + '_' + Math.random().toString(36).slice(2, 12));
   const book = {
     id,
     title:       title || 'Untitled',
@@ -5320,6 +5322,7 @@ document.getElementById('auth-sync-now-btn').addEventListener('click', () => {
 // Upload a single book's large data to Storage, metadata to DB
 async function cloudPushBook(book) {
   if (!sbClient || !sbUser) return;
+  if (!book?.id) return;
   const uid = sbUser.id;
 
   // Upload content
@@ -5368,7 +5371,33 @@ async function cloudPushBook(book) {
     has_chapters:  !!(book.chapters && book.chapters.length),
   };
   const { error } = await sbClient.from('library_books').upsert(meta);
+  if (error && isCloudIdConflictError(error)) {
+    const migrated = await migrateLocalBookId(book);
+    if (migrated?.id && migrated.id !== book.id) {
+      await cloudPushBook(migrated);
+      return;
+    }
+  }
   if (error) { error.syncCode = 'SYNC-004'; throw error; }
+}
+
+function isCloudIdConflictError(error) {
+  const msg = String(error?.message || '').toLowerCase();
+  return error?.code === '23505' || msg.includes('duplicate key value') || msg.includes('unique constraint');
+}
+
+async function migrateLocalBookId(book) {
+  if (!book?.id) return book;
+  const nextId = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+    ? `book_${crypto.randomUUID()}`
+    : `book_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+  const nextBook = { ...book, id: nextId };
+  await dbPut(nextBook);
+  await dbDelete(book.id);
+  if (activeBookId === book.id) activeBookId = nextId;
+  if (detailBookId === book.id) detailBookId = nextId;
+  showToast('Resolved a cloud ID conflict and retried sync.', 'info');
+  return nextBook;
 }
 
 // Download a book from cloud and save to local IndexedDB (no re-upload)

@@ -1935,7 +1935,7 @@
       </div>
       <p class="feedback-note">Send Feedback and Ideas to <span class="email">feedback@sorbr.com</span></p>
       <a class="footer-blog-btn" href="/blog" title="Blog">Blog</a>
-      <span>Sorbr v1.9.1 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
+      <span>Sorbr v1.9.2 &nbsp;·&nbsp; Speed Reader with Comprehension Checkpoints</span>
       <span style="font-size:10px;opacity:0.6;">© 2026 Caleb Day</span>
     </div>
   </div>
@@ -2028,6 +2028,12 @@
     <div class="ns-toolbar">
       <span class="ns-count" id="ns-count">0 selected</span>
       <button class="ns-toggle-all-btn" id="ns-toggle-all-btn">Deselect All</button>
+    </div>
+    <div class="ns-toolbar" style="padding-top:0;justify-content:flex-start;gap:10px;">
+      <label for="ns-split-count" style="font-size:12px;color:var(--muted);">Split into sticky notes:</label>
+      <select id="ns-split-count" style="padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;">
+        <option value="1">1 sticky note</option>
+      </select>
     </div>
     <div class="ns-list" id="ns-list"></div>
     <div class="ns-footer">
@@ -4507,6 +4513,14 @@ function openNoteSelectModal(sourceNotes, title) {
   nsSourceNotes = written;
   nsTitle = title || 'Notes';
 
+  const splitSelect = document.getElementById('ns-split-count');
+  const maxSplit = Math.min(written.length, 12);
+  splitSelect.innerHTML = Array.from({ length: maxSplit }, (_, i) => {
+    const n = i + 1;
+    return `<option value="${n}">${n} sticky note${n === 1 ? '' : 's'}</option>`;
+  }).join('');
+  splitSelect.value = String(Math.min(1, maxSplit));
+
   const nsList = document.getElementById('ns-list');
   nsList.innerHTML = written.map((n, i) => `
     <label class="ns-note-item" for="ns-note-${i}">
@@ -4551,8 +4565,9 @@ document.getElementById('ns-print-btn').addEventListener('click', () => {
   const selected = [...document.querySelectorAll('.ns-checkbox:checked')]
     .map(b => nsSourceNotes[parseInt(b.dataset.idx)]);
   if (!selected.length) { showToast('Select at least one note.', 'err'); return; }
+  const splitCount = Math.max(1, parseInt(document.getElementById('ns-split-count')?.value || '1', 10));
   closeNoteSelectModal();
-  openPrintWindow('sticky', selected, nsTitle);
+  openPrintWindow('sticky', selected, nsTitle, splitCount);
 });
 
 // ─── Print button in notes sidebar ──────────────────────────────────────────
@@ -4590,7 +4605,7 @@ qpPrintBtn.addEventListener('click', () => {
 // ═══════════════════════════════════════════
 //  OPEN PRINT WINDOW  (shared by both paths)
 // ═══════════════════════════════════════════
-function openPrintWindow(mode, sourceNotes, title) {
+function openPrintWindow(mode, sourceNotes, title, splitCount = 1) {
   // mode is always 'sticky' — bookmark format has been removed
   const written = (sourceNotes || []).filter(n => !n.skipped && n.summary && n.summary.trim());
   if (!written.length) { showToast('No notes to print.', 'err'); return; }
@@ -4598,10 +4613,17 @@ function openPrintWindow(mode, sourceNotes, title) {
   const date      = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const safeTitle = String(title || 'Notes').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-  const noteBlocksHTML = written.map(n => {
-    const label = n.isFinal ? '★ Final' : `§${n.checkpoint} (${n.pct}%)`;
-    const body  = String(n.summary).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-    return `<div class="note-block"><span class="note-cp">${label}</span><span class="note-body">${body}</span></div>`;
+  const totalCards = Math.max(1, Math.min(parseInt(splitCount, 10) || 1, written.length));
+  const notesPerCard = Math.ceil(written.length / totalCards);
+  const cardsHTML = Array.from({ length: totalCards }, (_, cardIndex) => {
+    const chunk = written.slice(cardIndex * notesPerCard, (cardIndex + 1) * notesPerCard);
+    const noteBlocksHTML = chunk.map(n => {
+      const label = n.isFinal ? '★ Final' : `§${n.checkpoint} (${n.pct}%)`;
+      const body  = String(n.summary).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+      return `<div class="note-block"><span class="note-cp">${label}</span><span class="note-body">${body}</span></div>`;
+    }).join('');
+    const cardTitle = `${safeTitle}${totalCards > 1 ? ` · ${cardIndex + 1}/${totalCards}` : ''}`;
+    return `<div class="card-wrap"><div class="card"><div class="card-title">${cardTitle}</div><div class="notes-wrapper"><div class="notes-inner">${noteBlocksHTML}</div></div><div class="card-foot">Sorbr &middot; ${date} &middot; ${chunk.length} note${chunk.length !== 1 ? 's' : ''}</div></div></div>`;
   }).join('');
 
   // Sticky note: 76 × 76 mm
@@ -4613,9 +4635,10 @@ function openPrintWindow(mode, sourceNotes, title) {
   // then switches to 2-col layout if still overflowing.
   const adaptScript = `
   (function() {
-    const notes   = document.getElementById('notes-inner');
-    const wrapper = document.getElementById('notes-wrapper');
-    const card    = document.querySelector('.card');
+    const card = document.querySelector('.card');
+    if (!card) return;
+    const notes = card.querySelector('.notes-inner');
+    const wrapper = card.querySelector('.notes-wrapper');
     const cardH   = card.clientHeight;
     const titleH  = document.querySelector('.card-title').offsetHeight;
     const footH   = document.querySelector('.card-foot').offsetHeight;
@@ -4705,10 +4728,10 @@ function openPrintWindow(mode, sourceNotes, title) {
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     flex-shrink: 0;
   }
-  #notes-wrapper {
+   .notes-wrapper {
     flex: 1; overflow: hidden; min-height: 0;
   }
-  #notes-inner {
+   .notes-inner {
     padding: 2mm 3mm;
     font-size: 7.5pt;
     line-height: 1.45;
@@ -4720,6 +4743,8 @@ function openPrintWindow(mode, sourceNotes, title) {
     letter-spacing: .06em; text-transform: uppercase; color: #999;
   }
   .note-body { color: #111; word-break: break-word; }
+  .cards-grid { display:flex; flex-wrap:wrap; gap:4mm; }
+  .card-wrap { break-inside: avoid; page-break-inside: avoid; }
   .card-foot {
     font-size: 5pt; color: #bbb; text-align: center;
     border-top: 1px solid #eee; padding: 1mm;
@@ -4736,13 +4761,7 @@ function openPrintWindow(mode, sourceNotes, title) {
     <button class="font-btn" onclick="window._fontStep(0.5)">+</button>
     <button class="font-btn" style="width:auto;padding:0 8px;font-size:11px;" onclick="window._openPrintDialog()">Print</button>
   </div>
-  <div class="card">
-    <div class="card-title">${safeTitle}</div>
-    <div id="notes-wrapper">
-      <div id="notes-inner">${noteBlocksHTML}</div>
-    </div>
-    <div class="card-foot">Sorbr &middot; ${date} &middot; ${written.length} note${written.length !== 1 ? 's' : ''}</div>
-  </div>
+  <div class="cards-grid">${cardsHTML}</div>
   <script>
     window.addEventListener('load', function() {
       ${adaptScript}
